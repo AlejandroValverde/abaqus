@@ -1,7 +1,7 @@
 import os
 import pdb #pdb.set_trace()
 
-from moduleCommon import *
+from moduleCommon import * # HOLA
 
 #Functions
 def writeInputParaToFile(fileName, iter, parameters, valueCurrent, keyCurrent, nominalDict):
@@ -11,6 +11,8 @@ def writeInputParaToFile(fileName, iter, parameters, valueCurrent, keyCurrent, n
 	file.write('Iter' + '\n')
 
 	file.write(str(iter) + '\n')
+
+	#HOla, como estas
 
 	for parameter, value in zip(parameters, [nominalDict[para] for para in parameters]):
 
