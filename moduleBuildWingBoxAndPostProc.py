@@ -49,7 +49,7 @@ def loadParameters(paraRead, fileName):
 		elif platform.system() == 'Windows':
 
 			valueParater = valueParater.replace('\n','')
-			nameParater = nameParater.replace('\n','')
+			nameParater = nameParater.replace('\n','') ###### 
 
 		else:
 
