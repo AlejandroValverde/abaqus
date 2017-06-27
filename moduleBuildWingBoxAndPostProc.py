@@ -4,8 +4,9 @@
 import math
 import numpy as np
 from shutil import copyfile
-import os
+import os, re
 import platform
+import sys
 
 from part import *
 from material import *
@@ -21,13 +22,13 @@ from sketch import *
 from visualization import *
 from connectorBehavior import *
 import regionToolset
+import copy
 
 #For the post-processing
 from abaqus import *
 from abaqusConstants import *
 
 #User-defined modules
-from functions_Lattice import *
 from moduleCommon import *
 
 def loadParameters(paraRead, fileName):
@@ -49,7 +50,7 @@ def loadParameters(paraRead, fileName):
 		elif platform.system() == 'Windows':
 
 			valueParater = valueParater.replace('\n','')
-			nameParater = nameParater.replace('\n','') ###### 
+			nameParater = nameParater.replace('\n','')
 
 		else:
 
