@@ -1,6 +1,7 @@
 # Define parameters range
 
-rangesDict={'N' : [],#[5, 10, 20, 30, 40, 50],
+rangesDict={'E1overE_rib' : [], 
+			'N' : [],#[5, 10, 20, 30, 40, 50],
 			'M' : [],
 			'r' : [],
 			'B' : [],
@@ -34,7 +35,8 @@ rangesDict={'N' : [],#[5, 10, 20, 30, 40, 50],
 			'typeAnalysis' : [],
 			'typeAbaqus' : []}
 
-nominalDict={'N' : 10, #Number of unit cells in spanwise direction
+nominalDict={'E1overE_rib' : 1, #N/mm^2, for the rib, expressed as a fraction of the main material
+			'N' : 10, #Number of unit cells in spanwise direction
 			'M' : 3, #Number of unit cells in transversal direction
 			'r' : 10.0,#Node radius 
 			'B' : 30.0, #Node depth
@@ -68,7 +70,7 @@ nominalDict={'N' : 10, #Number of unit cells in spanwise direction
 			'typeAnalysis' : 'nonlinear',
 			'typeAbaqus' : 'Standard'}
 
-parameters=('N', 'M', 'r', 'B', 'L', 'Cbox_t', 'rib_t', 'rib_t_inner', 'rib_a', 'C3', 'wingBoxLength', 'eOverB', 'tChiral', 
+parameters=('E1overE_rib', 'N', 'M', 'r', 'B', 'L', 'Cbox_t', 'rib_t', 'rib_t_inner', 'rib_a', 'C3', 'wingBoxLength', 'eOverB', 'tChiral', 
 			'typeLoad', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
 			'innerRibs_n', 'courseSize',	'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
 			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')

@@ -65,10 +65,10 @@ def loadParameters(paraRead, fileName):
 
 	return paraRead
 
-def loadMaterials(model, design, load):
+def loadMaterials(model, design, load, mat):
 
 	model.Material(name='ABS')
-	model.materials['ABS'].Elastic(table=((3100.0, 0.3), ))
+	model.materials['ABS'].Elastic(table=((mat.E_chiral, mat.v_chiral), ))
 	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
 	    integrationRule=SIMPSON, material='ABS', name='Section-ABS', numIntPts=5, 
 	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
@@ -76,7 +76,7 @@ def loadMaterials(model, design, load):
 	    UNIFORM, useDensity=OFF)
 
 	model.Material(name='Alu')
-	model.materials['Alu'].Elastic(table=((69000.0, 0.3269), ))
+	model.materials['Alu'].Elastic(table=((mat.E1, mat.v1), ))
 	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
 	    integrationRule=SIMPSON, material='Alu', name='Section-Alu', numIntPts=5, 
 	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
@@ -88,10 +88,15 @@ def loadMaterials(model, design, load):
 	    thickness=design.tChiral, thicknessField='', thicknessModulus=None, thicknessType=
 	    UNIFORM, useDensity=OFF)
 
+	#For the ribs
+	model.Material(name='Alu_rib')
+	model.materials['Alu_rib'].Elastic(table=((mat.E_rib, mat.v_rib), ))
+
 	if load.typeAbaqus == 'Explicit': #Necessary to define material density when computing Abaqus Explicit
 
 		model.materials['Alu'].Density(table=((2.7E-6, ), )) #kg /mm^3
 		model.materials['ABS'].Density(table=((1.07E-6, ), )) #kg /mm^3
+		model.materials['Alu_rib'].Density(table=((2.7E-6, ), )) #kg /mm^3
 
 def buildBasicChiral(model, design):
 
@@ -1025,7 +1030,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 
 		#Section
 		model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
-		    integrationRule=SIMPSON, material='Alu', name='Section-Rib', numIntPts=5, 
+		    integrationRule=SIMPSON, material='Alu_rib', name='Section-Rib', numIntPts=5, 
 		    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
 		    thickness=design.ribt, thicknessField='', thicknessModulus=None, thicknessType=
 		    UNIFORM, useDensity=OFF)
@@ -1079,7 +1084,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 
 		#Section
 		model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
-		    integrationRule=SIMPSON, material='Alu', name='Section-Rib-inner', numIntPts=5, 
+		    integrationRule=SIMPSON, material='Alu_rib', name='Section-Rib-inner', numIntPts=5, 
 		    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
 		    thickness=design.ribt_inner, thicknessField='', thicknessModulus=None, thicknessType=
 		    UNIFORM, useDensity=OFF)

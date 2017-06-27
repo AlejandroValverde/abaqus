@@ -170,6 +170,35 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 		    farPlane=6034.91, width=925.052, height=444.988, viewOffsetX=-310.927, 
 		    viewOffsetY=337.564)
 
+	def searchNodesForSequenceOfx(xList, yPos, zPos, tupleOfNodes, instanceToApplyLoadAndBC):
+
+		#Search nodes on upper part
+		for i in range(len(xList)):
+
+			radius = 1
+
+			FlagSearch = True
+
+			while FlagSearch:
+
+				node = instanceToApplyLoadAndBC.nodes.getByBoundingSphere((xList[i], yPos, zPos), radius)
+				
+				if node: #Continue if node found
+
+					#Apply force just to the first node found
+					nodeTuple = node.getMask()
+					maskStr0 = nodeTuple[0].split('#')
+					maskStr = '[#'+str(maskStr0[1])+'#'+str(maskStr0[2]) + ']'
+					tupleOfNodes += (instanceToApplyLoadAndBC.nodes.getSequenceFromMask(mask=(maskStr,),), )
+
+					FlagSearch = False
+
+				else:
+					print('Node to apply force not found, radius increased')
+					radius += 1
+
+		return tupleOfNodes
+
 	# Load specification
 
 	#Create step for load
@@ -244,6 +273,26 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 		    distributionType=UNIFORM, field='', localCsys=None, name='Load-1', region=
 		    model.rootAssembly.sets['pointLoad'])
 
+	elif typeLoad == 'singleForceOnLastRib_upper' or typeLoad == 'singleForceOnLastRib_lower':
+
+		setCameraBeforeDefiningSet(model)
+
+		#Create set
+		tupleOfNodes = ()
+
+		if typeLoad == 'singleForceOnLastRib_upper':
+			searchNodesForSequenceOfx([design.cutWingTip], design.cutUp - (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
+		elif typeLoad == 'singleForceOnLastRib_lower':
+			searchNodesForSequenceOfx([design.cutWingTip], design.cutDown + (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
+
+		model.rootAssembly.Set(name='setForSingleLoadOnOuterRib', nodes=tupleOfNodes)
+
+		load.force = load.ForceMagnitude #Single force
+
+		model.ConcentratedForce(cf2=load.force, createStepName='load', 
+		    distributionType=UNIFORM, field='', localCsys=None, name='singleLoadOnOuterRib', 
+		    region=model.rootAssembly.sets['setForSingleLoadOnOuterRib'])
+
 
 	elif (typeLoad == 'linForceInnerRibs_upper' or typeLoad == 'linForceInnerRibs_middle' or typeLoad == 'linForceInnerRibs_upper_down') and (design.innerRibs_n != 0):
 
@@ -256,62 +305,14 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 		forceXPos = design.innerRibsXpos + [design.cutWingTip] #[ design.innerRibsXpos[-1] + design.innerRibsXpos[1] - design.innerRibsXpos[0]]
 		
 		#Search nodes on upper part
-		for i in range(len(forceXPos)):
+		if typeLoad == 'linForceInnerRibs_middle':
+			searchNodesForSequenceOfx(forceXPos, (design.cutUp - design.cutDown) / 2.0, (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
+		else: #If 'upper' or 'upper_down'
+			searchNodesForSequenceOfx(forceXPos, design.cutUp - (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
 
-			radius = 1
-
-			FlagSearch = True
-
-			while FlagSearch:
-
-				if typeLoad == 'linForceInnerRibs_middle':
-					node = instanceToApplyLoadAndBC.nodes.getByBoundingSphere((forceXPos[i], (design.cutUp - design.cutDown) / 2.0, (load.zPos*design.C3)), radius)
-				else: #If 'upper' or 'upper_down'
-					node = instanceToApplyLoadAndBC.nodes.getByBoundingSphere((forceXPos[i], design.cutUp - (design.a/2), (load.zPos*design.C3)), radius)
-				
-				if node: #Continue if node found
-
-					#Apply force just to the first node found
-					nodeTuple = node.getMask()
-					maskStr0 = nodeTuple[0].split('#')
-					maskStr = '[#'+str(maskStr0[1])+'#'+str(maskStr0[2]) + ']'
-					tupleOfNodes += (instanceToApplyLoadAndBC.nodes.getSequenceFromMask(mask=(maskStr,),), )
-
-					FlagSearch = False
-
-				else:
-					print('Node to apply force not found, radius increased')
-					radius += 1
-
-			print('Final radius utilized for finding the node: '+str(radius))
-
-		#Search nodes on lower part, if specified
+		#Search nodes on lower part, if specified, more nodes will be added
 		if typeLoad == 'linForceInnerRibs_upper_down':
-
-			for i in range(len(forceXPos)):
-
-				radius = 1
-
-				FlagSearch = True
-
-				while FlagSearch:
-
-					node = instanceToApplyLoadAndBC.nodes.getByBoundingSphere((forceXPos[i], design.cutDown + (design.a/2), (load.zPos*design.C3)), radius)
-					if node: #Continue if node found
-
-						#Apply force just to the first node found
-						nodeTuple = node.getMask()
-						maskStr0 = nodeTuple[0].split('#')
-						maskStr = '[#'+str(maskStr0[1])+'#'+str(maskStr0[2]) + ']'
-						tupleOfNodes += (instanceToApplyLoadAndBC.nodes.getSequenceFromMask(mask=(maskStr,),), )
-
-						FlagSearch = False
-
-					else:
-						print('Node to apply force not found, radius increased')
-						radius += 1
-
-				print('Final radius utilized for finding the node: '+str(radius))
+			searchNodesForSequenceOfx(forceXPos, design.cutDown + (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
 
 		model.rootAssembly.Set(name='setForDistributedLoad', nodes=tupleOfNodes)
 

@@ -19,6 +19,15 @@ paraRead = structtype()
 inputFileName = 'inputAbaqus.txt'
 paraRead = loadParameters(paraRead, inputFileName)
 
+## Material
+mat = structtype()
+mat.E1 = 69000.0 #N/mm^2 - For the box, aluminum 
+mat.v1 = 0.3269 #For the box, aluminum 
+mat.E_chiral = 31000 #N/mm^2 - For the chiral structure, ABS
+mat.v_chiral = 0.3 #For the chiral structure, ABS
+mat.E_rib = mat.E1 / float(paraRead.E1overE_rib) #N/mm^2, for the rib, expressed as a fraction of the main material
+mat.v_rib = mat.v1
+
 ## Design parameters
 design = structtype()
 
@@ -60,7 +69,26 @@ mesh.ElemType = '' #'quad'
 
 ## Load
 load = structtype()
-load.typeLoad = paraRead.typeLoad #'moment', 'force', 'displacement', 'linForce', 'linForceInnerRibs_upper', 'linForceInnerRibs_upper_down', 'linForceInnerRibs_middle', 
+load.typeLoad = paraRead.typeLoad 
+#Types of load:
+# - 'moment': Moment applied at the rib tip, through coupling and a reference point
+#		*Parameters: momentMagnitude
+# - 'force': Single force applied at the tip, where the z coordinate is 0 and the y coordinate is maximum
+#		*Parameters: ForceMagnitude
+# - 'displacement': Displacement imposed at the tip, where  'linForce', where the z coordinate is 0 and the y coordinate is maximum
+#		*Parameters: displ
+# - 'linForce': Distributed set of single forces on the wingbox skin
+#		*Parameters: ForceMagnitude, zPos, forceXEnd, forceXStart, forceXn
+# - 'linForceInnerRibs_upper': Distributed set of single forces applied at each of the inner ribs and the tip outer rib, at the upper flange
+#		*Parameters: ForceMagnitude, zPos
+# - 'linForceInnerRibs_middle': Distributed set of single forces applied at each of the inner ribs and the tip outer rib, at the middle flange
+#		*Parameters: ForceMagnitude, zPos
+# - 'linForceInnerRibs_upper_down': Distributed set of single forces applied at each of the inner ribs and the tip outer rib, at the upper and lower flange
+#		*Parameters: ForceMagnitude, zPos
+# - 'singleForceOnLastRib_upper': Single force applied on the tip outer rib, at the upper flange
+#		*Parameters: ForceMagnitude, zPos
+# - 'singleForceOnLastRib_bootom': Single force applied on the tip outer rib, at the lower flange
+#		*Parameters: ForceMagnitude, zPos
 #Step
 load.typeAnalysis = paraRead.typeAnalysis #'linear' or 'nonlinear'
 load.typeAbaqus = paraRead.typeAbaqus #'Standard' or 'Explicit'
@@ -104,7 +132,7 @@ session.executePostProc = (paraRead.executePostProc == 'True')
 model = mdb.models['Model-1']
 
 #Load materials
-loadMaterials(model, design, load)
+loadMaterials(model, design, load, mat)
 
 #Build lattice structure basic elements
 buildBasicChiral(model, design)
