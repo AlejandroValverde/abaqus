@@ -1459,11 +1459,11 @@ def PostProc_nonlinear(iterStr, design, load):
 		#Write ur1 data to XY file
 		#Up
 		x0_ur1_up = session.xyDataObjects['ur1_fr'+str(frameID)+'_up']
-		session.writeXYReport(fileName='ur1_frame'+str(frameID)+'_up.rpt', xyData=(x0_ur1_up, ), appendMode=OFF)
+		session.writeXYReport(fileName='ur1_up_frame'+str(frameID)+'.rpt', xyData=(x0_ur1_up, ), appendMode=OFF)
 
 		#Down
 		x0_ur1_dn = session.xyDataObjects['ur1_fr'+str(frameID)+'_dn']
-		session.writeXYReport(fileName='ur1_frame'+str(frameID)+'_dn.rpt', xyData=(x0_ur1_dn, ), appendMode=OFF)
+		session.writeXYReport(fileName='ur1_dn_frame'+str(frameID)+'.rpt', xyData=(x0_ur1_dn, ), appendMode=OFF)
 
 	#Return to original working folder
 	globalChangeDir(cwd, '.')

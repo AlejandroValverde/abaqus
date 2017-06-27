@@ -63,8 +63,6 @@ data = []
 for file in os.listdir(postProcFolder):
     globalChangeDir(cwd, '-postProc')
     if file.endswith('inputAbaqus.txt'):
-
-        #Hola
         
         #Create case study class where store all the results obtained from Abaqus at termination of its computation
         temp = caseStudy(int(file[:-16])) #file[:-16] - Returns the index
@@ -102,9 +100,9 @@ for file in os.listdir(postProcFolder):
 
                 if file2.startswith('ur1_frame'):
 
-                    tempPerFrame = dataPerFrame(int(file2.replace('.rpt','')[9:]))
+                    tempPerFrame = dataPerFrame(int(file2.replace('.rpt','')[12:]))
 
-                    tempPerFrame.import_data_from_path(file2, 'ur1', 'xOverL_'+file[-6:-4])
+                    tempPerFrame.import_data_from_path(file2, 'ur1', 'xOverL_'+file2[4:6])
 
                     #For u2 vs x
                     dataU2OverX = []
