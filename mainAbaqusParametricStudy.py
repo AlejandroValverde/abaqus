@@ -133,6 +133,9 @@ for f in os.listdir(os.getcwd()):
     if f.startswith('parametricStudyDef'):
         os.remove(f) #Delete "parametricStudyDef" if it already exits from previous studies
 globalChangeDir(cwd, '.') #Return to working folder
+
+#Copy ODB file and input file to corresponding Post-proc folder
 globalCopyFile(cwd, cwd+'-postProc', 'parametricStudyDef.txt', 'parametricStudyDef.txt')
+globalCopyFile(cwd, cwd+'-postProc', 'Job_current.odb', 'Job_current.odb')
 
 print('-> Abaqus parametric study finished')

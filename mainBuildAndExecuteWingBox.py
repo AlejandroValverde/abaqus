@@ -25,7 +25,7 @@ mat.E1 = 69000.0 #N/mm^2 - For the box, aluminum
 mat.v1 = 0.3269 #For the box, aluminum 
 mat.E_chiral = 31000 #N/mm^2 - For the chiral structure, ABS
 mat.v_chiral = 0.3 #For the chiral structure, ABS
-mat.E_rib = mat.E1 / float(paraRead.E1overE_rib) #N/mm^2, for the rib, expressed as a fraction of the main material
+mat.E_rib = mat.E1 * float(paraRead.E_ribOverE1) #N/mm^2, for the rib, expressed as a fraction of the main material
 mat.v_rib = mat.v1
 
 ## Design parameters
