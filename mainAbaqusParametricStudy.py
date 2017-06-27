@@ -1,7 +1,7 @@
 import os
 import pdb #pdb.set_trace()
 
-from moduleCommon import * # HOLA
+from moduleCommon import *
 
 #Functions
 def writeInputParaToFile(fileName, iter, parameters, valueCurrent, keyCurrent, nominalDict):
@@ -11,8 +11,6 @@ def writeInputParaToFile(fileName, iter, parameters, valueCurrent, keyCurrent, n
 	file.write('Iter' + '\n')
 
 	file.write(str(iter) + '\n')
-
-	#HOla, como estas
 
 	for parameter, value in zip(parameters, [nominalDict[para] for para in parameters]):
 
@@ -77,8 +75,8 @@ rangesDict={'N' : [],#[5, 10, 20, 30, 40, 50],
 			'r' : [],
 			'B' : [],
 			'L' : [],
-			'Cbox_t' : [8],#[5, 10, 20],#5, 10, 20, 30, 40, 60, 80, 100], 
-			'rib_t' : [],#[3, 5, 8, 10],#2, 6, 10, 20, 40], 
+			'Cbox_t' : [8],#[5, 10, 20],#5, 10, 20, 30, 40, 60, 80, 100],
+			'rib_t' : [],#[3, 5, 8, 10],#2, 6, 10, 20, 40],
 			'rib_t_inner' : [],
 			'rib_a' : [],#[50, 100, 150, 200],
 			'C3' : [],
@@ -114,14 +112,14 @@ nominalDict={'N' : 10, #Number of unit cells in spanwise direction
 			'Cbox_t' : 8, #C-box wall thickness, $t_{C}$ (mm)
 			'rib_t' : 3, #Rib thickness, $t_{rib}$ (mm)
 			'rib_t_inner' : 3,
-			'rib_a' : 20, #Rib dimension frame width, $a$ (mm)
+			'rib_a' : 30, #Rib dimension frame width, $a$ (mm)
 			'C3' : 400, #C-box length in the chordwise direction (mm)
 			'wingBoxLength' : None, #Calculated using "N" as a parameter 
 			'eOverB' : 0.01, #Chiral ligament eccentricity, $e/B$ (%)
 			'tChiral' : 1.0, #Chiral lattice section thickness, $t_{chiral}$ (mm)
-			'typeLoad' : 'linForceInnerRibs_upper_down', #'moment', 'force', 'displacement', 'linForce', 'linForceInnerRibs_upper_down', 'linForceInnerRibs_upper', linForceInnerRibs_middle
+			'typeLoad' : 'linForceInnerRibs_upper_down', #'moment', 'force', 'displacement', 'linForce', 'linForceInnerRibs_upper_down', 'linForceInnerRibs_upper', 'linForceInnerRibs_middle'
 			'displImposed' : 50,
-			'ForceMagnitude' : -10000, #Applied force magnitude  (N)
+			'ForceMagnitude' : -8000, #Applied force magnitude  (N)
 			'momentMagnitude' : -200000,
 			'forceXStart' : 0.1, #Initial x-coordinate of distributed force (mm)
 			'forceXEnd' : 1, #Final x-coordinate of distributed force (mm)

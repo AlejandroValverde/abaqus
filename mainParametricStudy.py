@@ -63,6 +63,8 @@ data = []
 for file in os.listdir(postProcFolder):
     globalChangeDir(cwd, '-postProc')
     if file.endswith('inputAbaqus.txt'):
+
+        #Hola
         
         #Create case study class where store all the results obtained from Abaqus at termination of its computation
         temp = caseStudy(int(file[:-16])) #file[:-16] - Returns the index
