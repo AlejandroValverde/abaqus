@@ -47,7 +47,7 @@ nominalDict={'N' : 10, #Number of unit cells in spanwise direction
 			'wingBoxLength' : None, #Calculated using "N" as a parameter 
 			'eOverB' : 0.01, #Chiral ligament eccentricity, $e/B$ (%)
 			'tChiral' : 1.0, #Chiral lattice section thickness, $t_{chiral}$ (mm)
-			'typeLoad' : 'linForceInnerRibs_upper_down', #'moment', 'force', 'displacement', 'linForce', 'linForceInnerRibs_upper_down', 'linForceInnerRibs_upper', 'linForceInnerRibs_middle'
+			'typeLoad' : 'linForceInnerRibs_upper', #'moment', 'force', 'displacement', 'linForce', 'linForceInnerRibs_upper_down', 'linForceInnerRibs_upper', 'linForceInnerRibs_middle'
 			'displImposed' : 50,
 			'ForceMagnitude' : -8000, #Applied force magnitude  (N)
 			'momentMagnitude' : -200000,

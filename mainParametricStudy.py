@@ -98,11 +98,15 @@ for file in os.listdir(postProcFolder):
             framesCount = []
             for file2 in os.listdir(postProcFolderForCase):
 
-                if file2.startswith('ur1_frame'):
+                if file2.startswith('ur1_up'):
 
                     tempPerFrame = dataPerFrame(int(file2.replace('.rpt','')[12:]))
 
                     tempPerFrame.import_data_from_path(file2, 'ur1', 'xOverL_'+file2[4:6])
+
+                    #For down
+                    file2_down = file2.replace('up','dn')
+                    tempPerFrame.import_data_from_path(file2_down, 'ur1', 'xOverL_'+file2_down[4:6])
 
                     #For u2 vs x
                     dataU2OverX = []
