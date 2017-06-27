@@ -60,7 +60,7 @@ mesh.ElemType = '' #'quad'
 
 ## Load
 load = structtype()
-load.typeLoad = paraRead.typeLoad #'moment', 'force', 'displacement', 'linForce', 'linForceInnerRibs_upper', 'linForceInnerRibs_middle'
+load.typeLoad = paraRead.typeLoad #'moment', 'force', 'displacement', 'linForce', 'linForceInnerRibs_upper', 'linForceInnerRibs_upper_down', 'linForceInnerRibs_middle', 
 #Step
 load.typeAnalysis = paraRead.typeAnalysis #'linear' or 'nonlinear'
 load.typeAbaqus = paraRead.typeAbaqus #'Standard' or 'Explicit'

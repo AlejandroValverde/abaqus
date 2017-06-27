@@ -1431,7 +1431,7 @@ def PostProc_nonlinear(iterStr, design, load):
 			x0_u2 = session.xyDataObjects['u2_fr'+str(frameID)+'_x'+str(round(x,0))]
 			session.writeXYReport(fileName='u2_frame'+str(frameID)+'_x'+str(round(x,2))+'.rpt', xyData=(x0_u2, ), appendMode=OFF)
 
-		#### UR1
+		##### UR1
 		session.viewports['Viewport: 1'].odbDisplay.setPrimaryVariable(
 		    variableLabel='UR', outputPosition=NODAL, refinement=(COMPONENT, 'UR1'))
 
@@ -1445,7 +1445,7 @@ def PostProc_nonlinear(iterStr, design, load):
 		    design.C3/2), (design.cutWingTip, design.cutDown + correction, design.C3/2)))
 		pth_ur1_dn = session.paths['pth_ur1_frame'+str(frameID)+'_dn']
 
-		#Up
+		#Upper
 		session.XYDataFromPath(name='ur1_fr'+str(frameID)+'_up', path=pth_ur1_up, includeIntersections=False, 
 		    projectOntoMesh=False, pathStyle=UNIFORM_SPACING, numIntervals=20, 
 		    projectionTolerance=0, shape=UNDEFORMED, labelType=NORM_DISTANCE)
@@ -1456,9 +1456,11 @@ def PostProc_nonlinear(iterStr, design, load):
 		    projectionTolerance=0, shape=UNDEFORMED, labelType=NORM_DISTANCE)
 
 		#Write ur1 data to XY file
+		#Up
 		x0_ur1_up = session.xyDataObjects['ur1_fr'+str(frameID)+'_up']
 		session.writeXYReport(fileName='ur1_frame'+str(frameID)+'_up.rpt', xyData=(x0_ur1_up, ), appendMode=OFF)
 
+		#Down
 		x0_ur1_dn = session.xyDataObjects['ur1_fr'+str(frameID)+'_dn']
 		session.writeXYReport(fileName='ur1_frame'+str(frameID)+'_dn.rpt', xyData=(x0_ur1_dn, ), appendMode=OFF)
 

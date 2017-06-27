@@ -305,9 +305,10 @@ def plotU2_z_LastTau(classOfData, plotSettings, attr, ax):
 
 	indexForMaxFrame = classOfData.framesCount.index(max(classOfData.framesCount))
 	j=0
-
+	# pdb.set_trace()
 	for x in classOfData.dataFrames[indexForMaxFrame].xPosForU2:
 
+	    # pdb.set_trace()
 	    ax.plot(classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].zOverC3, classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].u2_zOverC3, label='x='+str(round(x,2)), **plotSettings['line'])
 	    j += 1
 
@@ -322,10 +323,11 @@ def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHand
 	i = 0
 	for frame in classOfData.framesCount:
 
+		#UR1 - Up
 	    ax.plot(float(frame) / max(classOfData.framesCount) , classOfData.dataFrames[i].ur1_xOverL_up[-1] * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
-
+	    
+	    #UR1 - Down
 	    ax.plot(float(frame) / max(classOfData.framesCount) , classOfData.dataFrames[i].ur1_xOverL_dn[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
-
 	    indexForMaxX = classOfData.dataFrames[i].xPosForU2.index(max(classOfData.dataFrames[i].xPosForU2))
 	    ax.plot(float(frame) / max(classOfData.framesCount) , classOfData.dataFrames[i].twistFromU2[indexForMaxX] * (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
 	    i += 1
