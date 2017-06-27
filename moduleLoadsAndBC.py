@@ -281,9 +281,9 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 		tupleOfNodes = ()
 
 		if typeLoad == 'singleForceOnLastRib_upper':
-			searchNodesForSequenceOfx([design.cutWingTip], design.cutUp - (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
+			tupleOfNodes = searchNodesForSequenceOfx([design.cutWingTip], design.cutUp - (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
 		elif typeLoad == 'singleForceOnLastRib_lower':
-			searchNodesForSequenceOfx([design.cutWingTip], design.cutDown + (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
+			tupleOfNodes = searchNodesForSequenceOfx([design.cutWingTip], design.cutDown + (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
 
 		model.rootAssembly.Set(name='setForSingleLoadOnOuterRib', nodes=tupleOfNodes)
 
@@ -306,13 +306,13 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 		
 		#Search nodes on upper part
 		if typeLoad == 'linForceInnerRibs_middle':
-			searchNodesForSequenceOfx(forceXPos, (design.cutUp - design.cutDown) / 2.0, (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
+			tupleOfNodes = searchNodesForSequenceOfx(forceXPos, (design.cutUp - design.cutDown) / 2.0, (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
 		else: #If 'upper' or 'upper_down'
-			searchNodesForSequenceOfx(forceXPos, design.cutUp - (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
+			tupleOfNodes = searchNodesForSequenceOfx(forceXPos, design.cutUp - (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
 
 		#Search nodes on lower part, if specified, more nodes will be added
 		if typeLoad == 'linForceInnerRibs_upper_down':
-			searchNodesForSequenceOfx(forceXPos, design.cutDown + (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
+			tupleOfNodes = searchNodesForSequenceOfx(forceXPos, design.cutDown + (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
 
 		model.rootAssembly.Set(name='setForDistributedLoad', nodes=tupleOfNodes)
 
