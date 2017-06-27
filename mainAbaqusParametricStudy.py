@@ -87,7 +87,7 @@ for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters de
 
 			#Clear files from last iteration if it was unsuccessful 
 			for f in os.listdir(cwd):
-			    if f.startswith('Job_current'):
+			    if f.startswith('Job_current') or f.startswith('abaqus.rpy'):
 			        os.remove(f)
 
 			print('Abaqus parametric study initialized, iteration: ' + str(iterationID))
@@ -116,7 +116,7 @@ for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters de
 
 			#Clear files from present iteration
 			for f in os.listdir(cwd):
-			    if f.startswith('Job_current'):
+			    if f.startswith('Job_current') or f.startswith('abaqus.rpy'):
 			        os.remove(f)
 
 			iterationID += 1
