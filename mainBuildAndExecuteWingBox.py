@@ -120,6 +120,7 @@ load.damp = float(paraRead.damp)
 
 ## Job
 jobDef = structtype()
+jobDef.jobName = paraRead.jobName
 jobDef.saveJob = False
 jobDef.numCpus = 4
 
@@ -193,7 +194,7 @@ loads(model, design, mesh, load, model.rootAssembly.instances['RibBoxLattice-1']
 mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF, 
     explicitPrecision=SINGLE, getMemoryFromAnalysis=True, historyPrint=OFF, 
     memory=90, memoryUnits=PERCENTAGE, model='Model-1', modelPrint=OFF, 
-    multiprocessingMode=DEFAULT, name='Job_current', nodalOutputPrecision=SINGLE, 
+    multiprocessingMode=DEFAULT, name=jobDef.jobName, nodalOutputPrecision=SINGLE, 
     numCpus=jobDef.numCpus, numDomains=jobDef.numCpus, numGPUs=0, queue=None, resultsFormat=ODB, scratch='', type=
     ANALYSIS, userSubroutine='', waitHours=0, waitMinutes=0)
 
@@ -201,18 +202,18 @@ mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF,
 if jobDef.saveJob:
 
 	print('Job saved...')
-	mdb.jobs['Job_current'].writeInput(consistencyChecking=OFF)
+	mdb.jobs[jobDef.jobName].writeInput(consistencyChecking=OFF)
 
 #Submit job
 if session.executeJob:
 
 	model.rootAssembly.regenerate()
-	mdb.jobs['Job_current'].submit(consistencyChecking=OFF)
+	mdb.jobs[jobDef.jobName].submit(consistencyChecking=OFF)
 
 	print('Job submitted and calculating...')
-	mdb.jobs['Job_current'].waitForCompletion()
+	mdb.jobs[jobDef.jobName].waitForCompletion()
 
-	if str(mdb.jobs['Job_current'].status) == 'COMPLETED':
+	if str(mdb.jobs[jobDef.jobName].status) == 'COMPLETED':
 
 		print('Job successfully completed')
 
