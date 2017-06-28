@@ -843,13 +843,13 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 	#Create sketch palette with dimensions 150% bigger and the maximum length in the lattice
 	model.ConstrainedSketch(name='__profile__', sheetSize=1.5 * max(design.L1, design.L2))
 
-	if typeOfRib == 'inner_ribs' or (typeOfRib == 'outer_ribs' and typeOfRib2 == 'open'):
+	if typeOfRib == 'inner_ribs' or ((typeOfRib == 'root_rib' or typeOfRib == 'tip_rib') and typeOfRib2 == 'open'):
 
 		if typeOfRib == 'inner_ribs':
 
 			design.rib1 = design.C3 - design.B - design.innerRibs_gap #Lattice dimension in the transversal direction
 
-		elif typeOfRib == 'outer_ribs':
+		elif (typeOfRib == 'root_rib' or typeOfRib == 'tip_rib'):
 
 			design.rib1 = design.C3
 
@@ -942,7 +942,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		    model.sketches['__profile__'].geometry[10], entity2=
 		    model.sketches['__profile__'].geometry[11])
 
-	elif typeOfRib == 'outer_ribs' and typeOfRib2 == 'closed':
+	elif (typeOfRib == 'root_rib' or typeOfRib == 'tip_rib') and typeOfRib2 == 'closed':
 
 		#Create shape
 		#1 -> 2
@@ -1014,18 +1014,18 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 
 	# PART AND INSTANCE OPERATIONS
 
-	if typeOfRib == 'outer_ribs':
+	if (typeOfRib == 'root_rib' or typeOfRib == 'tip_rib'):
 
 		#Shell creation
-		model.Part(dimensionality=THREE_D, name='Rib-outer', type=
+		model.Part(dimensionality=THREE_D, name=typeOfRib, type=
 		    DEFORMABLE_BODY)
-		model.parts['Rib-outer'].BaseShell(sketch=
+		model.parts[typeOfRib].BaseShell(sketch=
 		    model.sketches['__profile__'])
 		del model.sketches['__profile__']
 
 		#General set "all" for the part
-		model.parts['Rib-outer'].Set(faces=
-		    model.parts['Rib-outer'].faces.findAt(((design.a/2,design.a/2,0.0),),)
+		model.parts[typeOfRib].Set(faces=
+		    model.parts[typeOfRib].faces.findAt(((design.a/2,design.a/2,0.0),),)
 		    , name='rib-all') 
 
 		#Section
@@ -1036,38 +1036,40 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		    UNIFORM, useDensity=OFF)
 
 		#Section assignment, assign material to part. This part is not a shell, therefore, no thickness is defined when specifying the section.
-		model.parts['Rib-outer'].SectionAssignment(offset=0.0, offsetField=''
+		model.parts[typeOfRib].SectionAssignment(offset=0.0, offsetField=''
 		    , offsetType=MIDDLE_SURFACE, region=
-		    model.parts['Rib-outer'].sets['rib-all'], sectionName=
+		    model.parts[typeOfRib].sets['rib-all'], sectionName=
 		    'Section-Rib', thicknessAssignment=FROM_SECTION)
 
 		#### Instance operations ####
 		model.rootAssembly.DatumCsysByDefault(CARTESIAN)
 
 		#Wing root rib
-		model.rootAssembly.Instance(dependent=ON, name='Rib-root-inst', part=
-		    model.parts['Rib-outer']) #Create instance
-		model.rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 1.0, 
-		    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('Rib-root-inst', ))
-		model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
-		    vector=(0.0, 0.0, design.C3))
-		model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
-		    vector=(0.0, design.cutDown, 0.0))
-		model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
-		    vector=(design.cutWingRoot, 0.0, 0.0))
+		if typeOfRib == 'root_rib':
+			model.rootAssembly.Instance(dependent=ON, name='Rib-root-inst', part=
+			    model.parts[typeOfRib]) #Create instance
+			model.rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 1.0, 
+			    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('Rib-root-inst', ))
+			model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
+			    vector=(0.0, 0.0, design.C3))
+			model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
+			    vector=(0.0, design.cutDown, 0.0))
+			model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
+			    vector=(design.cutWingRoot, 0.0, 0.0))
 
-		#Wing tip rib
-		model.rootAssembly.Instance(dependent=ON, name='Rib-tip-inst', part=
-		    model.parts['Rib-outer']) #Create instance
-		model.rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 1.0, 
-		    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('Rib-tip-inst', ))
-		model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
-		    vector=(0.0, 0.0, design.C3))
-		model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
-		    vector=(0.0, design.cutDown, 0.0))
-		model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
-		    vector=(design.cutWingTip, 0.0, 0.0))
-
+		elif typeOfRib == 'tip_rib':
+			#Wing tip rib
+			model.rootAssembly.Instance(dependent=ON, name='Rib-tip-inst', part=
+			    model.parts[typeOfRib]) #Create instance
+			model.rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 1.0, 
+			    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('Rib-tip-inst', ))
+			model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
+			    vector=(0.0, 0.0, design.C3))
+			model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
+			    vector=(0.0, design.cutDown, 0.0))
+			model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
+			    vector=(design.cutWingTip, 0.0, 0.0))
+			
 	elif typeOfRib == 'inner_ribs':
 
 		#Shell creation

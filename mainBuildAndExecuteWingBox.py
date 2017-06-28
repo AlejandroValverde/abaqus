@@ -59,6 +59,8 @@ design.ribt = float(paraRead.rib_t) #10 #Rib thickness, in millimeters
 design.ribt_inner = float(paraRead.rib_t_inner) #10 #Inner ribs thickness, in millimeters
 design.innerRibs_n = int(paraRead.innerRibs_n) #Choose 0 for not inner ribs
 design.innerRibs_gap = 20 #Distance from the lattice, in millimeters
+design.rootRibShape = paraRead.rootRibShape #'open' or 'closed'
+design.tipRibShape = paraRead.tipRibShape #'open' or 'closed'
 
 ## Meshing
 mesh = structtype()
@@ -156,7 +158,8 @@ mergeInstances(model, (model.rootAssembly.instances['All-1'], model.rootAssembly
 #				Choose 'outer_ribs' to create ribs located at the wing tip and at the root. These can be:
 #				- typeOfRib2: Choose 'open' to make ribs with a open section and closed to make them a close profile
 
-buildRib(model, design, 'outer_ribs', 'open') 
+buildRib(model, design, 'root_rib', design.rootRibShape)
+buildRib(model, design, 'tip_rib', design.tipRibShape) 
 
 if design.innerRibs_n != 0:
 	instances_ribs_inner = buildRib(model, design, 'inner_ribs', [])

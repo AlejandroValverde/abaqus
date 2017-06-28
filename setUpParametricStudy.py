@@ -1,40 +1,10 @@
 # Define parameters range
+parameters=('E_ribOverE1', 'N', 'M', 'r', 'B', 'L', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
+			'eOverB', 'tChiral', 'typeLoad', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
+			'courseSize', 'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
+			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')
 
-rangesDict={'E_ribOverE1' : [], 
-			'N' : [],#[5, 10, 20, 30, 40, 50],
-			'M' : [],
-			'r' : [],
-			'B' : [],
-			'L' : [],
-			'Cbox_t' : [8],#[5, 10, 20],#5, 10, 20, 30, 40, 60, 80, 100],
-			'rib_t' : [],#[3, 5, 8, 10],#2, 6, 10, 20, 40],
-			'rib_t_inner' : [],
-			'rib_a' : [],#[50, 100, 150, 200],
-			'C3' : [],
-			'wingBoxLength' : [], 
-			'eOverB' : [],#[0.005, 0.01, 0.03, 0.05, 0.1, 0.15], 
-			'tChiral' : [],#[0.05, 0.1, 0.5, 2.0, 2.5],
-			'typeLoad' : [],
-			'displImposed' : [],
-			'ForceMagnitude' : [],
-			'momentMagnitude' : [],
-			'forceXStart' : [],
-			'forceXEnd' : [],
-			'forceXn' : [],
-			'forceZPos' : [],#[0.50, 0.70, 0.80, 0.90, 0.95],
-			'innerRibs_n' : [],#3, 5, 7, 9, 11]}
-			'courseSize' : [],
-			'fineSize' : [],
-			'maxTimeIncrement' : [],
-			'initialTimeIncrement' : [],
-			'minTimeIncrement' : [],
-			'maxNumInc' : [],
-			'executeJob' : [],
-			'executePostProc' : [],
-			'damp' : [],
-			'typeAnalysis' : [],
-			'typeAbaqus' : []}
-
+#Define nominal values of the parameters
 nominalDict={'E_ribOverE1' : 1, #N/mm^2, for the rib, expressed as a fraction of the main material
 			'N' : 10, #Number of unit cells in spanwise direction
 			'M' : 3, #Number of unit cells in transversal direction
@@ -45,6 +15,8 @@ nominalDict={'E_ribOverE1' : 1, #N/mm^2, for the rib, expressed as a fraction of
 			'rib_t' : 3, #Rib thickness, $t_{rib}$ (mm)
 			'rib_t_inner' : 3,
 			'rib_a' : 30, #Rib dimension frame width, $a$ (mm)
+			'rootRibShape' : 'closed', #'Shape of the outer rib, 'closed' or 'open'
+			'tipRibShape' : 'open',
 			'C3' : 400, #C-box length in the chordwise direction (mm)
 			'wingBoxLength' : None, #Calculated using "N" as a parameter 
 			'eOverB' : 0.01, #Chiral ligament eccentricity, $e/B$ (%)
@@ -70,9 +42,42 @@ nominalDict={'E_ribOverE1' : 1, #N/mm^2, for the rib, expressed as a fraction of
 			'typeAnalysis' : 'nonlinear',
 			'typeAbaqus' : 'Standard'}
 
-parameters=('E_ribOverE1', 'N', 'M', 'r', 'B', 'L', 'Cbox_t', 'rib_t', 'rib_t_inner', 'rib_a', 'C3', 'wingBoxLength', 'eOverB', 'tChiral', 
-			'typeLoad', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
-			'innerRibs_n', 'courseSize',	'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
-			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')
+#Define 
+rangesDict={'E_ribOverE1' : [], 
+			'N' : [],#[5, 10, 20, 30, 40, 50],
+			'M' : [],
+			'r' : [],
+			'B' : [],
+			'L' : [],
+			'Cbox_t' : [8],#[5, 10, 20],#5, 10, 20, 30, 40, 60, 80, 100],
+			'rib_t' : [],#[3, 5, 8, 10],#2, 6, 10, 20, 40],
+			'rib_t_inner' : [],
+			'rib_a' : [],#[50, 100, 150, 200],
+			'rootRibShape' : 'closed', #'Shape of the root rib, 'closed' or 'open'
+			'tipRibShape' : 'open', #'Shape of the tip rib, 'closed' or 'open'
+			'C3' : [],
+			'wingBoxLength' : [], 
+			'eOverB' : [],#[0.005, 0.01, 0.03, 0.05, 0.1, 0.15], 
+			'tChiral' : [],#[0.05, 0.1, 0.5, 2.0, 2.5],
+			'typeLoad' : [],
+			'displImposed' : [],
+			'ForceMagnitude' : [],
+			'momentMagnitude' : [],
+			'forceXStart' : [],
+			'forceXEnd' : [],
+			'forceXn' : [],
+			'forceZPos' : [],#[0.50, 0.70, 0.80, 0.90, 0.95],
+			'innerRibs_n' : [],#3, 5, 7, 9, 11]}
+			'courseSize' : [],
+			'fineSize' : [],
+			'maxTimeIncrement' : [],
+			'initialTimeIncrement' : [],
+			'minTimeIncrement' : [],
+			'maxNumInc' : [],
+			'executeJob' : [],
+			'executePostProc' : [],
+			'damp' : [],
+			'typeAnalysis' : [],
+			'typeAbaqus' : []}
 
 iterationIDlimit = -1 #Limit number of iterations, choose -1 for no limit

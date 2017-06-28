@@ -20,7 +20,7 @@ def writeInputParaToFile(fileName, iter, parameters, valueCurrent, keyCurrent, n
 
 			file.write(str(valueCurrent) + '\n')
 
-		else:
+		else: #Write the parameter that it's being considered for the parametric study iteration
 
 			file.write(parameter + '\n')
 

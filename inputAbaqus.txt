@@ -18,6 +18,10 @@ rib_t
 8
 rib_t_inner
 8
+innerRibs_n
+2
+outerRibShape
+closed
 rib_a
 40
 C3
@@ -44,8 +48,6 @@ forceXn
 1
 forceZPos
 0.5
-innerRibs_n
-2
 courseSize
 25
 fineSize

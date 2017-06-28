@@ -24,14 +24,13 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 
 		z = design.B / 2
 
-		# nameRefPoint = 'referencePoint_x'+str(int(xNode))+'_y'+str(int(yNode))
 		nameSet = 'set_x'+str(int(xNode))+'_y'+str(int(yNode))
-		# nameFixCondition = 'fix_x'+str(int(xNode))+'_y'+str(int(yNode))
+
 		nameConstraint = 'constraint_x'+str(int(xNode))+'_y'+str(int(yNode))
 
 		rf = model.rootAssembly.ReferencePoint(point=(xNode, yNode, z))
-		# model.rootAssembly.Set(name=nameRefPoint, referencePoints=(model.rootAssembly.referencePoints[rf.id], ))
 		rfRegion = regionToolset.Region(referencePoints = (model.rootAssembly.referencePoints[rf.id], ))
+
 		#Find faces
 
 		faces_list=[]
@@ -85,7 +84,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 		#Enable coupling condition
 		model.Coupling(controlPoint= model.rootAssembly.sets['referencePoint'], couplingType=
 		    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-		    'Constraint', surface= model.rootAssembly.sets['fixed'], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
+		    'Clamped through RF point and coupling at root', surface= model.rootAssembly.sets['fixed'], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
 
 		#Fix reference point
 		model.DisplacementBC(name='fixed', createStepName='Initial', 
@@ -99,12 +98,12 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 
 		totalHeight = design.cutUp + abs(design.cutDown)
 
+		#The vector Q iterates through the first set of columns of chiral nodes
 		Q_i = np.arange(design.distanceCenterPoints, totalLength + design.distanceCenterPoints, design.distanceCenterPoints)
-
 		Q_j = np.arange(0.0, totalHeight, 2 * design.heightTriangle)
 
+		#The vector P iterates through the second set of columns of chiral nodes
 		P_i = np.arange(design.distanceCenterPoints * 3/2, totalLength + design.distanceCenterPoints, design.distanceCenterPoints)
-
 		P_j = np.arange(design.heightTriangle, totalHeight, 2 * design.heightTriangle)
 
 		facesNotFoundCounter = 0
@@ -127,6 +126,9 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 					elif q_j == Q_j[-1]: #Upper node, half cut
 						angles = [225, 270, 315]
 
+					elif q_i == Q_i[0] and design.rootRibShape == 'closed' and not (q_j == Q_j[0] or q_j == Q_j[-1]): #Avoids interface with nodes that are coupled to the reference point used to clamp the root
+						angles = [0, 45, 315]
+
 					else: #Nodes in the middle
 						angles = [0, 45, 90, 135, 180, 225, 270, 315]
 
@@ -142,7 +144,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 
 		if facesNotFoundCounter > 10:
 
-			raise ValueError('ERROR: More than 10 faces could not be found')
+			raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')
 
 
 def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAnalysis, typeAbaqus):
