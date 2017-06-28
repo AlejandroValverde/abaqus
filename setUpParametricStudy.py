@@ -22,7 +22,7 @@ nominalDict={'jobName' : 'Job_current',
 			'wingBoxLength' : None, #Calculated using "N" as a parameter 
 			'eOverB' : 0.01, #Chiral ligament eccentricity, $e/B$ (%)
 			'tChiral' : 1.0, #Chiral lattice section thickness, $t_{chiral}$ (mm)
-			'typeLoad' : 'linForceInnerRibs_upper', #'moment', 'force', 'displacement', 'linForce', 'linForceInnerRibs_(upper, middle, upper_down)', 'singleForceOnLastRib_(upper, down)'
+			'typeLoad' : 'linForceInnerRibs_upper', #'moment', 'force1', 'force2', 'displacement', 'linForce', 'linForceInnerRibs_(upper, middle, upper_down)', 'singleForceOnLastRib_(upper, down)'
 			'displImposed' : 50,
 			'ForceMagnitude' : -8000, #Applied force magnitude  (N)
 			'momentMagnitude' : -200000,

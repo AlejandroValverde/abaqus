@@ -261,14 +261,18 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 		    distributionType=UNIFORM, field='', localCsys=None, name='moment', region=
 		    model.rootAssembly.sets['referencePointMoment'])
 
-	elif typeLoad == 'force': #Load on upper wing tip edge
+	elif typeLoad == 'force1' or typeLoad == 'force2': #Load on upper wing tip edge
 
 		#Load type 1
 
-		#Create a set where a the displacement is imposed 
-		model.rootAssembly.Set(name='pointLoad', vertices=
-		    instanceToApplyLoadAndBC.vertices.findAt(((design.cutWingTip,design.cutUp,0.0),),) )
+		#Create a set where a the displacement is imposed
+		if typeLoad == 'force1':
+			model.rootAssembly.Set(name='pointLoad', vertices=
+				instanceToApplyLoadAndBC.vertices.findAt(((design.cutWingTip,design.cutUp,0.0),),) )
 
+		elif typeLoad == 'force2':
+			model.rootAssembly.Set(name='pointLoad', vertices=
+				instanceToApplyLoadAndBC.vertices.findAt(((design.cutWingTip,design.cutDown,design.C3),),) )
 
 		#Define displacement condition
 		model.ConcentratedForce(cf2=load.ForceMagnitude, createStepName='load', 
