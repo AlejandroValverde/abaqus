@@ -1,11 +1,12 @@
 # Define parameters range
-parameters=('jobName', 'E_ribOverE1', 'N', 'M', 'r', 'B', 'L', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
+parameters=('typeOfModel', 'jobName', 'E_ribOverE1', 'N', 'M', 'r', 'B', 'L', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
 			'eOverB', 'tChiral', 'typeLoad', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
 			'courseSize', 'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
 			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')
 
 #Define nominal values of the parameters
-nominalDict={'jobName' : 'Job_current',
+nominalDict={'typeOfModel' : 'simpleModel',
+			'jobName' : 'Job_current',
 			'E_ribOverE1' : 1, #N/mm^2, for the rib, expressed as a fraction of the main material
 			'N' : 10, #Number of unit cells in spanwise direction
 			'M' : 3, #Number of unit cells in transversal direction
@@ -44,7 +45,8 @@ nominalDict={'jobName' : 'Job_current',
 			'typeAbaqus' : 'Standard'}
 
 #Define 
-rangesDict={'jobName' : [], #Name to be assigned to the job
+rangesDict={'typeOfModel' : 'simpleModel',
+			'jobName' : [], #Name to be assigned to the job
 			'E_ribOverE1' : [], 
 			'N' : [],#[5, 10, 20, 30, 40, 50],
 			'M' : [],

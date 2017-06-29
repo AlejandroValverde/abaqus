@@ -75,18 +75,18 @@ def loadMaterials(model, design, load, mat):
 	    thickness=design.tChiral, thicknessField='', thicknessModulus=None, thicknessType=
 	    UNIFORM, useDensity=OFF)
 
+
+	#Material for box
 	model.Material(name='Alu')
 	model.materials['Alu'].Elastic(table=((mat.E1, mat.v1), ))
-	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
-	    integrationRule=SIMPSON, material='Alu', name='Section-Alu', numIntPts=5, 
-	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
-	    thickness=2, thicknessField='', thicknessModulus=None, thicknessType=
-	    UNIFORM, useDensity=OFF)
-	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
-	    integrationRule=SIMPSON, material='ABS', name='Section-Ellipse', numIntPts=5, 
-	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
-	    thickness=design.tChiral, thicknessField='', thicknessModulus=None, thicknessType=
-	    UNIFORM, useDensity=OFF)
+
+	if not design.typeOfModel == 'completeModel': #For simple design of box
+
+		model.Material(name='Mat-part1')
+		model.materials['Mat-part1'].Elastic(table=((mat.E1, mat.v1), ))
+
+		model.Material(name='Mat-part2')
+		model.materials['Mat-part2'].Elastic(table=((mat.E2, mat.v2), ))
 
 	#For the ribs
 	model.Material(name='Alu_rib')
@@ -97,6 +97,7 @@ def loadMaterials(model, design, load, mat):
 		model.materials['Alu'].Density(table=((2.7E-6, ), )) #kg /mm^3
 		model.materials['ABS'].Density(table=((1.07E-6, ), )) #kg /mm^3
 		model.materials['Alu_rib'].Density(table=((2.7E-6, ), )) #kg /mm^3
+
 
 def buildBasicChiral(model, design):
 
@@ -619,6 +620,8 @@ def buildLattice(model, design):
 	    , offsetType=MIDDLE_SURFACE, region=model.parts['All'].sets['LatticeAll'], sectionName='Section-ABS', 
 	    thicknessAssignment=FROM_SECTION)
 	########################################################################################################################################################
+
+	return 'All', 'All'+'-1'
 	
 def cutLattice(model, design):
 
@@ -828,6 +831,109 @@ def buildBox(model, design, mesh):
 	#Transversal shifting - Not necessary transversal shifting in this direction
 	# model.rootAssembly.translate(instanceList=('C-box-inst', ), 
 	#     vector=(0.0, -HoeheDreieck, 0.0))
+
+	return 'C-box', 'C-box-inst'
+
+def buildBasicBox(model, design):
+
+	#Calculate dimensions for the box
+	design.C2 = (design.cutUp + abs(design.cutDown)) # + design.Ct #Interference on purpose = t 
+	design.C1 = design.cutWingTip - design.cutWingRoot
+
+	#Create sketch palette with dimensions 150% bigger and the maximum length in the lattice
+	model.ConstrainedSketch(name='__profile__', sheetSize=1.5 * max(design.L1, design.L2))
+
+	#Create squared shape
+	model.sketches['__profile__'].Line(point1=(design.C3, design.cutUp), 
+	    point2=(0.0, design.cutUp))
+	model.sketches['__profile__'].HorizontalConstraint(
+	    addUndoState=False, entity=
+	    model.sketches['__profile__'].geometry[2])
+	model.sketches['__profile__'].Line(point1=(0.0, design.cutUp), 
+	    point2=(0.0, design.cutDown))
+	model.sketches['__profile__'].VerticalConstraint(addUndoState=
+	    False, entity=model.sketches['__profile__'].geometry[3])
+	model.sketches['__profile__'].PerpendicularConstraint(
+	    addUndoState=False, entity1=
+	    model.sketches['__profile__'].geometry[2], entity2=
+	    model.sketches['__profile__'].geometry[3])
+	model.sketches['__profile__'].Line(point1=(0.0, design.cutDown), 
+	    point2=(design.C3, design.cutDown))
+	model.sketches['__profile__'].HorizontalConstraint(
+	    addUndoState=False, entity=
+	    model.sketches['__profile__'].geometry[4])
+	model.sketches['__profile__'].PerpendicularConstraint(
+	    addUndoState=False, entity1=
+	    model.sketches['__profile__'].geometry[3], entity2=
+	    model.sketches['__profile__'].geometry[4])
+	model.sketches['__profile__'].EqualLengthConstraint(entity1=
+	    model.sketches['__profile__'].geometry[2], entity2=
+	    model.sketches['__profile__'].geometry[4])
+	model.sketches['__profile__'].Line(point1=(design.C3, design.cutDown), 
+	    point2=(design.C3, design.cutUp))
+	model.sketches['__profile__'].VerticalConstraint(addUndoState=
+	    False, entity=model.sketches['__profile__'].geometry[5])
+	model.sketches['__profile__'].PerpendicularConstraint(
+	    addUndoState=False, entity1=
+	    model.sketches['__profile__'].geometry[4], entity2=
+	    model.sketches['__profile__'].geometry[5])
+
+	#Shell extrude
+	model.Part(dimensionality=THREE_D, name='box', type=
+	    DEFORMABLE_BODY)
+	model.parts['box'].BaseShellExtrude(depth=design.C1, sketch=
+	    model.sketches['__profile__'])
+	del model.sketches['__profile__']
+
+	#Create set from part
+	model.parts['box'].Set(faces=
+	    model.parts['box'].faces.findAt(((design.C3/2,design.cutUp,design.cutWingTip/2),), 
+	    ((0.0,design.cutUp/2,design.cutWingTip/2),),
+	    ((design.C3/2,design.cutDown,design.cutWingTip/2),),), name='part-1')
+
+	#Create set from part
+	model.parts['box'].Set(faces=
+	    model.parts['box'].faces.findAt(((design.C3,design.cutUp/2,design.cutWingTip/2),),), name='part-2')
+
+	#Section
+	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
+	    integrationRule=SIMPSON, material='Mat-part1', name='Section-part1', numIntPts=5, 
+	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
+	    thickness=design.Ct, thicknessField='', thicknessModulus=None, thicknessType=
+	    UNIFORM, useDensity=OFF)
+
+	#Section
+	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
+	    integrationRule=SIMPSON, material='Mat-part2', name='Section-part2', numIntPts=5, 
+	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
+	    thickness=design.Ct, thicknessField='', thicknessModulus=None, thicknessType=
+	    UNIFORM, useDensity=OFF)
+
+	model.parts['box'].SectionAssignment(offset=0.0, offsetField=
+	    '', offsetType=MIDDLE_SURFACE, region=
+	    model.parts['box'].sets['part-1'], sectionName=
+	    'Section-part1', thicknessAssignment=FROM_SECTION)
+
+	model.parts['box'].SectionAssignment(offset=0.0, offsetField=
+	    '', offsetType=MIDDLE_SURFACE, region=
+	    model.parts['box'].sets['part-2'], sectionName=
+	    'Section-part2', thicknessAssignment=FROM_SECTION)
+
+	#### Instance operations ####
+	model.rootAssembly.DatumCsysByDefault(CARTESIAN)
+	model.rootAssembly.Instance(dependent=ON, name='box-inst', part=
+	    model.parts['box'])
+	model.rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 1.0, 
+	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('box-inst', ))
+	model.rootAssembly.translate(instanceList=('box-inst', ), 
+	    vector=(0.0, 0.0, design.C3))
+
+	#Spanwise shifting
+	model.rootAssembly.translate(instanceList=('box-inst', ), 
+	    vector=(design.cutWingRoot, 0.0, 0.0))
+
+	return 'box', 'box-inst'
+
 
 def buildRib(model, design, typeOfRib, typeOfRib2):
 
@@ -1057,6 +1163,8 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 			model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
 			    vector=(design.cutWingRoot, 0.0, 0.0))
 
+			return 'Rib-root-inst'
+
 		elif typeOfRib == 'tip_rib':
 			#Wing tip rib
 			model.rootAssembly.Instance(dependent=ON, name='Rib-tip-inst', part=
@@ -1069,6 +1177,8 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 			    vector=(0.0, design.cutDown, 0.0))
 			model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
 			    vector=(design.cutWingTip, 0.0, 0.0))
+
+			return 'Rib-tip-inst'
 			
 	elif typeOfRib == 'inner_ribs':
 
@@ -1128,136 +1238,139 @@ def meshing(design, mesh, partToMesh):
 
 
 	#Global Mesh - fine mesh
-	partToMesh.seedPart(deviationFactor=0.1, minSizeFactor=0.1, size=mesh.fineSize) #fine mesh
+	if design.typeOfModel == 'completeModel': #Standard design
+		partToMesh.seedPart(deviationFactor=0.1, minSizeFactor=0.1, size=mesh.fineSize) #fine mesh
+	else:
+		partToMesh.seedPart(deviationFactor=0.1, minSizeFactor=0.1, size=mesh.courseSize) #fine mesh
 
+	if design.typeOfModel == 'completeModel':
+		#Define x,y,z positions
 
-	#Define x,y,z positions
+		#x
+		xPos1 = design.cutWingTip
 
-	#x
-	xPos1 = design.cutWingTip
+		xPos2 = design.cutWingRoot
 
-	xPos2 = design.cutWingRoot
+		xPos3 = [
+				design.cutWingTip/2, 
+				design.cutWingTip/2]
 
-	xPos3 = [
-			design.cutWingTip/2, 
-			design.cutWingTip/2]
+		#y
 
-	#y
+		yPos1to2 = [design.cutUp,
+				design.cutUp - design.a,
+				(design.cutUp + abs(design.cutDown))/2,
+				(design.cutUp + abs(design.cutDown))/2,
+				design.cutDown + design.a,
+				design.cutDown]
 
-	yPos1to2 = [design.cutUp,
-			design.cutUp - design.a,
-			(design.cutUp + abs(design.cutDown))/2,
-			(design.cutUp + abs(design.cutDown))/2,
-			design.cutDown + design.a,
-			design.cutDown]
+		yPos3 = [design.cutUp,
+				design.cutDown]
 
-	yPos3 = [design.cutUp,
-			design.cutDown]
+		#z
 
-	#z
+		zPos1to2 = [design.C3/2,
+				design.C3/2,
+				design.C3 - design.a,
+				design.C3,
+				design.C3/2,
+				design.C3/2]
 
-	zPos1to2 = [design.C3/2,
-			design.C3/2,
-			design.C3 - design.a,
-			design.C3,
-			design.C3/2,
-			design.C3/2]
+		zPos3 = design.C3
 
-	zPos3 = design.C3
+		zPos4 = mesh.d #Position to locate edge in the border with the lattice
 
-	zPos4 = mesh.d #Position to locate edge in the border with the lattice
+		#Search edges for course mesh 
+		edges_tuple = ()
 
-	#Search edges for course mesh 
-	edges_tuple = ()
+		for i in range(len(yPos1to2)): #Rib at wing tip
+			
+			foundEdge = partToMesh.edges.findAt(((xPos1,yPos1to2[i],zPos1to2[i]),),)
 
-	for i in range(len(yPos1to2)): #Rib at wing tip
-		
-		foundEdge = partToMesh.edges.findAt(((xPos1,yPos1to2[i],zPos1to2[i]),),)
+			edges_tuple += (foundEdge,)
 
-		edges_tuple += (foundEdge,)
+		for i in range(len(yPos1to2)): #Rib at wing root
 
-	for i in range(len(yPos1to2)): #Rib at wing root
+			foundEdge = partToMesh.edges.findAt(((xPos2,yPos1to2[i],zPos1to2[i]),),)
 
-		foundEdge = partToMesh.edges.findAt(((xPos2,yPos1to2[i],zPos1to2[i]),),)
+			edges_tuple += (foundEdge,)
 
-		edges_tuple += (foundEdge,)
+		if design.innerRibs_n == 0: #If there aren't ribs in the middle
 
-	if design.innerRibs_n == 0: #If there aren't ribs in the middle
+			for i in range(len(yPos3)):
 
-		for i in range(len(yPos3)):
+				foundEdge = partToMesh.edges.findAt(((xPos3[i],yPos3[i],zPos3),),) #Edge far from the lattice
 
-			foundEdge = partToMesh.edges.findAt(((xPos3[i],yPos3[i],zPos3),),) #Edge far from the lattice
+				foundEdge2 = partToMesh.edges.findAt(((xPos3[i],yPos3[i],zPos4),),) #Edge close to the lattice
 
-			foundEdge2 = partToMesh.edges.findAt(((xPos3[i],yPos3[i],zPos4),),) #Edge close to the lattice
+				edges_tuple += (foundEdge, foundEdge2, )
 
-			edges_tuple += (foundEdge, foundEdge2, )
+		else: #If there are ribs in the middle
 
-	else: #If there are ribs in the middle
+			index = 0
 
-		index = 0
+			for xPosInner in design.innerRibsXpos:
 
-		for xPosInner in design.innerRibsXpos:
+				if xPosInner == design.innerRibsXpos[0]: #For the rib close to the root
 
-			if xPosInner == design.innerRibsXpos[0]: #For the rib close to the root
+					positionInX = xPosInner - ((xPosInner - design.cutWingRoot)/2)
 
-				positionInX = xPosInner - ((xPosInner - design.cutWingRoot)/2)
+				else:
 
-			else:
+					positionInX = xPosInner - ((xPosInner - design.innerRibsXpos[index-1])/2)
 
-				positionInX = xPosInner - ((xPosInner - design.innerRibsXpos[index-1])/2)
+				for i in range(len(yPos3)):
+
+					foundEdge = partToMesh.edges.findAt(((positionInX,yPos3[i],zPos3),),) #Edge far from the lattice
+
+					foundEdge2 = partToMesh.edges.findAt(((positionInX,yPos3[i],zPos4),),) #Edge close to the lattice
+			
+					edges_tuple += (foundEdge, foundEdge2, )
+
+				index += 1
+
+			#For the last rib
+			positionInX = design.cutWingTip - ((design.cutWingTip - design.innerRibsXpos[index-1])/2)
 
 			for i in range(len(yPos3)):
 
 				foundEdge = partToMesh.edges.findAt(((positionInX,yPos3[i],zPos3),),) #Edge far from the lattice
 
 				foundEdge2 = partToMesh.edges.findAt(((positionInX,yPos3[i],zPos4),),) #Edge close to the lattice
-		
+				
 				edges_tuple += (foundEdge, foundEdge2, )
 
-			index += 1
+		#Apply course mesh on inner ribs
+		if design.innerRibs_n != 0:
 
-		#For the last rib
-		positionInX = design.cutWingTip - ((design.cutWingTip - design.innerRibsXpos[index-1])/2)
+			edges_tuple_InnerRibs = ()
 
-		for i in range(len(yPos3)):
+			for xPosInner in design.innerRibsXpos:
 
-			foundEdge = partToMesh.edges.findAt(((positionInX,yPos3[i],zPos3),),) #Edge far from the lattice
+				for i in range(len(zPos1to2)):
 
-			foundEdge2 = partToMesh.edges.findAt(((positionInX,yPos3[i],zPos4),),) #Edge close to the lattice
-			
-			edges_tuple += (foundEdge, foundEdge2, )
+					foundEdge = partToMesh.edges.findAt(((xPosInner,yPos1to2[i],zPos1to2[i]),),)
 
-	#Apply course mesh on inner ribs
-	if design.innerRibs_n != 0:
+					edges_tuple_InnerRibs += (foundEdge,)
 
-		edges_tuple_InnerRibs = ()
+		#Create set from 
+		partToMesh.Set(edges=edges_tuple, name='CourseMeshEdges')
+		if design.innerRibs_n != 0:
+			partToMesh.Set(edges=edges_tuple_InnerRibs, name='CourseMeshEdgesForInnerRibs')
 
-		for xPosInner in design.innerRibsXpos:
+		#Apply course Mesh
+		for j in range(len(edges_tuple)):
+			partToMesh.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=edges_tuple[j], size=mesh.courseSize)
 
-			for i in range(len(zPos1to2)):
+		if design.innerRibs_n != 0:
+			for j in range(len(edges_tuple_InnerRibs)):
+				partToMesh.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=edges_tuple_InnerRibs[j], size=mesh.courseSize)
 
-				foundEdge = partToMesh.edges.findAt(((xPosInner,yPos1to2[i],zPos1to2[i]),),)
+		if mesh.ElemType == 'quad':
 
-				edges_tuple_InnerRibs += (foundEdge,)
-
-	#Create set from 
-	partToMesh.Set(edges=edges_tuple, name='CourseMeshEdges')
-	if design.innerRibs_n != 0:
-		partToMesh.Set(edges=edges_tuple_InnerRibs, name='CourseMeshEdgesForInnerRibs')
-
-	#Apply course Mesh
-	for j in range(len(edges_tuple)):
-		partToMesh.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=edges_tuple[j], size=mesh.courseSize)
-
-	if design.innerRibs_n != 0:
-		for j in range(len(edges_tuple_InnerRibs)):
-			partToMesh.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=edges_tuple_InnerRibs[j], size=mesh.courseSize)
-
-	if mesh.ElemType == 'quad':
-
-		partToMesh.setElementType(elemTypes=(
-		    ElemType(elemCode=S8R, elemLibrary=STANDARD), ElemType(elemCode=STRI65, 
-		    elemLibrary=STANDARD)), regions=(partToMesh.faces.getByBoundingBox(0, -10, -10, design.cutWingTip+10, design.cutUp+10, design.C3 +10), ))
+			partToMesh.setElementType(elemTypes=(
+			    ElemType(elemCode=S8R, elemLibrary=STANDARD), ElemType(elemCode=STRI65, 
+			    elemLibrary=STANDARD)), regions=(partToMesh.faces.getByBoundingBox(0, -10, -10, design.cutWingTip+10, design.cutUp+10, design.C3 +10), ))
 
 	# #Generate mesh
 	partToMesh.generateMesh()

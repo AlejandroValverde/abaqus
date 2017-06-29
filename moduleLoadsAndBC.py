@@ -79,7 +79,14 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 		model.rootAssembly.Set(name='referencePoint', referencePoints=(model.rootAssembly.referencePoints[rf.id], ))
 
 		#Face
-		model.rootAssembly.Set(faces = instanceToApplyLoadAndBC.faces.findAt(((design.cutWingRoot, design.cutDown + 1, design.C3/2),),), name='fixed')
+		if design.typeOfModel == 'simpleModel':
+			model.rootAssembly.Set(edges = instanceToApplyLoadAndBC.edges.findAt(((design.cutWingRoot, design.cutDown, design.C3/2),),
+																				((design.cutWingRoot, design.cutUp, design.C3/2),),
+																				((design.cutWingRoot, design.cutUp/2, design.C3),),
+																				((design.cutWingRoot, design.cutUp/2, 0.0),),
+																				), name='fixed')
+		else:
+			model.rootAssembly.Set(faces = instanceToApplyLoadAndBC.faces.findAt(((design.cutWingRoot, design.cutDown + 1, design.C3/2),),), name='fixed')
 
 		#Enable coupling condition
 		model.Coupling(controlPoint= model.rootAssembly.sets['referencePoint'], couplingType=

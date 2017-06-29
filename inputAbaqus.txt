@@ -2,6 +2,8 @@ Iter
 1
 jobName
 Job_current
+typeOfModel
+simpleModel
 E_ribOverE1
 10000
 N
@@ -21,8 +23,10 @@ rib_t
 rib_t_inner
 8
 innerRibs_n
-2
-outerRibShape
+0
+rootRibShape
+closed
+tipRibShape
 closed
 rib_a
 40
@@ -35,7 +39,7 @@ eOverB
 tChiral
 0.5
 typeLoad
-singleForceOnLastRib_upper
+force1
 displImposed
 50
 ForceMagnitude
