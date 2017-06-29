@@ -192,6 +192,26 @@ elif design.typeOfModel == 'simpleModel':
 	partToApplyMeshBCsLoads = model.parts[boxPartName]
 	instanceToApplyMeshBCsLoads = model.rootAssembly.instances[boxInstanceName]
 
+elif design.typeOfModel == 'onlyLattice':
+
+	#Build lattice structure basic elements
+	buildBasicChiral(model, design)
+
+	#Build the whole lattice
+	latticePartName, latticeInstanceName = buildLattice(model, design)
+
+	#Cut lattice
+	cutLattice(model, design)
+
+	#Add supports
+	supportsInstanceList = buildAditionalSupportsLattice(model, design, mesh)
+
+	#Merge
+	mergeInstances(model, (model.rootAssembly.instances[latticeInstanceName], )+supportsInstanceList, 'LatticeWithSupports')
+
+	partToApplyMeshBCsLoads = model.parts['LatticeWithSupports']
+	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['LatticeWithSupports-1']
+
 elif design.typeOfModel == 'simpleModelWithRibs':
 
 	boxPartName, boxInstanceName = buildBasicBox(model, design)
@@ -228,13 +248,15 @@ meshing(design, mesh, partToApplyMeshBCsLoads)
 #Load and BC's
 
 #Boundary conditions and coupling restriction definition
-defineBCs(model, design, instanceToApplyMeshBCsLoads, 'withReferencePoint') #Type of BC: 'clamped' or 'withReferencePoint'
+if not design.typeOfModel == 'onlyLattice':
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'withReferencePoint') #Type of BC: 'clamped' or 'withReferencePoint'
 
 if design.typeOfModel == 'completeModel': #Standard design
 	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'couplingAtLatticeNodes')
 
 #Load definition
-loads(model, design, mesh, load, instanceToApplyMeshBCsLoads, load.typeLoad, load.typeAnalysis, load.typeAbaqus) #Type of load: 'displ', 'force' or 'distributedForce', type of analysis: 'linear' or 'nonlinear'
+if not design.typeOfModel == 'onlyLattice':
+	loads(model, design, mesh, load, instanceToApplyMeshBCsLoads, load.typeLoad, load.typeAnalysis, load.typeAbaqus) #Type of load: 'displ', 'force' or 'distributedForce', type of analysis: 'linear' or 'nonlinear'
 
 ################################
 #Job operations

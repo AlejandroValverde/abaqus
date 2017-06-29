@@ -79,7 +79,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 		model.rootAssembly.Set(name='referencePoint', referencePoints=(model.rootAssembly.referencePoints[rf.id], ))
 
 		#Face
-		if design.typeOfModel == 'simpleModel':
+		if design.typeOfModel == 'simpleModel' or design.typeOfModel == 'onlyLattice':
 			model.rootAssembly.Set(edges = instanceToApplyLoadAndBC.edges.findAt(((design.cutWingRoot, design.cutDown, design.C3/2),),
 																				((design.cutWingRoot, design.cutUp, design.C3/2),),
 																				((design.cutWingRoot, design.cutUp/2, design.C3),),

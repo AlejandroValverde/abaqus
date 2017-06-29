@@ -3,7 +3,7 @@ Iter
 jobName
 Job_current
 typeOfModel
-simpleModel
+onlyLattice
 E_ribOverE1
 10000
 N
@@ -19,9 +19,9 @@ L
 Cbox_t
 2
 rib_t
-8
+2
 rib_t_inner
-8
+2
 innerRibs_n
 0
 rootRibShape
@@ -73,6 +73,6 @@ False
 damp
 0.0
 typeAnalysis
-nonlinear
+linear
 typeAbaqus
 Standard

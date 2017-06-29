@@ -713,6 +713,70 @@ def cutLattice(model, design):
 	    SIDE1, sketchUpEdge=model.parts['All'].datums[datumAxis.id])
 	del model.sketches['__profile__']
 
+def buildAditionalSupportsLattice(model, design, mesh):
+
+	def createPartSupport(model, design, mesh, nameStr, length):
+
+		#Create sketch palette with dimensions 150% bigger and the maximum length in the lattice
+		model.ConstrainedSketch(name='__profile__', sheetSize=1.5 * max(design.L1, design.L2))
+
+		model.sketches['__profile__'].rectangle(point1=(0.0, 0.0), 
+		    point2=(design.B, length))
+
+		#Shell extrude
+		model.Part(dimensionality=THREE_D, name=nameStr, type=
+		    DEFORMABLE_BODY)
+		model.parts[nameStr].BaseShell(sketch=model.sketches['__profile__'])
+		del model.sketches['__profile__']
+
+	parts = ('short', 'long')
+	length = (design.cutUp + abs(design.cutDown), design.cutWingTip - design.cutWingRoot)
+	i = 0
+	for part in parts:
+		createPartSupport(model, design, mesh, 'support_'+part, length(i))
+		i += 1
+
+	#### Instance operations ####
+	model.rootAssembly.DatumCsysByDefault(CARTESIAN)
+	model.rootAssembly.Instance(dependent=ON, name='support_short_inst_1', part=
+	    model.parts['support_short'])
+	model.rootAssembly.rotate(angle=-90.0, axisDirection=(0.0, 1.0, 
+	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_short_inst_1', ))
+	model.rootAssembly.translate(instanceList=('support_short_inst_1', ), 
+	    vector=(design.cutWingRoot, 0.0, 0.0))
+
+	model.rootAssembly.Instance(dependent=ON, name='support_short_inst_2', part=
+	    model.parts['support_short'])
+	model.rootAssembly.rotate(angle=-90.0, axisDirection=(0.0, 1.0, 
+	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_short_inst_2', ))
+	model.rootAssembly.translate(instanceList=('support_short_inst_2', ), 
+	    vector=(design.cutWingTip, 0.0, 0.0))
+
+	model.rootAssembly.Instance(dependent=ON, name='support_long_inst_1', part=
+	    model.parts['support_long'])
+	model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
+	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_long_inst_1', ))
+	model.rootAssembly.rotate(angle=-90.0, axisDirection=(0.0, 1.0, 
+	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_long_inst_1', ))
+	model.rootAssembly.translate(instanceList=('support_long_inst_1', ), 
+	    vector=(design.cutWingTip, 0.0, 0.0))
+
+	model.rootAssembly.Instance(dependent=ON, name='support_long_inst_2', part=
+	    model.parts['support_long'])
+	model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
+	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_long_inst_2', ))
+	model.rootAssembly.rotate(angle=-90.0, axisDirection=(0.0, 1.0, 
+	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_long_inst_2', ))
+	model.rootAssembly.translate(instanceList=('support_long_inst_2', ), 
+	    vector=(0.0, design.cutUp + abs(design.cutDown), 0.0))
+	model.rootAssembly.translate(instanceList=('support_long_inst_2', ), 
+	    vector=(design.cutWingTip, 0.0, 0.0))
+
+	return instanceList = (model.rootAssembly.instances['support_short_inst_1'], 
+							model.rootAssembly.instances['support_short_inst_2'],
+							model.rootAssembly.instances['support_long_inst_1'],
+							model.rootAssembly.instances['support_long_inst_2'])
+
 def buildBox(model, design, mesh):
 
 	#Build wing box around lattice
