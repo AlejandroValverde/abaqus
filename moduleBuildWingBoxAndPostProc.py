@@ -715,6 +715,14 @@ def cutLattice(model, design):
 
 def buildAditionalSupportsLattice(model, design, mesh):
 
+	#Section creation
+	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
+	    integrationRule=SIMPSON, material='ABS', name='Section-ABS-support', numIntPts=5, 
+	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
+	    thickness=design.tChiral, thicknessField='', thicknessModulus=None, thicknessType=
+	    UNIFORM, useDensity=OFF)
+	
+
 	def createPartSupport(model, design, mesh, nameStr, length):
 
 		#Create sketch palette with dimensions 150% bigger and the maximum length in the lattice
@@ -729,6 +737,15 @@ def buildAditionalSupportsLattice(model, design, mesh):
 		model.parts[nameStr].BaseShell(sketch=model.sketches['__profile__'])
 		del model.sketches['__profile__']
 
+		#Set for all
+		model.parts[nameStr].Set(faces=model.parts[nameStr].faces.findAt(((design.B/2,length/2,0),),), name='all')
+
+		#Section assignment
+		model.parts[nameStr].SectionAssignment(offset=0.0, offsetField=
+		    '', offsetType=MIDDLE_SURFACE, region=
+		    model.parts[nameStr].sets['all'], sectionName=
+		    'Section-ABS-support', thicknessAssignment=FROM_SECTION)
+		
 	parts = ('short', 'long')
 	lengthTuple = (design.cutUp + abs(design.cutDown), design.cutWingTip - design.cutWingRoot)
 	i = 0
