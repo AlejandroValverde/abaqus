@@ -730,10 +730,10 @@ def buildAditionalSupportsLattice(model, design, mesh):
 		del model.sketches['__profile__']
 
 	parts = ('short', 'long')
-	length = (design.cutUp + abs(design.cutDown), design.cutWingTip - design.cutWingRoot)
+	lengthTuple = (design.cutUp + abs(design.cutDown), design.cutWingTip - design.cutWingRoot)
 	i = 0
 	for part in parts:
-		createPartSupport(model, design, mesh, 'support_'+part, length(i))
+		createPartSupport(model, design, mesh, 'support_'+part, lengthTuple[i])
 		i += 1
 
 	#### Instance operations ####
@@ -772,10 +772,12 @@ def buildAditionalSupportsLattice(model, design, mesh):
 	model.rootAssembly.translate(instanceList=('support_long_inst_2', ), 
 	    vector=(design.cutWingTip, 0.0, 0.0))
 
-	return instanceList = (model.rootAssembly.instances['support_short_inst_1'], 
-							model.rootAssembly.instances['support_short_inst_2'],
-							model.rootAssembly.instances['support_long_inst_1'],
-							model.rootAssembly.instances['support_long_inst_2'])
+	instanceList = (model.rootAssembly.instances['support_short_inst_1'], 
+					model.rootAssembly.instances['support_short_inst_2'],
+					model.rootAssembly.instances['support_long_inst_1'],
+					model.rootAssembly.instances['support_long_inst_2'])
+
+	return instanceList
 
 def buildBox(model, design, mesh):
 
