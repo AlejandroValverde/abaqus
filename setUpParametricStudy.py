@@ -1,5 +1,5 @@
 # Define parameters range
-parameters=('typeOfModel', 'jobName', 'E_ribOverE1', 'N', 'M', 'r', 'B', 'L', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
+parameters=('typeOfModel', 'jobName', 'E_ribOverE1', 'E1OverE2_simpleModel', 'N', 'M', 'r', 'B', 'L', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
 			'eOverB', 'tChiral', 'typeLoad', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
 			'courseSize', 'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
 			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')
@@ -9,6 +9,7 @@ nominalDict={'typeOfModel' : 'simpleModel',
 			'jobName' : 'Job_current',
 			'E_ribOverE1' : 1, #N/mm^2, for the rib, expressed as a fraction of the main material
 			'N' : 10, #Number of unit cells in spanwise direction
+			'E1OverE2_simpleModel' : 1,
 			'M' : 3, #Number of unit cells in transversal direction
 			'r' : 10.0,#Node radius 
 			'B' : 30.0, #Node depth
@@ -49,6 +50,7 @@ rangesDict={'typeOfModel' : 'simpleModel',
 			'jobName' : [], #Name to be assigned to the job
 			'E_ribOverE1' : [], 
 			'N' : [],#[5, 10, 20, 30, 40, 50],
+			'E1OverE2_simpleModel' : [],
 			'M' : [],
 			'r' : [],
 			'B' : [],

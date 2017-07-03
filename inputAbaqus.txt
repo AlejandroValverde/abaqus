@@ -6,6 +6,8 @@ typeOfModel
 onlyLattice
 E_ribOverE1
 10000
+E1OverE2_simpleModel
+10
 N
 10
 M
