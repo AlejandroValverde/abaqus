@@ -73,7 +73,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 		    region=model.rootAssembly.sets['fixed'], u1=SET, u2=SET, 
 		    u3=SET, ur1=SET, ur2=SET, ur3=SET)
 
-	elif typeBC == 'withReferencePoint': #One of the ribs faces constrained to one point in 6 dof
+	elif typeBC == 'coupling' or typeBC == 'encastre': #One of the ribs faces constrained to one point in 6 dof
 
 		rf = model.rootAssembly.ReferencePoint(point=(design.cutWingRoot, (design.cutUp+abs(design.cutDown))/2, design.C3/2))
 		model.rootAssembly.Set(name='referencePoint', referencePoints=(model.rootAssembly.referencePoints[rf.id], ))
@@ -86,18 +86,50 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 																				((design.cutWingRoot, design.cutUp/2, 0.0),),
 																				), name='fixed')
 		else:
-			model.rootAssembly.Set(faces = instanceToApplyLoadAndBC.faces.findAt(((design.cutWingRoot, design.cutDown + 1, design.C3/2),),), name='fixed')
+			faces_list=[]
 
-		#Enable coupling condition
-		model.Coupling(controlPoint= model.rootAssembly.sets['referencePoint'], couplingType=
-		    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-		    'Clamped through RF point and coupling at root', surface= model.rootAssembly.sets['fixed'], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
+			#First face
+			face_found = instanceToApplyLoadAndBC.faces.findAt(((design.cutWingRoot, design.cutDown + 1, design.C3/2),),)
+			faces_list.append(face_found)
 
-		#Fix reference point
-		model.DisplacementBC(name='fixed', createStepName='Initial', 
-		    region=model.rootAssembly.sets['referencePoint'], u1=0.0, u2=0.0, u3=0.0, ur1=0.0, ur2=0.0, ur3=0.0, 
-		    amplitude=UNSET, fixed=OFF, distributionType=UNIFORM, fieldName='', 
-		    localCsys=None)
+			#Search more faces
+			facesNotFoundCounter = 0
+
+			yIncrement = (abs(design.cutDown) + design.cutUp)/50
+
+			y = design.cutDown
+
+			for i in range(50):
+
+				y = y + yIncrement
+				face_found = instanceToApplyLoadAndBC.faces.findAt(((design.cutWingRoot, y, design.B/2),),)
+				if not face_found: #if empty, face couldn't be found
+					facesNotFoundCounter += 1
+				
+				if face_found not in faces_list: #if the face hasn't already been found
+					faces_list.append(face_found)
+				else:
+					print('Face found is being neglected, it was already found')
+
+			faces_tuple = tuple(faces_list)
+			model.rootAssembly.Set(faces = faces_tuple, name='fixed')
+
+		if typeBC == 'coupling':
+			#Enable coupling condition
+			model.Coupling(controlPoint= model.rootAssembly.sets['referencePoint'], couplingType=
+			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+			    'Clamped through RF point and coupling at root', surface= model.rootAssembly.sets['fixed'], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
+
+			#Fix reference point
+			model.DisplacementBC(name='fixed', createStepName='Initial', 
+			    region=model.rootAssembly.sets['referencePoint'], u1=0.0, u2=0.0, u3=0.0, ur1=0.0, ur2=0.0, ur3=0.0, 
+			    amplitude=UNSET, fixed=OFF, distributionType=UNIFORM, fieldName='', 
+			    localCsys=None)
+
+		elif typeBC == 'encastre':
+
+			model.EncastreBC(createStepName='Initial', localCsys=None, 
+			    name='Encastre', region=mdb.models['Model-1'].rootAssembly.sets['fixed'])
 
 	elif typeBC == 'couplingAtLatticeNodes':
 
@@ -152,6 +184,10 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 		if facesNotFoundCounter > 10:
 
 			raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')
+
+	else:
+
+		raise ValueError('Not correct option chosen for boundary condition definition') 
 
 
 def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAnalysis, typeAbaqus):

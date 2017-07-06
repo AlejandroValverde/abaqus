@@ -125,6 +125,9 @@ load.zPos = float(paraRead.forceZPos)
 load.dampFlag = (float(paraRead.damp) != 0.0)
 load.damp = float(paraRead.damp)
 
+#BCs
+load.typeBC = paraRead.typeBC #'clamped', 'coupling', 'encastre'
+
 ## Job
 jobDef = structtype()
 jobDef.jobName = paraRead.jobName
@@ -249,10 +252,10 @@ meshing(design, mesh, partToApplyMeshBCsLoads)
 
 #Boundary conditions and coupling restriction definition
 if not design.typeOfModel == 'onlyLattice':
-	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'withReferencePoint') #Type of BC: 'clamped' or 'withReferencePoint'
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'coupling') #Type of BC: 'clamped' or 'coupling'
 
 if design.typeOfModel == 'completeModel': #Standard design
-	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'couplingAtLatticeNodes')
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, load.typeBC)
 
 #Load definition
 loads(model, design, mesh, load, instanceToApplyMeshBCsLoads, load.typeLoad, load.typeAnalysis, load.typeAbaqus) #Type of load: 'displ', 'force' or 'distributedForce', type of analysis: 'linear' or 'nonlinear'
