@@ -27,9 +27,14 @@ mat.E_chiral = 31000 #N/mm^2 - For the chiral structure, ABS
 mat.v_chiral = 0.3 #For the chiral structure, ABS
 mat.E_rib = mat.E1 * float(paraRead.E_ribOverE1) #N/mm^2, for the rib, expressed as a fraction of the main material
 mat.v_rib = mat.v1
+mat.E2 = mat.E1 / float(paraRead.E1OverE2_simpleModel)
+mat.v2 = mat.v1
 
 ## Design parameters
 design = structtype()
+
+## Type of model
+design.typeOfModel = paraRead.typeOfModel #'simpleModel' 'simpleModelWithRibs', or 'completeModel'
 
 ## Unit chiral structure
 design.eOverB = float(paraRead.eOverB) #typical: 0.01
@@ -75,7 +80,9 @@ load.typeLoad = paraRead.typeLoad
 #Types of load:
 # - 'moment': Moment applied at the rib tip, through coupling and a reference point
 #		*Parameters: momentMagnitude
-# - 'force': Single force applied at the tip, where the z coordinate is 0 and the y coordinate is maximum
+# - 'force1': Single force applied at the tip, where the z coordinate is 0 and the y coordinate is maximum
+#		*Parameters: ForceMagnitude
+# - 'force2': Single force applied at the tip, where the z coordinate is C3 and the y coordinate is minimum
 #		*Parameters: ForceMagnitude
 # - 'displacement': Displacement imposed at the tip, where  'linForce', where the z coordinate is 0 and the y coordinate is maximum
 #		*Parameters: displ
@@ -118,6 +125,9 @@ load.zPos = float(paraRead.forceZPos)
 load.dampFlag = (float(paraRead.damp) != 0.0)
 load.damp = float(paraRead.damp)
 
+#BCs
+load.typeBC = paraRead.typeBC #'clamped', 'coupling', 'encastre'
+
 ## Job
 jobDef = structtype()
 jobDef.jobName = paraRead.jobName
@@ -134,58 +144,121 @@ session.executePostProc = (paraRead.executePostProc == 'True')
 #Model variable
 model = mdb.models['Model-1']
 
+#Load parameters from the Chiral design
+design = internalParameters(model, design)
+
 #Load materials
 loadMaterials(model, design, load, mat)
 
-#Build lattice structure basic elements
-buildBasicChiral(model, design)
+if design.typeOfModel == 'completeModel': #Standard design
 
-#Build the whole lattice
-design = internalParameters(model, design)
-buildLattice(model, design)
+	#Build lattice structure basic elements
+	buildBasicChiral(model, design)
 
-#Cut lattice
-cutLattice(model, design)
+	#Build the whole lattice
+	latticePartName, latticeInstanceName = buildLattice(model, design)
 
-#Build box
-buildBox(model, design, mesh)
+	#Cut lattice
+	cutLattice(model, design)
 
-#Marge box and lattice
-mergeInstances(model, (model.rootAssembly.instances['All-1'], model.rootAssembly.instances['C-box-inst']), 'BoxPlusLattice')
+	#Build box
+	boxPartName, boxInstanceName = buildBox(model, design, mesh)
 
-#Build Ribs
-# The function 'buildRib' takes two parameters:
-# - typeOfRib: 	Choose 'inner_ribs' to create ribs in between the wing tip and the root, and
-#				Choose 'outer_ribs' to create ribs located at the wing tip and at the root. These can be:
-#				- typeOfRib2: Choose 'open' to make ribs with a open section and closed to make them a close profile
+	#Marge box and lattice
+	mergeInstances(model, (model.rootAssembly.instances[latticeInstanceName], model.rootAssembly.instances[boxInstanceName]), 'BoxPlusLattice')
 
-buildRib(model, design, 'root_rib', design.rootRibShape)
-buildRib(model, design, 'tip_rib', design.tipRibShape) 
+	#Build Ribs
+	# The function 'buildRib' takes two parameters:
+	# - typeOfRib: 	Choose 'inner_ribs' to create ribs in between the wing tip and the root, and
+	#				Choose 'outer_ribs' to create ribs located at the wing tip and at the root. These can be:
+	#				- typeOfRib2: Choose 'open' to make ribs with a open section and closed to make them a close profile
 
-if design.innerRibs_n != 0:
-	instances_ribs_inner = buildRib(model, design, 'inner_ribs', [])
-else:
-	instances_ribs_inner = ()
+	ribRootInstanceName= buildRib(model, design, 'root_rib', design.rootRibShape)
+	ribTipInstanceName= buildRib(model, design, 'tip_rib', design.tipRibShape) 
 
-#Merge box and lattice to pair of ribs
-mergeInstances(model, (model.rootAssembly.instances['BoxPlusLattice-1'], 
-	model.rootAssembly.instances['Rib-root-inst'], model.rootAssembly.instances['Rib-tip-inst'], )+instances_ribs_inner, 'RibBoxLattice')
+	if design.innerRibs_n != 0:
+		instances_ribs_inner = buildRib(model, design, 'inner_ribs', [])
+	else:
+		instances_ribs_inner = ()
+
+	#Merge box and lattice to pair of ribs
+	mergeInstances(model, (model.rootAssembly.instances['BoxPlusLattice-1'], 
+		model.rootAssembly.instances[ribRootInstanceName], model.rootAssembly.instances[ribTipInstanceName], )+instances_ribs_inner, 'RibBoxLattice')
+
+	partToApplyMeshBCsLoads = model.parts['RibBoxLattice']
+	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLattice-1']
+
+elif design.typeOfModel == 'simpleModel':
+
+	boxPartName, boxInstanceName = buildBasicBox(model, design)
+
+	partToApplyMeshBCsLoads = model.parts[boxPartName]
+	instanceToApplyMeshBCsLoads = model.rootAssembly.instances[boxInstanceName]
+
+elif design.typeOfModel == 'onlyLattice':
+
+	#Build lattice structure basic elements
+	buildBasicChiral(model, design)
+
+	#Build the whole lattice
+	latticePartName, latticeInstanceName = buildLattice(model, design)
+
+	#Cut lattice
+	cutLattice(model, design)
+
+	#Add supports
+	supportsInstanceList = buildAditionalSupportsLattice(model, design, mesh)
+
+	#Merge
+	mergeInstances(model, (model.rootAssembly.instances[latticeInstanceName], )+supportsInstanceList, 'LatticeWithSupports')
+
+	partToApplyMeshBCsLoads = model.parts['LatticeWithSupports']
+	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['LatticeWithSupports-1']
+
+elif design.typeOfModel == 'simpleModelWithRibs':
+
+	boxPartName, boxInstanceName = buildBasicBox(model, design)
+
+	#Build Ribs
+	# The function 'buildRib' takes two parameters:
+	# - typeOfRib: 	Choose 'inner_ribs' to create ribs in between the wing tip and the root, and
+	#				Choose 'outer_ribs' to create ribs located at the wing tip and at the root. These can be:
+	#				- typeOfRib2: Choose 'open' to make ribs with a open section and closed to make them a close profile
+
+	ribRootInstanceName= buildRib(model, design, 'root_rib', design.rootRibShape)
+	ribTipInstanceName= buildRib(model, design, 'tip_rib', design.tipRibShape) 
+
+	if design.innerRibs_n != 0:
+		instances_ribs_inner = buildRib(model, design, 'inner_ribs', [])
+	else:
+		instances_ribs_inner = ()
+
+	#Merge box and lattice to pair of ribs
+	mergeInstances(model, (model.rootAssembly.instances[boxInstanceName], 
+		model.rootAssembly.instances[ribRootInstanceName], model.rootAssembly.instances[ribTipInstanceName], )+instances_ribs_inner, 'RibBox')
+
+	partToApplyMeshBCsLoads = model.parts['RibBox']
+	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBox-1']
+
 
 ##########################
 #Meshing operations
 
 #Build mesh
-meshing(design, mesh, model.parts['RibBoxLattice'])
+meshing(design, mesh, partToApplyMeshBCsLoads)
 
 ########################
 #Load and BC's
 
 #Boundary conditions and coupling restriction definition
-defineBCs(model, design, model.rootAssembly.instances['RibBoxLattice-1'], 'withReferencePoint') #Type of BC: 'clamped' or 'withReferencePoint'
-defineBCs(model, design, model.rootAssembly.instances['RibBoxLattice-1'], 'couplingAtLatticeNodes')
+if not design.typeOfModel == 'onlyLattice':
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'coupling') #Type of BC: 'clamped' or 'coupling'
+
+if design.typeOfModel == 'completeModel': #Standard design
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, load.typeBC)
 
 #Load definition
-loads(model, design, mesh, load, model.rootAssembly.instances['RibBoxLattice-1'], load.typeLoad, load.typeAnalysis, load.typeAbaqus) #Type of load: 'displ', 'force' or 'distributedForce', type of analysis: 'linear' or 'nonlinear'
+loads(model, design, mesh, load, instanceToApplyMeshBCsLoads, load.typeLoad, load.typeAnalysis, load.typeAbaqus) #Type of load: 'displ', 'force' or 'distributedForce', type of analysis: 'linear' or 'nonlinear'
 
 ################################
 #Job operations
