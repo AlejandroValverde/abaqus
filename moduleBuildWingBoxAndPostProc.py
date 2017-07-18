@@ -1613,9 +1613,12 @@ def PostProc_nonlinear(iterStr, design, load):
 	#Move to simulation results folder
 	globalChangeDir(cwd, '-postProc-'+iterStr)
 
+
 	for frameID in range(len(nameStep.frames)):
 
 		session.viewports['Viewport: 1'].odbDisplay.setFrame(step=0, frame=frameID)
+
+		fractionTime = nameStep.frames[frameID].frameValue #Fraction of the total force applied at current frame
 
 		#U2
 		session.viewports['Viewport: 1'].odbDisplay.setPrimaryVariable(
