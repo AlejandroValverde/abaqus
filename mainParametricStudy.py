@@ -93,6 +93,9 @@ for file in os.listdir(postProcFolder):
         #NONLINEAR
         elif temp.typeAnalysis == 'nonlinear':
 
+            #Obtain information of the fraction of load applied at each frame
+            temp.framesFraction = temp.obtainFrameLoadFractionInfo('frameInfo.txt')
+
             #For each frame
             dataFrames = []
             framesCount = []
@@ -173,6 +176,10 @@ plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
 caseDistintion(data, studyDefDict, plotSettings)
 
 # NONLINEAR PLOTS
+plotSettings['typeOfPlot'] = 'UR1_frame'
+plotSettings['yLabel'] = 'Angular rotation (deg)'
+caseDistintion(data, studyDefDict, plotSettings)
+
 plotSettings['typeOfPlot'] = 'UR1_tau'
 plotSettings['yLabel'] = 'Angular rotation (deg)'
 caseDistintion(data, studyDefDict, plotSettings)

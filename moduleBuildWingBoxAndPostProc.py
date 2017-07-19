@@ -5,7 +5,6 @@ import math
 import numpy as np
 from shutil import copyfile
 import os, re
-import platform
 import sys
 
 from part import *
@@ -42,22 +41,11 @@ def loadParameters(paraRead, fileName):
 		nameParater = lines[(i*2)]
 		valueParater = lines[(2*i)+1]
 
-		if platform.system() == 'Linux':
+		valueParater = valueParater.replace('\r\n','')
+		nameParater = nameParater.replace('\r\n','')
 
-			valueParater = valueParater.replace('\r\n','')
-			nameParater = nameParater.replace('\r\n','')			
-
-		elif platform.system() == 'Windows':
-
-			valueParater = valueParater.replace('\n','')
-			nameParater = nameParater.replace('\n','')
-
-		else:
-
-			valueParater = valueParater.replace('\r\n','')
-			nameParater = nameParater.replace('\r\n','')
-
-			print('OS not recognized, assumed unix based')
+		valueParater = valueParater.replace('\n','')
+		nameParater = nameParater.replace('\n','')
 
 		setattr(paraRead, nameParater, valueParater)
 
@@ -1463,7 +1451,7 @@ def mergeInstances(model, instancesToMerge, newName):
 	model.rootAssembly.InstanceFromBooleanMerge(domain=GEOMETRY, 
 	    instances=instancesToMerge, name=newName, originalInstances=SUPPRESS)
 
-def PostProc_linear(iterStr, design, load):
+def PostProc_linear(iterStr, design, load, jobDef):
 
 	#j index unused
 
@@ -1474,10 +1462,10 @@ def PostProc_linear(iterStr, design, load):
 	#Get current folder
 	cwd = os.getcwd()
 
-	o3 = session.openOdb(name='Job_current.odb')
+	o3 = session.openOdb(name=jobDef.jobName+'.odb')
 	session.viewports['Viewport: 1'].setValues(displayedObject=o3)
 	a = mdb.models['Model-1'].rootAssembly #in case we want to see the assembly
-	odb = session.odbs[cwd + '\\Job_current.odb']
+	odb = session.odbs[cwd + '\\'+jobDef.jobName+'.odb']
 
 	#Camera control
 	session.viewports['Viewport: 1'].view.setValues(nearPlane=3648.64, 
@@ -1579,17 +1567,17 @@ def PostProc_linear(iterStr, design, load):
 	#Return to original working folder
 	globalChangeDir(cwd, '.')
 
-def PostProc_nonlinear(iterStr, design, load):
+def PostProc_nonlinear(iterStr, design, load, jobDef):
 
 	#Postproccesing
 
 	#Get current folder
 	cwd = os.getcwd()
 
-	o3 = session.openOdb(name='Job_current.odb')
+	o3 = session.openOdb(name=jobDef.jobName+'.odb')
 	session.viewports['Viewport: 1'].setValues(displayedObject=o3)
 	a = mdb.models['Model-1'].rootAssembly #in case we want to see the assembly
-	odb = session.odbs[cwd + '\\Job_current.odb']
+	odb = session.odbs[cwd + '\\'+jobDef.jobName+'.odb']
 
 	#Camera control
 	session.viewports['Viewport: 1'].view.setValues(nearPlane=3648.64, 
@@ -1613,12 +1601,15 @@ def PostProc_nonlinear(iterStr, design, load):
 	#Move to simulation results folder
 	globalChangeDir(cwd, '-postProc-'+iterStr)
 
+	frameValueList = []
+
 
 	for frameID in range(len(nameStep.frames)):
 
 		session.viewports['Viewport: 1'].odbDisplay.setFrame(step=0, frame=frameID)
 
 		fractionTime = nameStep.frames[frameID].frameValue #Fraction of the total force applied at current frame
+		frameValueList += [fractionTime]
 
 		#U2
 		session.viewports['Viewport: 1'].odbDisplay.setPrimaryVariable(
@@ -1670,6 +1661,21 @@ def PostProc_nonlinear(iterStr, design, load):
 		#Down
 		x0_ur1_dn = session.xyDataObjects['ur1_fr'+str(frameID)+'_dn']
 		session.writeXYReport(fileName='ur1_dn_frame'+str(frameID)+'.rpt', xyData=(x0_ur1_dn, ), appendMode=OFF)
+
+	#Write list containing fraction of load applied at each frame
+
+	file = open('frameInfo.txt', 'w')
+
+	frame_i = 0
+	for frameValue in frameValueList:
+
+		file.write(str(frame_i) + '\n')
+
+		file.write(str(frameValue) + '\n')
+
+		frame_i += 1
+
+	file.close()
 
 	#Return to original working folder
 	globalChangeDir(cwd, '.')

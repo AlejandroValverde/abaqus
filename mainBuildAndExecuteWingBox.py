@@ -5,6 +5,7 @@ class structtype():
 
 #############################################
 import pdb #pdb.set_trace()
+import time
 
 #Import user-defined modules
 from moduleBuildWingBoxAndPostProc import *
@@ -281,18 +282,21 @@ if jobDef.saveJob:
 if session.executeJob:
 
 	model.rootAssembly.regenerate()
-	mdb.jobs[jobDef.jobName].submit(consistencyChecking=OFF)
 
-	print('Job submitted and calculating...')
-	mdb.jobs[jobDef.jobName].waitForCompletion()
+	try:
+		executionFlag = True
+		print('Job submitted and calculating...')
 
-	if str(mdb.jobs[jobDef.jobName].status) == 'COMPLETED':
+		mdb.jobs[jobDef.jobName].submit(consistencyChecking=OFF)
+		mdb.jobs[jobDef.jobName].waitForCompletion()
 
+	except Exception as e:
+		executionFlag = False
+
+	if executionFlag:
 		print('Job successfully completed')
-
 	else:
-
-		print('Job not successfully completed')
+		print('Job aborted')
 
 #Post-processing
 if session.executePostProc:
@@ -308,10 +312,10 @@ if session.executePostProc:
 	globalCreateDir(cwd, '-postProc-'+paraRead.Iter)
 
 	if load.typeAnalysis == 'linear':
-		PostProc_linear(paraRead.Iter, design, load)
+		PostProc_linear(paraRead.Iter, design, load, jobDef)
 
 	elif load.typeAnalysis == 'nonlinear':
-		PostProc_nonlinear(paraRead.Iter, design, load)
+		PostProc_nonlinear(paraRead.Iter, design, load, jobDef)
 
 	#Copy input file to postProc folder
 	globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName)

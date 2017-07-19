@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pdb #pdb.set_trace()
 import math
-import platform
 
 from moduleCommon import *
 
@@ -19,20 +18,11 @@ def importParametricStudyDeffile(fileName):
 		nameParater = lines[(i*2)]
 		lineRange = lines[(2*i)+1]
 
-		if platform.system() == 'Linux':
+		lineRange = lineRange.replace('\n','')
+		nameParater = nameParater.replace('\n','')
 
-			lineRange = lineRange.replace('\r\n','')
-			nameParater = nameParater.replace('\r\n','')			
-
-		elif platform.system() == 'Windows':
-
-			lineRange = lineRange.replace('\n','')
-			nameParater = nameParater.replace('\n','')
-
-		else:
-
-			lineRange = lineRange.replace('\r\n','')
-			nameParater = nameParater.replace('\r\n','')
+		lineRange = lineRange.replace('\r\n','')
+		nameParater = nameParater.replace('\r\n','')
 
 		dictOut[nameParater] = [float(lineRange.split(',')[0]), float(lineRange.split(',')[1]), float(lineRange.split(',')[2])]
 
@@ -59,22 +49,11 @@ class caseStudy(object):
 			nameParater = lines[(i*2)]
 			valueParater = lines[(2*i)+1]
 
-			if platform.system() == 'Linux':
+			valueParater = valueParater.replace('\n','')
+			nameParater = nameParater.replace('\n','')
 
-				valueParater = valueParater.replace('\r\n','')
-				nameParater = nameParater.replace('\r\n','')			
-
-			elif platform.system() == 'Windows':
-
-				valueParater = valueParater.replace('\n','')
-				nameParater = nameParater.replace('\n','')
-
-			else:
-
-				valueParater = valueParater.replace('\r\n','')
-				nameParater = nameParater.replace('\r\n','')
-
-				print('OS not recognized, assumed unix based')
+			valueParater = valueParater.replace('\r\n','')
+			nameParater = nameParater.replace('\r\n','')
 
 			setattr(self, nameParater, valueParater)
 
@@ -134,6 +113,29 @@ class caseStudy(object):
 
 		self.K = abs( totalForce / self.u2_xOverL[-1] )
 
+	def obtainFrameLoadFractionInfo(self, fileName):
+
+		file = open(fileName, 'r')
+
+		lines = file.readlines()
+
+		frameInfoList = []
+
+		for i in range(int((len(lines))/2)):
+
+			valueParater = lines[(2*i)+1]
+
+			valueParater = valueParater.replace('\n','')
+
+			valueParater = valueParater.replace('\r\n','')
+
+			frameInfoList += [valueParater]
+
+		file.close()
+
+		return frameInfoList
+
+
 class dataPerFrame(caseStudy):
 
 	def __init__(self, arg):
@@ -173,7 +175,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 	flagDict = studyDefDict.fromkeys(keysAll, True)
 	axDict = studyDefDict.fromkeys(keysAll, 0)
 	
-	if plotSettings['typeOfPlot'] == 'UR1_tau':
+	if plotSettings['typeOfPlot'] == 'UR1_tau' or plotSettings['typeOfPlot'] == 'UR1_frame':
 		counterNperKey = studyDefDict.fromkeys(keysAll, 0)
 		scatterHandles = studyDefDict.fromkeys(keysAll, [])
 		keysWith_UR1_tau_plot = []
@@ -213,7 +215,17 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 				elif case.typeAnalysis == 'nonlinear':
 
-					if plotSettings['typeOfPlot'] == 'UR1_tau':
+					if plotSettings['typeOfPlot'] == 'UR1_frame':
+
+						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
+
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
+						scatterHandles[keyCurrent] = plotUR1_frame(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
+						counterNperKey[keyCurrent] += 1
+
+						if not keyCurrent in keysWith_UR1_tau_plot: keysWith_UR1_tau_plot.append(keyCurrent)
+
+					elif plotSettings['typeOfPlot'] == 'UR1_tau':
 
 						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
 
@@ -315,21 +327,49 @@ def plotU2_z_LastTau(classOfData, plotSettings, attr, ax):
 	ax.legend(**plotSettings['legend'])
 
 
-def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles):
+def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles):
 
-	ax.set_xlabel('$f_{frame} / f_{total}$', **plotSettings['axes_x'])
+	ax.set_xlabel('$frame$', **plotSettings['axes_x'])
 	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
 
 	i = 0
 	for frame in classOfData.framesCount:
 
 		#UR1 - Up
-	    ax.plot(float(frame) / max(classOfData.framesCount) , classOfData.dataFrames[i].ur1_xOverL_up[-1] * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+	    ax.plot(frame , classOfData.dataFrames[i].ur1_xOverL_up[-1] * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
 	    
 	    #UR1 - Down
-	    ax.plot(float(frame) / max(classOfData.framesCount) , classOfData.dataFrames[i].ur1_xOverL_dn[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+	    ax.plot(frame , classOfData.dataFrames[i].ur1_xOverL_dn[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
 	    indexForMaxX = classOfData.dataFrames[i].xPosForU2.index(max(classOfData.dataFrames[i].xPosForU2))
-	    ax.plot(float(frame) / max(classOfData.framesCount) , classOfData.dataFrames[i].twistFromU2[indexForMaxX] * (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+	    ax.plot(frame , classOfData.dataFrames[i].twistFromU2[indexForMaxX] * (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+	    i += 1
+	
+	handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 up, '+attr+'='+str(getattr(classOfData, attr)))
+	handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='s', linestyle='', label='UR1 down, '+attr+'='+str(getattr(classOfData, attr)))
+	handle3 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='+', linestyle='', label='Diff U2 up, '+attr+'='+str(getattr(classOfData, attr)))
+
+	scatterHandles[attr] = scatterHandles[attr] + [handle1]
+	scatterHandles[attr] = scatterHandles[attr] + [handle2]
+	scatterHandles[attr] = scatterHandles[attr] + [handle3]
+
+	return scatterHandles[attr]
+
+
+def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles):
+
+	ax.set_xlabel('$f_{frame} / f_{total}$', **plotSettings['axes_x'])
+	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
+
+	i = 0
+	for fraction in classOfData.framesFraction:
+
+		#UR1 - Up
+	    ax.plot(fraction , classOfData.dataFrames[i].ur1_xOverL_up[-1] * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+	    
+	    #UR1 - Down
+	    ax.plot(fraction , classOfData.dataFrames[i].ur1_xOverL_dn[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+	    indexForMaxX = classOfData.dataFrames[i].xPosForU2.index(max(classOfData.dataFrames[i].xPosForU2))
+	    ax.plot(fraction , classOfData.dataFrames[i].twistFromU2[indexForMaxX] * (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
 	    i += 1
 	
 	handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 up, '+attr+'='+str(getattr(classOfData, attr)))

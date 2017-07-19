@@ -1,4 +1,5 @@
 import os
+import sys
 import pdb #pdb.set_trace()
 
 from moduleCommon import *
@@ -68,7 +69,10 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 	file.close()
 
-execfile('setUpParametricStudy.py') #Load parametric study values
+if sys.version_info.major == 2:
+	execfile('setUpParametricStudy.py') #Load parametric study values
+elif sys.version_info.major == 3:
+	exec(open("./setUpParametricStudy.py").read())
 ########################################
 
 #Write parameter study definition file
@@ -90,14 +94,14 @@ for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters de
 			    if f.startswith(nominalDict['jobName']) or f.startswith('abaqus.rpy'):
 			        os.remove(f)
 
-			print('Abaqus parametric study initialized, iteration: ' + str(iterationID))
+			print('### Abaqus parametric study initialized, iteration: ' + str(iterationID))
 
 			#Update Abaqus input file
-			print('Updating Abaqus input parameters')
+			print('-> Updating Abaqus input parameters')
 			writeInputParaToFile('inputAbaqus.txt', iterationID, parameters, valueCurrent, keyCurrent, nominalDict)
 
 			#Build geometry, create and execute job, and run post-processing
-			print('Building and executing model...')
+			print('-> Building and executing model...')
 			os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
 
 			#Check if postProc folder already exists
@@ -106,6 +110,9 @@ for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters de
 			#Create folder for simulation results
 			globalCreateDir(cwd, '-postProc-'+str(iterationID))
 
+			#Copy job file to specific postproc folder
+			globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), nominalDict['jobName']+'.odb', nominalDict['jobName']+'.odb')
+
 			#Move input file to PostProc folder
 			# os.chdir(cwd + '\\postProc') #Move to post-processing directory
 			# for f in os.listdir():
@@ -113,11 +120,6 @@ for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters de
 			#         os.remove(f) #Delete "parametricStudyDef" if it already exits from previous studies
 			# os.chdir(cwd) #Return to working folder
 			# os.rename('inputAbaqus.txt', '.\\postProc\\' + str(iterationID) + '-abaqusInput.txt')
-
-			#Clear files from present iteration
-			for f in os.listdir(cwd):
-			    if f.startswith(nominalDict['jobName']) or f.startswith('abaqus.rpy'):
-			        os.remove(f)
 
 			iterationID += 1
 
@@ -136,6 +138,5 @@ globalChangeDir(cwd, '.') #Return to working folder
 
 #Copy ODB file and input file to corresponding Post-proc folder
 globalCopyFile(cwd, cwd+'-postProc', 'parametricStudyDef.txt', 'parametricStudyDef.txt')
-globalCopyFile(cwd, cwd+'-postProc', 'Job_current.odb', 'Job_current.odb')
 
-print('-> Abaqus parametric study finished')
+print('---> Abaqus parametric study finished')
