@@ -101,26 +101,29 @@ for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters de
 			writeInputParaToFile('inputAbaqus.txt', iterationID, parameters, valueCurrent, keyCurrent, nominalDict)
 
 			#Build geometry, create and execute job, and run post-processing
-			print('-> Building and executing model...')
+			print('-> Building and executing model (nonlinear simulation)...')
 			os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
-
-			#Check if postProc folder already exists
-			globalCreateDir(cwd, '-postProc')
-			
-			#Create folder for simulation results
-			globalCreateDir(cwd, '-postProc-'+str(iterationID))
 
 			#Copy job file to specific postproc folder if the program is being run in Linux
 			if platform.system() == 'Windows':
 				globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), nominalDict['jobName']+'.odb', nominalDict['jobName']+'.odb')
 
-			#Move input file to PostProc folder
-			# os.chdir(cwd + '\\postProc') #Move to post-processing directory
-			# for f in os.listdir():
-			#     if re.search(str(iterationID) + '-abaqusInput*', f):
-			#         os.remove(f) #Delete "parametricStudyDef" if it already exits from previous studies
-			# os.chdir(cwd) #Return to working folder
-			# os.rename('inputAbaqus.txt', '.\\postProc\\' + str(iterationID) + '-abaqusInput.txt')
+			#Clear files from last computation
+			for f in os.listdir(cwd):
+			    if f.startswith(nominalDict['jobName']) or f.startswith('abaqus.rpy'):
+			        os.remove(f)
+
+			######################################
+			#####Run linear simulation of present iteration
+			nominalDict['typeAnalysis'] = 'linear'
+
+			#Update Abaqus input file
+			print('-> Updating Abaqus input parameters for linear simulation')
+			writeInputParaToFile('inputAbaqus.txt', iterationID, parameters, valueCurrent, keyCurrent, nominalDict)
+
+			#Build geometry, create and execute job, and run post-processing
+			print('-> Building and executing model (linear simulation)...')
+			os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
 
 			iterationID += 1
 

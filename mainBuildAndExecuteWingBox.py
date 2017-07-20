@@ -320,7 +320,7 @@ if session.executePostProc:
 		PostProc_nonlinear(paraRead.Iter, design, load, jobDef)
 
 	#Copy input file to postProc folder
-	globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName)
+	globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName + '_' + paraRead.typeAnalysis)
 
 	#Return to original working folder
 	globalChangeDir(cwd, '.')

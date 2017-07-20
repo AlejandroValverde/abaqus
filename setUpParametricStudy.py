@@ -9,8 +9,8 @@ nominalDict={'typeOfModel' : 'simpleModel',
 			'jobName' : 'Job_current_parametric',
 			'typeOfModel' : 'completeModel',
 			'E_ribOverE1' : 10, #N/mm^2, for the rib, expressed as a fraction of the main material
-			'N' : 8, #Number of unit cells in spanwise direction
 			'E1OverE2_simpleModel' : 1,
+			'N' : 8, #Number of unit cells in spanwise direction
 			'M' : 3, #Number of unit cells in transversal direction
 			'r' : 10.0,#Node radius 
 			'B' : 20.0, #Node depth
@@ -48,12 +48,12 @@ nominalDict={'typeOfModel' : 'simpleModel',
 			'typeAbaqus' : 'Standard'}
 
 #Define 
-rangesDict={'typeOfModel' : 'simpleModel',
+rangesDict={'typeOfModel' : [],
 			'jobName' : [], #Name to be assigned to the job
 			'typeOfModel' : [],
 			'E_ribOverE1' : [], 
-			'N' : [],#[5, 10, 20, 30, 40, 50],
 			'E1OverE2_simpleModel' : [],
+			'N' : [],#[5, 10, 20, 30, 40, 50],
 			'M' : [],
 			'r' : [],
 			'B' : [],

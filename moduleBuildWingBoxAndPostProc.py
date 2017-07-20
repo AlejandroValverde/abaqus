@@ -1455,7 +1455,7 @@ def PostProc_linear(iterStr, design, load, jobDef):
 
 	#j index unused
 
-	nameToSave = iterStr + '-'
+	nameToSave = 'linear_'
 
 	#Postproccesing
 
@@ -1481,26 +1481,26 @@ def PostProc_linear(iterStr, design, load, jobDef):
 	    DEFORMED, ))
 	session.viewports['Viewport: 1'].odbDisplay.display.setValues(plotState=(
 	    CONTOURS_ON_DEF, ))
-	session.viewports['Viewport: 1'].odbDisplay.commonOptions.setValues(
-	    deformationScaling=UNIFORM, uniformScaleFactor=10) #Uniform deformation
+	# session.viewports['Viewport: 1'].odbDisplay.commonOptions.setValues(
+	#     deformationScaling=UNIFORM, uniformScaleFactor=10) #Uniform deformation
 
 	#Print deformations plus von Misses
-	session.printToFile(fileName='.\\postProc\\'+nameToSave+'def_misses.tiff', format=TIFF, canvasObjects=(
-	    session.viewports['Viewport: 1'], ))
+	# session.printToFile(fileName='.\\postProc\\'+nameToSave+'def_misses.tiff', format=TIFF, canvasObjects=(
+	#     session.viewports['Viewport: 1'], ))
 
-	#################################
+	# #################################
 
-	# Plot UR3
-	#Camera control
-	session.viewports['Viewport: 1'].view.setValues(nearPlane=3956.75, 
-	    farPlane=6168.99, width=1518.21, height=730.322, viewOffsetX=282.193, 
-	    viewOffsetY=-14.7636)
-	session.viewports['Viewport: 1'].odbDisplay.setPrimaryVariable(
-    variableLabel='UR', outputPosition=NODAL, refinement=(COMPONENT, 'UR3'), )
+	# # Plot UR3
+	# #Camera control
+	# session.viewports['Viewport: 1'].view.setValues(nearPlane=3956.75, 
+	#     farPlane=6168.99, width=1518.21, height=730.322, viewOffsetX=282.193, 
+	#     viewOffsetY=-14.7636)
+	# session.viewports['Viewport: 1'].odbDisplay.setPrimaryVariable(
+ #    variableLabel='UR', outputPosition=NODAL, refinement=(COMPONENT, 'UR3'), )
 
-	#Print deformations plus von Misses
-	session.printToFile(fileName='.\\postProc\\'+nameToSave+'ur3.tiff', format=TIFF, canvasObjects=(
-	    session.viewports['Viewport: 1'], ))
+	# #Print deformations plus von Misses
+	# session.printToFile(fileName='.\\postProc\\'+nameToSave+'ur3.tiff', format=TIFF, canvasObjects=(
+	#     session.viewports['Viewport: 1'], ))
 
 	##################################
 	correction = 0.0
@@ -1540,10 +1540,10 @@ def PostProc_linear(iterStr, design, load, jobDef):
 	    projectionTolerance=0, shape=UNDEFORMED, labelType=NORM_DISTANCE)
 
 	#Reaction force at reference point
-	session.xyDataListFromField(odb=odb, outputPosition=NODAL, variable=(('RF', NODAL, ((COMPONENT, 'RF2'), )), ), nodeSets=('REFERENCEPOINT', ))
+	# session.xyDataListFromField(odb=odb, outputPosition=NODAL, variable=(('RF', NODAL, ((COMPONENT, 'RF2'), )), ), nodeSets=('REFERENCEPOINT', ))
 
-	session.xyDataObjects.changeKey(fromName='RF:RF2 PI: ASSEMBLY N: 1', 
-	     toName='XYData_rf2')
+	# session.xyDataObjects.changeKey(fromName='RF:RF2 PI: ASSEMBLY N: 1', 
+	#      toName='XYData_rf2')
 
 	#Move to simulation results folder
 	globalChangeDir(cwd, '-postProc-'+iterStr)
@@ -1561,8 +1561,8 @@ def PostProc_linear(iterStr, design, load, jobDef):
 	session.writeXYReport(fileName=nameToSave+'u2_xOverL.rpt', xyData=(x0_u2_x, ), appendMode=OFF)
 
 	#Write rf2 data to XY file
-	x0_rf2 = session.xyDataObjects['XYData_rf2']
-	session.writeXYReport(fileName=nameToSave+'rf2.rpt', xyData=(x0_rf2, ), appendMode=OFF)
+	# x0_rf2 = session.xyDataObjects['XYData_rf2']
+	# session.writeXYReport(fileName=nameToSave+'rf2.rpt', xyData=(x0_rf2, ), appendMode=OFF)
 
 	#Return to original working folder
 	globalChangeDir(cwd, '.')

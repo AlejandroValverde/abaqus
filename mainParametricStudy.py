@@ -65,10 +65,10 @@ studyDefDict = importParametricStudyDeffile('parametricStudyDef.txt')
 data = []
 for file in os.listdir(postProcFolder):
     globalChangeDir(cwd, '-postProc')
-    if file.endswith('inputAbaqus.txt'):
+    if file.endswith('inputAbaqus_nonlinear.txt'):
         
         #Create case study class where store all the results obtained from Abaqus at termination of its computation
-        temp = caseStudy(int(file[:-16])) #file[:-16] - Returns the index
+        temp = caseStudy(int(file[:-26])) #file[:-26] - Returns the index
 
         temp.importInputData(file)
 
@@ -81,7 +81,7 @@ for file in os.listdir(postProcFolder):
             warnings.warn('-> No result files found for iteration '+str(temp.id))
 
         #LINEAR
-        if temp.typeAnalysis == 'linear':
+        if temp.typeAnalysis == 'linear': #NOT IN USE
 
             temp.importReactionForce()
 
