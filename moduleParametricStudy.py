@@ -320,9 +320,9 @@ def plotU2_z_LastTau(classOfData, plotSettings, attr, ax):
 	# pdb.set_trace()
 	for x in classOfData.dataFrames[indexForMaxFrame].xPosForU2:
 
-	    # pdb.set_trace()
-	    ax.plot(classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].zOverC3, classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].u2_zOverC3, label='x='+str(round(x,2)), **plotSettings['line'])
-	    j += 1
+		# pdb.set_trace()
+		ax.plot(classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].zOverC3, classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].u2_zOverC3, label='x='+str(round(x,2)), **plotSettings['line'])
+		j += 1
 
 	ax.legend(**plotSettings['legend'])
 
@@ -335,49 +335,92 @@ def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHa
 	i = 0
 	for frame in classOfData.framesCount:
 
-		#UR1 - Up
-	    ax.plot(frame , classOfData.dataFrames[i].ur1_xOverL_up[-1] * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
-	    
-	    #UR1 - Down
-	    ax.plot(frame , classOfData.dataFrames[i].ur1_xOverL_dn[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
-	    indexForMaxX = classOfData.dataFrames[i].xPosForU2.index(max(classOfData.dataFrames[i].xPosForU2))
-	    ax.plot(frame , classOfData.dataFrames[i].twistFromU2[indexForMaxX] * (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
-	    i += 1
-	
-	handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 up, '+attr+'='+str(getattr(classOfData, attr)))
-	handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='s', linestyle='', label='UR1 down, '+attr+'='+str(getattr(classOfData, attr)))
-	handle3 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='+', linestyle='', label='Diff U2 up, '+attr+'='+str(getattr(classOfData, attr)))
+		dataThisFrame = classOfData.dataFrames[i]
 
-	scatterHandles[attr] = scatterHandles[attr] + [handle1]
-	scatterHandles[attr] = scatterHandles[attr] + [handle2]
-	scatterHandles[attr] = scatterHandles[attr] + [handle3]
+		#To obtain twist from U2 difference
+		indexForMaxX = dataThisFrame.xPosForU2.index(max(dataThisFrame.xPosForU2))
+
+		if plotSettings['meanOption']:
+
+			meanTwist = np.mean([dataThisFrame.ur1_xOverL_up[-1], dataThisFrame.ur1_xOverL_dn[-1], dataThisFrame.twistFromU2[indexForMaxX]])
+			ax.plot(frame , meanTwist * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
+
+		else:
+		
+			#UR1 - Up
+			ax.plot(frame , dataThisFrame.ur1_xOverL_up[-1] * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+			
+			#UR1 - Down
+			ax.plot(frame , dataThisFrame.ur1_xOverL_dn[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+			indexForMaxX = dataThisFrame.xPosForU2.index(max(dataThisFrame.xPosForU2))
+			ax.plot(frame , dataThisFrame.twistFromU2[indexForMaxX] * (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+		
+		i += 1
+
+	if plotSettings['meanOption']:
+
+		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 mean, '+attr+'='+str(getattr(classOfData, attr)))
+		scatterHandles[attr] = scatterHandles[attr] + [handle1]
+
+	else:
+
+		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 up, '+attr+'='+str(getattr(classOfData, attr)))
+		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='s', linestyle='', label='UR1 down, '+attr+'='+str(getattr(classOfData, attr)))
+		handle3 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='+', linestyle='', label='Diff U2 up, '+attr+'='+str(getattr(classOfData, attr)))
+
+		scatterHandles[attr] = scatterHandles[attr] + [handle1]
+		scatterHandles[attr] = scatterHandles[attr] + [handle2]
+		scatterHandles[attr] = scatterHandles[attr] + [handle3]
 
 	return scatterHandles[attr]
 
 
 def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles):
 
-	ax.set_xlabel('$f_{frame} / f_{total}$', **plotSettings['axes_x'])
+	ax.set_xlabel('$Q_{frame} / Q_{total}$', **plotSettings['axes_x'])
 	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
 
 	i = 0
 	for fraction in classOfData.framesFraction:
 
-		#UR1 - Up
-	    ax.plot(fraction , classOfData.dataFrames[i].ur1_xOverL_up[-1] * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
-	    
-	    #UR1 - Down
-	    ax.plot(fraction , classOfData.dataFrames[i].ur1_xOverL_dn[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
-	    indexForMaxX = classOfData.dataFrames[i].xPosForU2.index(max(classOfData.dataFrames[i].xPosForU2))
-	    ax.plot(fraction , classOfData.dataFrames[i].twistFromU2[indexForMaxX] * (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
-	    i += 1
-	
-	handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 up, '+attr+'='+str(getattr(classOfData, attr)))
-	handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='s', linestyle='', label='UR1 down, '+attr+'='+str(getattr(classOfData, attr)))
-	handle3 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='+', linestyle='', label='Diff U2 up, '+attr+'='+str(getattr(classOfData, attr)))
+		#Find index for current frame, classOfData.dataFrames contains unsorted data
+		indexFrame = classOfData.framesCount.index(i)
 
-	scatterHandles[attr] = scatterHandles[attr] + [handle1]
-	scatterHandles[attr] = scatterHandles[attr] + [handle2]
-	scatterHandles[attr] = scatterHandles[attr] + [handle3]
+		dataThisFrame = classOfData.dataFrames[indexFrame]
+
+		#To obtain twist from U2 difference
+		indexForMaxX = dataThisFrame.xPosForU2.index(max(dataThisFrame.xPosForU2))
+
+		if plotSettings['meanOption']:
+
+			meanTwist = np.mean([dataThisFrame.ur1_xOverL_up[-1], dataThisFrame.ur1_xOverL_dn[-1], dataThisFrame.twistFromU2[indexForMaxX]])
+			ax.plot(fraction , meanTwist * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
+
+		else:
+		
+			#UR1 - Up
+			ax.plot(fraction , dataThisFrame.ur1_xOverL_up[-1] * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+			
+			#UR1 - Down
+			ax.plot(fraction , dataThisFrame.ur1_xOverL_dn[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+			indexForMaxX = dataThisFrame.xPosForU2.index(max(dataThisFrame.xPosForU2))
+			ax.plot(fraction , dataThisFrame.twistFromU2[indexForMaxX] * (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line']) #/ max(classOfData.framesCount)
+		
+		i += 1
+
+	if plotSettings['meanOption']:
+
+		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 mean, '+attr+'='+str(getattr(classOfData, attr)))
+		scatterHandles[attr] = scatterHandles[attr] + [handle1]
+
+	else:
+
+		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 up, '+attr+'='+str(getattr(classOfData, attr)))
+		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='s', linestyle='', label='UR1 down, '+attr+'='+str(getattr(classOfData, attr)))
+		handle3 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='+', linestyle='', label='Diff U2 up, '+attr+'='+str(getattr(classOfData, attr)))
+
+		scatterHandles[attr] = scatterHandles[attr] + [handle1]
+		scatterHandles[attr] = scatterHandles[attr] + [handle2]
+		scatterHandles[attr] = scatterHandles[attr] + [handle3]
 
 	return scatterHandles[attr]

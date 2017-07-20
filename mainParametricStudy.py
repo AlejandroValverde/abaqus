@@ -7,6 +7,9 @@ import warnings
 
 #### PLOTTING OPTIONS ####
 
+#Results options
+meanOptionalFlag = True #Plot mean of the twist (True) or plot twist obtained from different parts of the model (upper and lower flanges; and difference on U2 for upper flange)
+
 #Plotting options
 axes_label_x  = {'size' : 16, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'top'
 axes_label_y  = {'size' : 16, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'bottom'
@@ -40,7 +43,7 @@ xLabel={'N' : 'Number of unit cells in transversal direction',
 
 plotSettings = {'xLabel':xLabel,'axes_x':axes_label_x,'axes_y':axes_label_y, 'title':text_title_properties,
                 'axesTicks':axes_ticks, 'line':line, 'legend':legend, 'grid':grid, 'scatter':scatter,
-                'colors' : colors, 'markers' : markers}
+                'colors' : colors, 'markers' : markers, 'meanOption' : meanOptionalFlag}
 
 #### INITIALIZE FOLDERS ####
 
