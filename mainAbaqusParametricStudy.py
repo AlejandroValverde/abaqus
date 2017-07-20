@@ -110,8 +110,9 @@ for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters de
 			#Create folder for simulation results
 			globalCreateDir(cwd, '-postProc-'+str(iterationID))
 
-			#Copy job file to specific postproc folder
-			globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), nominalDict['jobName']+'.odb', nominalDict['jobName']+'.odb')
+			#Copy job file to specific postproc folder if the program is being run in Linux
+			if platform.system() == 'Windows':
+				globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), nominalDict['jobName']+'.odb', nominalDict['jobName']+'.odb')
 
 			#Move input file to PostProc folder
 			# os.chdir(cwd + '\\postProc') #Move to post-processing directory
@@ -136,7 +137,7 @@ for f in os.listdir(os.getcwd()):
         os.remove(f) #Delete "parametricStudyDef" if it already exits from previous studies
 globalChangeDir(cwd, '.') #Return to working folder
 
-#Copy ODB file and input file to corresponding Post-proc folder
+#Copy and input file to corresponding Post-proc folder
 globalCopyFile(cwd, cwd+'-postProc', 'parametricStudyDef.txt', 'parametricStudyDef.txt')
 
 print('---> Abaqus parametric study finished')
