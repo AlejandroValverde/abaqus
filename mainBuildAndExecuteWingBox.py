@@ -85,8 +85,10 @@ load.typeLoad = paraRead.typeLoad
 #		*Parameters: ForceMagnitude
 # - 'force2': Single force applied at the tip, where the z coordinate is C3 and the y coordinate is minimum
 #		*Parameters: ForceMagnitude
-# - 'displacement': Displacement imposed at the tip, where  'linForce', where the z coordinate is 0 and the y coordinate is maximum
+# - 'displacement_tip': Displacement imposed at the tip, at the point where the z coordinate is 0 and the y coordinate is maximum
 #		*Parameters: displ
+# - 'displacement_lastRib': Displacement imposed at the last rib, upper flange
+#		*Parameters: displ, zPos
 # - 'linForce': Distributed set of single forces on the wingbox skin
 #		*Parameters: ForceMagnitude, zPos, forceXEnd, forceXStart, forceXn
 # - 'linForceInnerRibs_upper': Distributed set of single forces applied at each of the inner ribs and the tip outer rib, at the upper flange
