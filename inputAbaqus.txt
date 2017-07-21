@@ -1,5 +1,5 @@
 Iter
-4
+42
 typeOfModel
 completeModel
 jobName
@@ -17,7 +17,7 @@ M
 r
 10.0
 B
-30.0
+20.0
 L
 50.0
 Cbox_t
@@ -31,9 +31,9 @@ innerRibs_n
 rootRibShape
 closed
 tipRibShape
-n
+closed
 rib_a
-20
+40
 C3
 300
 wingBoxLength
@@ -49,7 +49,7 @@ singleForceOnLastRib_upper
 displImposed
 -50
 ForceMagnitude
--900
+-1200
 momentMagnitude
 -200000
 forceXStart
@@ -61,9 +61,9 @@ forceXn
 forceZPos
 0.5
 courseSize
-30
+25
 fineSize
-2.0
+8.0
 maxTimeIncrement
 0.1
 initialTimeIncrement
@@ -73,12 +73,12 @@ minTimeIncrement
 maxNumInc
 1000
 executeJob
-False
+True
 executePostProc
-False
+True
 damp
 0.0
 typeAnalysis
-nonlinear
+linear
 typeAbaqus
 Standard

@@ -133,7 +133,7 @@ load.typeBC = paraRead.typeBC #'clamped', 'coupling', 'encastre'
 
 ## Job
 jobDef = structtype()
-jobDef.jobName = paraRead.jobName
+jobDef.jobName = paraRead.jobName + '_' +paraRead.typeAnalysis
 jobDef.saveJob = False
 jobDef.numCpus = 4
 
@@ -320,7 +320,7 @@ if session.executePostProc:
 		PostProc_nonlinear(paraRead.Iter, design, load, jobDef)
 
 	#Copy input file to postProc folder
-	globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName + '_' + paraRead.typeAnalysis)
+	globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName.replace('.txt', '_'+paraRead.typeAnalysis+'.txt'))
 
 	#Return to original working folder
 	globalChangeDir(cwd, '.')

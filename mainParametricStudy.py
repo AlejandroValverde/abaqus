@@ -106,11 +106,13 @@ for file in os.listdir(postProcFolder):
 
                 if file2.startswith('ur1_up'):
 
-                    tempPerFrame = dataPerFrame(int(file2.replace('.rpt','')[12:]))
+                    #Initialize class for frame
+                    tempPerFrame = dataPerFrame(int(file2.replace('.rpt','')[12:])) #int(file2.replace('.rpt','')[12:]) returns the frame ID
 
+                    #Import data from upper flange
                     tempPerFrame.import_data_from_path(file2, 'ur1', 'xOverL_'+file2[4:6])
 
-                    #For down
+                    #For lower flange
                     file2_down = file2.replace('up','dn')
                     tempPerFrame.import_data_from_path(file2_down, 'ur1', 'xOverL_'+file2_down[4:6])
 
@@ -133,19 +135,29 @@ for file in os.listdir(postProcFolder):
 
                             dataxPos += [tempPerFramePerX.xPos]
 
+                    #Save results into class
                     tempPerFrame.dataU2OverX = dataU2OverX
 
                     tempPerFrame.xPosForU2 = dataxPos
 
                     tempPerFrame.twistFromU2 = dataTwistFromU2
 
+                    #Save class into global list for this case
                     dataFrames += [tempPerFrame]
 
                     framesCount += [tempPerFrame.frameID]
 
+
             temp.dataFrames = dataFrames
             temp.framesCount = framesCount
 
+
+            #For the corresponding linear simulation
+            temp.import_data_from_path('linear_ur1_xOverL.rpt', 'linear_ur1', 'xOverL')
+            temp.import_data_from_path('linear_u2_zOverC3.rpt', 'linear_u2', 'zOverC3')
+            temp.import_data_from_path('linear_u2_xOverL.rpt', 'linear_u2', 'xOverL') #Not essential for later calculations
+
+            #Store global class
             data += [temp]
 
         #Return to original working folder

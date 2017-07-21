@@ -1512,7 +1512,7 @@ def PostProc_linear(iterStr, design, load, jobDef):
 
 	#Path to analyze displacement of points
 	session.Path(name='pth_u2_z', type=POINT_LIST, expression=((design.cutWingTip, design.cutUp - correction, 
-				0.0), (design.cutWingTip, design.cutUp - correction, design.C3)))
+				design.C3), (design.cutWingTip, design.cutUp - correction, 0.0)))
 	pth_u2_z = session.paths['pth_u2_z']
 
 	session.Path(name='pth_u2_x', type=POINT_LIST, expression=((design.cutWingRoot, design.cutUp - correction, 
@@ -1523,7 +1523,7 @@ def PostProc_linear(iterStr, design, load, jobDef):
 	session.viewports['Viewport: 1'].odbDisplay.setPrimaryVariable(
 	    variableLabel='UR', outputPosition=NODAL, refinement=(COMPONENT, 'UR1'))
 
-	session.XYDataFromPath(name='XYData_ur1', path=pth_ur1, includeIntersections=False, 
+	session.XYDataFromPath(name='ur1', path=pth_ur1, includeIntersections=False, 
 	    projectOntoMesh=False, pathStyle=UNIFORM_SPACING, numIntervals=20, 
 	    projectionTolerance=0, shape=UNDEFORMED, labelType=NORM_DISTANCE)
 
@@ -1531,11 +1531,11 @@ def PostProc_linear(iterStr, design, load, jobDef):
 	session.viewports['Viewport: 1'].odbDisplay.setPrimaryVariable(
 	    variableLabel='U', outputPosition=NODAL, refinement=(COMPONENT, 'U2'))
 
-	session.XYDataFromPath(name='XYData_u2_z', path=pth_u2_z, includeIntersections=False, 
+	session.XYDataFromPath(name='u2_z', path=pth_u2_z, includeIntersections=False, 
 	    projectOntoMesh=False, pathStyle=UNIFORM_SPACING, numIntervals=20, 
 	    projectionTolerance=0, shape=UNDEFORMED, labelType=NORM_DISTANCE)
 
-	session.XYDataFromPath(name='XYData_u2_x', path=pth_u2_x, includeIntersections=False, 
+	session.XYDataFromPath(name='u2_x', path=pth_u2_x, includeIntersections=False, 
 	    projectOntoMesh=False, pathStyle=UNIFORM_SPACING, numIntervals=20, 
 	    projectionTolerance=0, shape=UNDEFORMED, labelType=NORM_DISTANCE)
 
@@ -1549,15 +1549,15 @@ def PostProc_linear(iterStr, design, load, jobDef):
 	globalChangeDir(cwd, '-postProc-'+iterStr)
 
 	#Write ur1 data to XY file
-	x0_ur1 = session.xyDataObjects['XYData_ur1']
+	x0_ur1 = session.xyDataObjects['ur1']
 	session.writeXYReport(fileName=nameToSave+'ur1_xOverL.rpt', xyData=(x0_ur1, ), appendMode=OFF)
 
 	#Write u2_z data to XY file
-	x0_u2_z = session.xyDataObjects['XYData_u2_z']
+	x0_u2_z = session.xyDataObjects['u2_z']
 	session.writeXYReport(fileName=nameToSave+'u2_zOverC3.rpt', xyData=(x0_u2_z, ), appendMode=OFF)
 
 	#Write u2_z data to XY file
-	x0_u2_x = session.xyDataObjects['XYData_u2_x']
+	x0_u2_x = session.xyDataObjects['u2_x']
 	session.writeXYReport(fileName=nameToSave+'u2_xOverL.rpt', xyData=(x0_u2_x, ), appendMode=OFF)
 
 	#Write rf2 data to XY file
@@ -1593,7 +1593,7 @@ def PostProc_nonlinear(iterStr, design, load, jobDef):
 	    CONTOURS_ON_DEF, ))
 
 	#Path to analyze rotation of points
-	posMeasureU2 = np.linspace( design.cutWingRoot, design.cutWingTip, 10, endpoint = True)
+	posMeasureU2 = np.linspace( design.cutWingRoot, design.cutWingTip, 5, endpoint = True)
 	correction = 0.0
 
 	nameStep=o3.steps['load']

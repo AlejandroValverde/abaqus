@@ -82,19 +82,22 @@ cwd = os.getcwd() #Get working directory
 
 #Study loop
 iterationID = 1
-
-for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters defined
+# for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters defined
+for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in parameters]):
 
 	if rangesDict[keyCurrent]: #Continue if range is not empty
 
 		for valueCurrent in rangeCurrent:
 
-			#Clear files from last iteration if it was unsuccessful 
-			for f in os.listdir(cwd):
-			    if f.startswith(nominalDict['jobName']) or f.startswith('abaqus.rpy'):
-			        os.remove(f)
-
 			print('### Abaqus parametric study initialized, iteration: ' + str(iterationID))
+
+			#Update name
+			jobNameComplete = nominalDict['jobName'] + '_' + nominalDict['typeAnalysis']
+
+			#Clear files from last iteration
+			for f in os.listdir(cwd):
+			    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
+			        os.remove(f)
 
 			#Update Abaqus input file
 			print('-> Updating Abaqus input parameters')
@@ -106,24 +109,39 @@ for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters de
 
 			#Copy job file to specific postproc folder if the program is being run in Linux
 			if platform.system() == 'Windows':
-				globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), nominalDict['jobName']+'.odb', nominalDict['jobName']+'.odb')
+				globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'.odb')
 
 			#Clear files from last computation
 			for f in os.listdir(cwd):
-			    if f.startswith(nominalDict['jobName']) or f.startswith('abaqus.rpy'):
+			    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
 			        os.remove(f)
 
 			######################################
-			#####Run linear simulation of present iteration
+			##### Run linear simulation of present iteration
 			nominalDict['typeAnalysis'] = 'linear'
+
+			#Update name
+			jobNameComplete = nominalDict['jobName'] + '_' + nominalDict['typeAnalysis']
+
+			#Clear files from last iteration
+			for f in os.listdir(cwd):
+			    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
+			        os.remove(f)
 
 			#Update Abaqus input file
 			print('-> Updating Abaqus input parameters for linear simulation')
 			writeInputParaToFile('inputAbaqus.txt', iterationID, parameters, valueCurrent, keyCurrent, nominalDict)
-
+			
 			#Build geometry, create and execute job, and run post-processing
 			print('-> Building and executing model (linear simulation)...')
 			os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
+
+			#Copy job file to specific postproc folder if the program is being run in Linux
+			if platform.system() == 'Windows':
+				globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'.odb')
+
+			#####Return to original configuration
+			nominalDict['typeAnalysis'] = 'nonlinear'
 
 			iterationID += 1
 

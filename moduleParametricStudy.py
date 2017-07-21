@@ -89,30 +89,6 @@ class caseStudy(object):
 
 		setattr(self, kindX, outPos)
 
-	def importReactionForce(self):
-
-		file = open(str(self.id)+'-rf2.rpt', 'r')
-
-		lines = file.readlines()
-
-		lineNumber = 1
-
-		for line in lines:
-
-			if lineNumber == 5:
-
-				self.rf = ConvertNumber(line[30:])
-
-			lineNumber += 1
-
-		file.close()
-
-	def calculateK(self):
-
-		totalForce = self.forceMagnitude * self.forceXn
-
-		self.K = abs( totalForce / self.u2_xOverL[-1] )
-
 	def obtainFrameLoadFractionInfo(self, fileName):
 
 		file = open(fileName, 'r')
@@ -357,10 +333,19 @@ def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHa
 		
 		i += 1
 
+	#Linear,  frame= last frame
+	ax.plot(frame , classOfData.linear_ur1_xOverL[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
+	ax.plot(frame , ((classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3) )* (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
+
 	if plotSettings['meanOption']:
 
 		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 mean, '+attr+'='+str(getattr(classOfData, attr)))
+		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='s', linestyle='', label='UR1 linear, '+attr+'='+str(getattr(classOfData, attr)))
+		handle3 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='+', linestyle='', label='Diff U2 linear, '+attr+'='+str(getattr(classOfData, attr)))
+		
 		scatterHandles[attr] = scatterHandles[attr] + [handle1]
+		scatterHandles[attr] = scatterHandles[attr] + [handle2]
+		scatterHandles[attr] = scatterHandles[attr] + [handle3]
 
 	else:
 
@@ -408,10 +393,19 @@ def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHand
 		
 		i += 1
 
+	#Linear,  frame= last frame
+	ax.plot([1.0] , classOfData.linear_ur1_xOverL[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
+	ax.plot([1.0] , ((classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3) )* (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
+
 	if plotSettings['meanOption']:
 
 		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 mean, '+attr+'='+str(getattr(classOfData, attr)))
+		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='s', linestyle='', label='UR1 linear, '+attr+'='+str(getattr(classOfData, attr)))
+		handle3 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='+', linestyle='', label='Diff U2 linear, '+attr+'='+str(getattr(classOfData, attr)))
+				
 		scatterHandles[attr] = scatterHandles[attr] + [handle1]
+		scatterHandles[attr] = scatterHandles[attr] + [handle2]
+		scatterHandles[attr] = scatterHandles[attr] + [handle3]
 
 	else:
 
