@@ -195,7 +195,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
 
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | ' + str(case.ForceMagnitude)+'', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_frame(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 						counterNperKey[keyCurrent] += 1
 
@@ -205,7 +205,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
 
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | ' + str(case.ForceMagnitude)+'', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_tau(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 						counterNperKey[keyCurrent] += 1
 
@@ -215,7 +215,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
 						flagDict[keyCurrent] = True
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent]+', '+keyCurrent+'='+str(getattr(case, keyCurrent))+' / last frame', **plotSettings['title'])
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | ' + str(case.ForceMagnitude)+''+', '+keyCurrent+'='+str(getattr(case, keyCurrent))+' / last frame', **plotSettings['title'])
 						plotU2_z_LastTau(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 	if plotSettings['typeOfPlot'] == 'UR1_tau':
@@ -303,7 +303,7 @@ def plotU2_z_LastTau(classOfData, plotSettings, attr, ax):
 	ax.legend(**plotSettings['legend'])
 
 
-def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles):
+def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles): #NOT IN USE
 
 	ax.set_xlabel('$frame$', **plotSettings['axes_x'])
 	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
@@ -334,18 +334,23 @@ def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHa
 		i += 1
 
 	#Linear,  frame= last frame
-	ax.plot(frame , classOfData.linear_ur1_xOverL[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
-	ax.plot(frame , ((classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3) )* (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
+
+	#Check error if twist calculated from different parts
+	a = (classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3)
+	b = classOfData.linear_ur1_xOverL[-1]
+
+	if ((abs(a - b) / b)*100) > 5: #If error > 5%
+		raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')	
+	meanTwist_linear = np.mean([a, b])
+	ax.plot([0.0, frame] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 
 	if plotSettings['meanOption']:
 
 		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 mean, '+attr+'='+str(getattr(classOfData, attr)))
-		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='s', linestyle='', label='UR1 linear, '+attr+'='+str(getattr(classOfData, attr)))
-		handle3 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='+', linestyle='', label='Diff U2 linear, '+attr+'='+str(getattr(classOfData, attr)))
-		
+		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='', linestyle='-.', label='UR1 mean linear, '+attr+'='+str(getattr(classOfData, attr)))
+				
 		scatterHandles[attr] = scatterHandles[attr] + [handle1]
 		scatterHandles[attr] = scatterHandles[attr] + [handle2]
-		scatterHandles[attr] = scatterHandles[attr] + [handle3]
 
 	else:
 
@@ -394,18 +399,23 @@ def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHand
 		i += 1
 
 	#Linear,  frame= last frame
-	ax.plot([1.0] , classOfData.linear_ur1_xOverL[-1] * (180/math.pi), marker = 's', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
-	ax.plot([1.0] , ((classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3) )* (180/math.pi), marker = '+', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
+
+	#Check error if twist calculated from different parts
+	a = (classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3)
+	b = classOfData.linear_ur1_xOverL[-1]
+
+	if ((abs(a - b) / b)*100) > 5: #If error > 5%
+		raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')	
+	meanTwist_linear = np.mean([a, b])
+	ax.plot([0.0, 1.0] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 
 	if plotSettings['meanOption']:
 
 		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 mean, '+attr+'='+str(getattr(classOfData, attr)))
-		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='s', linestyle='', label='UR1 linear, '+attr+'='+str(getattr(classOfData, attr)))
-		handle3 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='+', linestyle='', label='Diff U2 linear, '+attr+'='+str(getattr(classOfData, attr)))
+		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='', linestyle='-.', label='UR1 mean linear, '+attr+'='+str(getattr(classOfData, attr)))
 				
 		scatterHandles[attr] = scatterHandles[attr] + [handle1]
 		scatterHandles[attr] = scatterHandles[attr] + [handle2]
-		scatterHandles[attr] = scatterHandles[attr] + [handle3]
 
 	else:
 

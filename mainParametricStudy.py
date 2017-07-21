@@ -11,11 +11,11 @@ import warnings
 meanOptionalFlag = True #Plot mean of the twist (True) or plot twist obtained from different parts of the model (upper and lower flanges; and difference on U2 for upper flange)
 
 #Plotting options
-axes_label_x  = {'size' : 16, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'top'
-axes_label_y  = {'size' : 16, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'bottom'
-text_title_properties = {'weight' : 'bold', 'size' : 20}
-axes_ticks = {'size' : 14}
-line = {'linewidth' : 2, 'markersize' : 6}
+axes_label_x  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'top'
+axes_label_y  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'bottom'
+text_title_properties = {'weight' : 'bold', 'size' : 18}
+axes_ticks = {'size' : 12}
+line = {'linewidth' : 1, 'markersize' : 5}
 scatter = {'linewidths' : 2}
 legend = {'fontsize' : 14, 'loc' : 'best'}
 grid = {'alpha' : 0.7}
@@ -191,9 +191,9 @@ plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
 caseDistintion(data, studyDefDict, plotSettings)
 
 # NONLINEAR PLOTS
-plotSettings['typeOfPlot'] = 'UR1_frame'
-plotSettings['yLabel'] = 'Angular rotation (deg)'
-caseDistintion(data, studyDefDict, plotSettings)
+# plotSettings['typeOfPlot'] = 'UR1_frame'
+# plotSettings['yLabel'] = 'Angular rotation (deg)'
+# caseDistintion(data, studyDefDict, plotSettings)
 
 plotSettings['typeOfPlot'] = 'UR1_tau'
 plotSettings['yLabel'] = 'Angular rotation (deg)'

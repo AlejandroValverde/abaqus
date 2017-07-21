@@ -267,9 +267,7 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 		model.steps['load'].setValues(continueDampingFactors=
 		    False, stabilizationMagnitude=load.damp, stabilizationMethod=DAMPING_FACTOR)
 
-	if typeLoad == 'displacement':
-
-		#Load type 1
+	if typeLoad == 'displacement_tip':
 
 		#Create a set where a the displacement is imposed 
 		model.rootAssembly.Set(name='pointLoad', vertices=
@@ -281,6 +279,22 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 		    distributionType=UNIFORM, fieldName='', fixed=OFF, localCsys=None, name=
 		    'displacement', region=
 		    model.rootAssembly.sets['pointLoad'], u1=UNSET, u2=load.displ, 
+		    u3=UNSET, ur1=UNSET, ur2=UNSET, ur3=UNSET)
+
+	elif typeLoad == 'displacement_lastRib':
+
+		#Create set
+		tupleOfNodes = ()
+		tupleOfNodes = searchNodesForSequenceOfx([design.cutWingTip], design.cutUp - (design.a/2), (load.zPos*design.C3), tupleOfNodes, instanceToApplyLoadAndBC)
+
+		#Create a set where a the displacement is imposed 
+		model.rootAssembly.Set(name='setForDisplacementOnOuterRib', nodes=tupleOfNodes)
+
+		#Define displacement condition
+		model.DisplacementBC(amplitude=UNSET, createStepName='load', 
+		    distributionType=UNIFORM, fieldName='', fixed=OFF, localCsys=None, name=
+		    'displacement', region=
+		    model.rootAssembly.sets['setForDisplacementOnOuterRib'], u1=UNSET, u2=load.displ, 
 		    u3=UNSET, ur1=UNSET, ur2=UNSET, ur3=UNSET)
 
 	elif typeLoad == 'moment':

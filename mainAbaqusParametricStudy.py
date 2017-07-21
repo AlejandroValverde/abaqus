@@ -1,5 +1,6 @@
 import os
 import sys
+import platform
 import pdb #pdb.set_trace()
 
 from moduleCommon import *
@@ -55,7 +56,7 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 		parameterEnd = len(rangeCurrent) + count
 
-		if len(rangeCurrent) == 0.0:
+		if len(rangeCurrent) == 0.0:	
 
 			file.write(str(lineNumberForRange)+','+str(0)+','+str(0)+'\n')
 
@@ -73,6 +74,7 @@ if sys.version_info.major == 2:
 	execfile('setUpParametricStudy.py') #Load parametric study values
 elif sys.version_info.major == 3:
 	exec(open("./setUpParametricStudy.py").read())
+
 ########################################
 
 #Write parameter study definition file
@@ -89,7 +91,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 		for valueCurrent in rangeCurrent:
 
-			print('### Abaqus parametric study initialized, iteration: ' + str(iterationID))
+			print('\n'+'\n'+'### Abaqus parametric study initialized, iteration: ' + str(iterationID))
 
 			#Update name
 			jobNameComplete = nominalDict['jobName'] + '_' + nominalDict['typeAnalysis']
