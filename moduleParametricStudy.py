@@ -195,7 +195,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
 
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | ' + str(case.ForceMagnitude)+'', **plotSettings['title'])
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_frame(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 						counterNperKey[keyCurrent] += 1
 
@@ -205,7 +205,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
 
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | ' + str(case.ForceMagnitude)+'', **plotSettings['title'])
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_tau(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 						counterNperKey[keyCurrent] += 1
 
@@ -215,7 +215,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
 						flagDict[keyCurrent] = True
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | ' + str(case.ForceMagnitude)+''+', '+keyCurrent+'='+str(getattr(case, keyCurrent))+' / last frame', **plotSettings['title'])
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N'+'/last frame', **plotSettings['title'])
 						plotU2_z_LastTau(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 	if plotSettings['typeOfPlot'] == 'UR1_tau':

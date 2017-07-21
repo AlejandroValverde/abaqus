@@ -613,14 +613,26 @@ def buildLattice(model, design):
 	
 def cutLattice(model, design):
 
+	#Cutting dimensions
+	design.cutUp_effective = design.cutUp 
+	design.cutDown_effective = design.cutDown
+
+	#Redefine cutting dimensions if there is gap
+	if design.cutGap != 0.0:
+		design.cutUp = design.cutUp + design.r + design.cutGap
+		design.cutDown = design.cutDown - ( design.r + design.cutGap )
+
+		design.cutUp_effective = design.cutUp_effective + design.r + 1.0 #Small offset (1.0)
+		design.cutDown_effective = design.cutDown_effective - (design.r + 1.0) #Small offset (1.0)
+
 	#Create Datum plane
 	datumPlane = model.parts['All'].DatumPlaneByPrincipalPlane(offset=0.0, 
 	    principalPlane=XYPLANE)
 
 	#Axis for sketch
-	point1 = model.parts['All'].DatumPointByCoordinate(coords=(-1.0, design.cutUp, 
+	point1 = model.parts['All'].DatumPointByCoordinate(coords=(-1.0, design.cutUp_effective, 
 	    1.0))
-	point2 = model.parts['All'].DatumPointByCoordinate(coords=(1.0, design.cutUp, 
+	point2 = model.parts['All'].DatumPointByCoordinate(coords=(1.0, design.cutUp_effective, 
 	    1.0))
 	datumAxis = model.parts['All'].DatumAxisByTwoPoint(point1=
 	    model.parts['All'].datums[point1.id], point2=
@@ -637,8 +649,8 @@ def cutLattice(model, design):
 	    sketchPlaneSide=SIDE1, 
 	    sketchUpEdge=model.parts['All'].datums[datumAxis.id], 
 	    sketchOrientation=TOP, origin=(0.0, 0.0, 0.0)))
-	model.sketches['__profile__'].rectangle(point1=(design.L1 + margin, design.cutUp), 
-	    point2=(-margin, design.cutUp + margin))
+	model.sketches['__profile__'].rectangle(point1=(design.L1 + margin, design.cutUp_effective), 
+	    point2=(-margin, design.cutUp_effective + margin))
 
 	#Cut - UP
 	model.parts['All'].CutExtrude(flipExtrudeDirection=ON, sketch=
@@ -655,8 +667,8 @@ def cutLattice(model, design):
 	    sketchPlaneSide=SIDE1, 
 	    sketchUpEdge=model.parts['All'].datums[datumAxis.id], 
 	    sketchOrientation=TOP, origin=(0.0, 0.0, 0.0)))
-	model.sketches['__profile__'].rectangle(point1=(design.L1 + margin, design.cutDown), 
-	    point2=(-margin, design.cutDown - margin))
+	model.sketches['__profile__'].rectangle(point1=(design.L1 + margin, design.cutDown_effective), 
+	    point2=(-margin, design.cutDown_effective - margin))
 
 	#Cut - DOWN
 	model.parts['All'].CutExtrude(flipExtrudeDirection=ON, sketch=
@@ -673,8 +685,8 @@ def cutLattice(model, design):
 	    sketchPlaneSide=SIDE1, 
 	    sketchUpEdge=model.parts['All'].datums[datumAxis.id], 
 	    sketchOrientation=TOP, origin=(0.0, 0.0, 0.0)))
-	model.sketches['__profile__'].rectangle(point1=(design.cutWingRoot, design.cutDown - margin), 
-	    point2=(design.cutWingRoot - margin, design.cutUp + margin))
+	model.sketches['__profile__'].rectangle(point1=(design.cutWingRoot, design.cutDown_effective - margin), 
+	    point2=(design.cutWingRoot - margin, design.cutUp_effective + margin))
 
 	#Cut - wingRoot
 	model.parts['All'].CutExtrude(flipExtrudeDirection=ON, sketch=
@@ -691,8 +703,8 @@ def cutLattice(model, design):
 	    sketchPlaneSide=SIDE1, 
 	    sketchUpEdge=model.parts['All'].datums[datumAxis.id], 
 	    sketchOrientation=TOP, origin=(0.0, 0.0, 0.0)))
-	model.sketches['__profile__'].rectangle(point1=(design.cutWingTip, design.cutDown - margin), 
-	    point2=(design.cutWingTip + margin, design.cutUp + margin))
+	model.sketches['__profile__'].rectangle(point1=(design.cutWingTip, design.cutDown_effective - margin), 
+	    point2=(design.cutWingTip + margin, design.cutUp_effective + margin))
 
 	#Cut - wingTip
 	model.parts['All'].CutExtrude(flipExtrudeDirection=ON, sketch=

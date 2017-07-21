@@ -1,6 +1,6 @@
 # Define parameters range
-parameters=('typeOfModel', 'jobName', 'typeOfModel', 'E_ribOverE1', 'E1OverE2_simpleModel', 'N', 'M', 'r', 'B', 'L', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
-			'eOverB', 'tChiral', 'typeBC', 'typeLoad', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
+parameters=('typeOfModel', 'jobName', 'typeOfModel', 'E_ribOverE1', 'E1OverE2_simpleModel', 'N', 'M', 'r', 'B', 'L', 'cutGap', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
+			'eOverB', 'tChiral', 'typeLoad', 'typeBC', 'addionalBC', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
 			'courseSize', 'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
 			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')
 
@@ -15,6 +15,7 @@ nominalDict={'typeOfModel' : 'simpleModel',
 			'r' : 10.0,#Node radius 
 			'B' : 20.0, #Node depth
 			'L' : 50.0, #half length
+			'cutGap' : 5.0,
 			'Cbox_t' : 0.8, #C-box wall thickness, $t_{C}$ (mm)
 			'rib_t' : 2, #Rib thickness, $t_{rib}$ (mm)
 			'rib_t_inner' : 2,
@@ -27,6 +28,7 @@ nominalDict={'typeOfModel' : 'simpleModel',
 			'tChiral' : 0.5, #Chiral lattice section thickness, $t_{chiral}$ (mm)
 			'typeLoad' : 'singleForceOnLastRib_upper', #'moment', 'force1', 'force2', 'displacement', 'linForce', 'linForceInnerRibs_(upper, middle, upper_down)', 'singleForceOnLastRib_(upper, down)'
 			'typeBC' : 'coupling', #'coupling', 'encastre'
+			'addionalBC' : 'couplingNodesUp', #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
 			'displImposed' : -50,
 			'ForceMagnitude' : -1200, #Applied force magnitude  (N)
 			'momentMagnitude' : -200000,
@@ -58,6 +60,7 @@ rangesDict={'typeOfModel' : [],
 			'r' : [], #[5, 10, 15],
 			'B' : [], #[10.0, 20.0, 30.0],
 			'L' : [], #[30.0, 50.0, 70.0],
+			'cutGap' : [],
 			'Cbox_t' : [0.4, 0.6, 0.8],#[5, 10, 20],#5, 10, 20, 30, 40, 60, 80, 100],
 			'rib_t' : [],#[3, 5, 8, 10],#2, 6, 10, 20, 40],
 			'rib_t_inner' : [],
@@ -70,6 +73,7 @@ rangesDict={'typeOfModel' : [],
 			'tChiral' : [0.3, 0.5, 0.7],#[0.05, 0.1, 0.5, 2.0, 2.5],
 			'typeLoad' : [],
 			'typeBC' : [],
+			'addionalBC' : [],
 			'displImposed' : [],
 			'ForceMagnitude' : [],
 			'momentMagnitude' : [],
