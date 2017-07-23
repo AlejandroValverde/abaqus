@@ -2,8 +2,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pdb #pdb.set_trace()
 import math
+import getopt
 
 from moduleCommon import *
+
+def readCMDoptions(argv):
+
+    try:
+    	opts, args = getopt.getopt(argv,"i:o:",["ifile=", "plotOptions="])
+    except getopt.GetoptError:
+        raise ValueError('ERROR: Not correct input to script')
+
+    for opt, arg in opts:
+        # pdb.set_trace()
+
+        if opt in ("-i", "--ifile"):
+            postProcFolderName = arg
+        elif opt in ("-o", "--plotOptions"):
+            plotOptString = arg
+
+    return postProcFolderName, plotOptString
 
 def importParametricStudyDeffile(fileName):
 
