@@ -9,7 +9,8 @@ from moduleCommon import *
 def readCMDoptions(argv):
 
     try:
-    	opts, args = getopt.getopt(argv,"i:",["ifile="])
+    	opts, args = getopt.getopt(argv,"i:o:",["ifile=", "plotOptions="])
+
     except getopt.GetoptError:
         raise ValueError('ERROR: Not correct input to script')
 
@@ -17,8 +18,10 @@ def readCMDoptions(argv):
 
         if opt in ("-i", "--ifile"):
             postProcFolderName = arg
+        elif opt in ("-o", "--plotOptions"):
+            plotOptString = arg
 
-    return postProcFolderName
+    return postProcFolderName, plotOptString
 
 def importParametricStudyDeffile(fileName):
 

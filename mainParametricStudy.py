@@ -52,15 +52,14 @@ plotSettings = {'xLabel':xLabel,'axes_x':axes_label_x,'axes_y':axes_label_y, 'ti
 
 #### INITIALIZE FOLDERS ####
 
-warnings.simplefilter('default', UserWarning) # print the first occurrence of matching warnings for each location where the warning is issued
-
 print('Parametric study processing started...')
 
 #Get working directory
 cwd = os.getcwd()
 
 #Read postProc folder name from CMD
-postProcFolderName = readCMDoptions(sys.argv[1:])
+postProcFolderName, plotOptString = readCMDoptions(sys.argv[1:])
+
 
 #Move to post-processing directory
 globalChangeDir(cwd, '-'+postProcFolderName)
@@ -202,14 +201,15 @@ caseDistintion(data, studyDefDict, plotSettings)
 # plotSettings['typeOfPlot'] = 'UR1_frame'
 # plotSettings['yLabel'] = 'Angular rotation (deg)'
 # caseDistintion(data, studyDefDict, plotSettings)
+if plotOptString == 'UR1_tau':
+    plotSettings['typeOfPlot'] = 'UR1_tau'
+    plotSettings['yLabel'] = 'Angular rotation (deg)'
+    caseDistintion(data, studyDefDict, plotSettings)
 
-plotSettings['typeOfPlot'] = 'UR1_tau'
-plotSettings['yLabel'] = 'Angular rotation (deg)'
-caseDistintion(data, studyDefDict, plotSettings)
-
-plotSettings['typeOfPlot'] = 'plotU2_z_LastTau'
-plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-caseDistintion(data, studyDefDict, plotSettings)
+if plotOptString == 'U2_z':
+    plotSettings['typeOfPlot'] = 'plotU2_z_LastTau'
+    plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
+    caseDistintion(data, studyDefDict, plotSettings)
 
 
 # plt.show(block = True)
