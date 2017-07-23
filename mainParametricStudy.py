@@ -1,4 +1,4 @@
-import os, re
+import os, re, sys
 
 from moduleParametricStudy import *
 from moduleCommon import *
@@ -23,7 +23,12 @@ colors = ['b', 'k', 'y', 'm', 'r', 'c']
 markers = ['o', 'v', '^', 's', '*', '+']
 
 #x labels
-xLabel={'N' : 'Number of unit cells in transversal direction', 
+xLabel={'N' : 'Number of unit cells in spanwise direction',
+        'M' : 'Number of unit cells in transversal direction',
+        'r' : 'Node radius (mm)',
+        'B' : 'Node depth (mm)',
+        'L' : 'Ligament half length (mm)',
+        'C3' : 'C-box length in the chordwise direction (mm)',
         'Cbox_t' : 'C-box wall thickness, $t_{C}$ (mm)', 
         'rib_t' : 'Rib thickness, $t_{rib}$ (mm)', 
         'rib_a' : 'Rib dimension frame width, $a$ (mm)', 
@@ -33,7 +38,7 @@ xLabel={'N' : 'Number of unit cells in transversal direction',
         'forceXStart' : 'Initial x-coordinate of distributed force (mm)',
         'forceXEnd' : 'Final x-coordinate of distributed force (mm)',
         'forceXn' : 'Number of points where the force is applied',
-        'forceZ3' : 'Z-coordinate of distributed force (mm)',
+        'forceZPos' : 'Load point position in the chordwise direction',
         'innerRibs_n' : 'Number of ribs in the inner part of the wing box',
         'courseSize' : 'Course mesh size',
         'fineSize' : 'Fine mesh size',
@@ -54,8 +59,11 @@ print('Parametric study processing started...')
 #Get working directory
 cwd = os.getcwd()
 
+#Read postProc folder name from CMD
+postProcFolderName = readCMDoptions(sys.argv[1:])
+
 #Move to post-processing directory
-globalChangeDir(cwd, '-postProc')
+globalChangeDir(cwd, '-'+postProcFolderName)
 postProcFolder = os.getcwd()
 
 #Read parameter study definition file
@@ -64,7 +72,7 @@ studyDefDict = importParametricStudyDeffile('parametricStudyDef.txt')
 #### IMPORT DATA ####
 data = []
 for file in os.listdir(postProcFolder):
-    globalChangeDir(cwd, '-postProc')
+    globalChangeDir(cwd, '-'+postProcFolderName)
     if file.endswith('inputAbaqus_nonlinear.txt'):
         
         #Create case study class where store all the results obtained from Abaqus at termination of its computation
@@ -73,7 +81,7 @@ for file in os.listdir(postProcFolder):
         temp.importInputData(file)
 
         #Import data for case
-        globalChangeDir(cwd, '-postProc-'+str(temp.id))
+        globalChangeDir(cwd, '-'+postProcFolderName+'-'+str(temp.id))
         postProcFolderForCase = os.getcwd()
 
         #Show warning message when there are not result files

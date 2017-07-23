@@ -1,5 +1,5 @@
 Iter
-1
+3
 typeOfModel
 completeModel
 jobName
@@ -44,12 +44,12 @@ eOverB
 0.01
 tChiral
 0.5
+typeLoad
+singleForceOnLastRib_upper
 typeBC
 coupling
 addionalBC
 couplingNodesUp
-typeLoad
-singleForceOnLastRib_upper
 displImposed
 -50
 ForceMagnitude
@@ -77,9 +77,9 @@ minTimeIncrement
 maxNumInc
 1000
 executeJob
-False
+True
 executePostProc
-False
+True
 damp
 0.0
 typeAnalysis

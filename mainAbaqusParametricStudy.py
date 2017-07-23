@@ -46,7 +46,7 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 	file = open(fileName, 'w')
 
-	count, lineNumberForRange = 0, 4
+	count = 0
 
 	for parameter, rangeCurrent in zip(parameters, [rangesDict[para] for para in parameters]):
 
@@ -62,11 +62,9 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 		else:
 
-			file.write(str(lineNumberForRange)+','+str(parameterStart)+','+str(parameterEnd)+'\n')
+			file.write(str(parameterStart)+','+str(parameterEnd)+'\n')
 
 		count += len(rangeCurrent)
-
-		lineNumberForRange += 2
 
 	file.close()
 

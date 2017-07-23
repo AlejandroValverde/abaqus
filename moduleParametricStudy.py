@@ -2,8 +2,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pdb #pdb.set_trace()
 import math
+import getopt
 
 from moduleCommon import *
+
+def readCMDoptions(argv):
+
+    try:
+    	opts, args = getopt.getopt(argv,"i:",["ifile="])
+    except getopt.GetoptError:
+        raise ValueError('ERROR: Not correct input to script')
+
+    for opt, arg in opts:
+
+        if opt in ("-i", "--ifile"):
+            postProcFolderName = arg
+
+    return postProcFolderName
 
 def importParametricStudyDeffile(fileName):
 
@@ -161,7 +176,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 		for (keyCurrent, rangeCurrent) in studyDefDict.items():
 
-			if studyDefDict[keyCurrent][1] <= case.id <= studyDefDict[keyCurrent][2]:
+			if studyDefDict[keyCurrent][0] <= case.id <= studyDefDict[keyCurrent][1]:
 
 				#Plotting operations
 				if case.typeAnalysis == 'linear':
@@ -405,7 +420,7 @@ def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHand
 	b = classOfData.linear_ur1_xOverL[-1]
 
 	if ((abs(a - b) / b)*100) > 5: #If error > 5%
-		raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')	
+		raise ValueError('ERROR: The error in twist for the linear solution is bigger than 5%, having it been obtained from different parts of the beam')	
 	meanTwist_linear = np.mean([a, b])
 	ax.plot([0.0, 1.0] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 
