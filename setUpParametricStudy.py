@@ -1,6 +1,6 @@
 # Define parameters range
 parameters=('typeOfModel', 'jobName', 'typeOfModel', 'E_ribOverE1', 'E1OverE2_simpleModel', 'N', 'M', 'r', 'B', 'L', 'cutGap', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
-			'eOverB', 'tChiral', 'typeLoad', 'typeBC', 'addionalBC', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
+			'eOverB', 'tChiral', 'typeLoad', 'typeBC', 'additionalBC', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
 			'courseSize', 'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
 			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')
 
@@ -28,7 +28,7 @@ nominalDict={'typeOfModel' : 'simpleModel',
 			'tChiral' : 0.5, #Chiral lattice section thickness, $t_{chiral}$ (mm)
 			'typeLoad' : 'singleForceOnLastRib_upper', #'moment', 'force1', 'force2', 'displacement', 'linForce', 'linForceInnerRibs_(upper, middle, upper_down)', 'singleForceOnLastRib_(upper, down)'
 			'typeBC' : 'coupling', #'coupling', 'encastre'
-			'addionalBC' : 'couplingNodesUp', #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
+			'additionalBC' : 'couplingNodesUp', #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
 			'displImposed' : -50,
 			'ForceMagnitude' : -1200, #Applied force magnitude  (N)
 			'momentMagnitude' : -200000,
@@ -73,7 +73,7 @@ rangesDict={'typeOfModel' : [],
 			'tChiral' : [0.3, 0.5, 0.7],#[0.05, 0.1, 0.5, 2.0, 2.5],
 			'typeLoad' : [],
 			'typeBC' : [],
-			'addionalBC' : [],
+			'additionalBC' : [],
 			'displImposed' : [],
 			'ForceMagnitude' : [],
 			'momentMagnitude' : [],

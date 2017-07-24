@@ -1,9 +1,9 @@
 Iter
-3
+1
 typeOfModel
 completeModel
 jobName
-Job_current_parametric
+Job_current
 typeOfModel
 completeModel
 E_ribOverE1
@@ -44,6 +44,10 @@ eOverB
 0.01
 tChiral
 0.5
+typeBC
+coupling
+additionalBC
+none
 typeLoad
 singleForceOnLastRib_upper
 typeBC
@@ -77,9 +81,9 @@ minTimeIncrement
 maxNumInc
 1000
 executeJob
-True
+False
 executePostProc
-True
+False
 damp
 0.0
 typeAnalysis
