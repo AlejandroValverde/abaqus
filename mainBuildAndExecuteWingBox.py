@@ -127,7 +127,7 @@ load.damp = float(paraRead.damp)
 
 #BCs
 load.typeBC = paraRead.typeBC #'clamped', 'coupling', 'encastre'
-load.addionalBC = paraRead.addionalBC #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
+load.additionalBC = paraRead.additionalBC #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
 
 ## Job
 jobDef = structtype()
@@ -264,9 +264,9 @@ if design.typeOfModel == 'completeModel': #Standard design
 	defineBCs(model, design, instanceToApplyMeshBCsLoads, load.typeBC)
 	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'couplingAtLatticeNodes')
 
-	if design.cutGap != 0.0 and load.addionalBC != 'none':
+	if design.cutGap != 0.0 and load.additionalBC != 'none':
 
-		defineBCs(model, design, instanceToApplyMeshBCsLoads, load.addionalBC)
+		defineBCs(model, design, instanceToApplyMeshBCsLoads, load.additionalBC)
 
 
 #Load definition
