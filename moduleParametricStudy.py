@@ -228,8 +228,10 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
 					if plotSettings['typeOfPlot'] == 'UR1_frame':
 
 						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | ' + str(case.ForceMagnitude)+'', **plotSettings['title'])
+						if 'Force' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+						elif 'displacement' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_frame(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 						counterNperKey[keyCurrent] += 1
 
@@ -238,8 +240,11 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
 					elif plotSettings['typeOfPlot'] == 'UR1_tau':
 
 						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
+						if 'Force' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+						elif 'displacement' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | ' + str(case.ForceMagnitude)+'', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_tau(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 						counterNperKey[keyCurrent] += 1
 
@@ -249,7 +254,11 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
 
 						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 						flagDict[keyCurrent] = True
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | ' + str(case.ForceMagnitude)+''+', '+keyCurrent+'='+str(getattr(case, keyCurrent))+' / last frame', **plotSettings['title'])
+						if 'Force' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N'+'/last frame', **plotSettings['title'])
+						elif 'displacement' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $displ_y$=' + str(case.displ)+'mm'+'/last frame', **plotSettings['title'])
+
 						plotU2_z_LastTau(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 	if plotSettings['typeOfPlot'] == 'UR1_tau':
