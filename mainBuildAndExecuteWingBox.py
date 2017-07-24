@@ -49,10 +49,7 @@ design.B = float(paraRead.B)  #Node depth
 design.L = float(paraRead.L) #half length
 
 #Cutting operations - To cut by half of the ligaments
-design.cutUp = (178 * design.M) - (145+35) #Obtained from inspection
-design.cutDown = 0 #-60 #Obtain from inspection
-design.cutWingRoot = 65 + 36
-design.cutWingTip = 105 * design.N - 50
+design.cutGap = float(paraRead.cutGap) #Gap between the 
 
 ## Box structure
 #The rest of the dimensions of the box structure are calculated using the lattice final dimensions as a reference
@@ -130,6 +127,7 @@ load.damp = float(paraRead.damp)
 
 #BCs
 load.typeBC = paraRead.typeBC #'clamped', 'coupling', 'encastre'
+load.addionalBC = paraRead.addionalBC #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
 
 ## Job
 jobDef = structtype()
@@ -162,6 +160,11 @@ if design.typeOfModel == 'completeModel': #Standard design
 	latticePartName, latticeInstanceName = buildLattice(model, design)
 
 	#Cut lattice
+	design.cutUp = 2 * (design.M - 1) * design.heightTriangle
+	design.cutDown = 0 #-60 #Obtain from inspection
+	design.cutWingRoot = 65 + 36 #Obtain from inspection
+	design.cutWingTip = 105 * design.N - 50 #Obtain from inspection
+
 	cutLattice(model, design)
 
 	#Build box
@@ -259,6 +262,12 @@ if not design.typeOfModel == 'onlyLattice':
 
 if design.typeOfModel == 'completeModel': #Standard design
 	defineBCs(model, design, instanceToApplyMeshBCsLoads, load.typeBC)
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'couplingAtLatticeNodes')
+
+	if design.cutGap != 0.0 and load.addionalBC != 'none':
+
+		defineBCs(model, design, instanceToApplyMeshBCsLoads, load.addionalBC)
+
 
 #Load definition
 loads(model, design, mesh, load, instanceToApplyMeshBCsLoads, load.typeLoad, load.typeAnalysis, load.typeAbaqus) #Type of load: 'displ', 'force' or 'distributedForce', type of analysis: 'linear' or 'nonlinear'

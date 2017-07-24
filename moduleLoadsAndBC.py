@@ -58,9 +58,76 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 		    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
 		    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
 
-		# model.rootAssembly.sets[nameSet]
-
 		return facesNotFoundCounter
+
+	def searchNodesForSequenceOfZ(xRange, yPos, zList, tupleOfNodes, instanceToApplyLoadAndBC):
+
+		#Search nodes on upper part
+		for x in xRange:
+			for i in range(len(zList)):
+
+				radius = 1
+
+				FlagSearch = True
+
+				while FlagSearch:
+
+					node = instanceToApplyLoadAndBC.nodes.getByBoundingSphere((x, yPos, zList[i]), radius)
+					
+					if node: #Continue if node found
+
+						#Apply force just to the first node found
+						nodeTuple = node.getMask()
+						maskStr0 = nodeTuple[0].split('#')
+						maskStr = '[#'+str(maskStr0[1])+'#'+str(maskStr0[2]) + ']'
+						tupleOfNodes += (instanceToApplyLoadAndBC.nodes.getSequenceFromMask(mask=(maskStr,),), )
+
+						FlagSearch = False
+
+					elif radius < 50:
+						print('Node to apply force not found, radius increased')
+						radius += 1
+
+					else:
+						raise ValueError('ERROR: Radius bigger than 50')
+
+				print('Final radius utilized for finding the node: '+str(radius))
+
+
+		return tupleOfNodes
+
+	def createCouplingLatticeWithSkin(xNode, xRange, yNode, ySkin, design, instanceToApplyLoadAndBC, model, typeBC):
+
+		z = design.B / 2
+
+		nameSet = 'set_skin_x'+str(int(xNode))+'_y'+str(int(yNode))
+
+		nameConstraint = 'constraint_extra_x'+str(int(xNode))+'_y'+str(int(yNode))
+
+		rf = model.rootAssembly.ReferencePoint(point=(xNode, yNode, z))
+		rfRegion = regionToolset.Region(referencePoints = (model.rootAssembly.referencePoints[rf.id], ))
+
+		#Search nodes on skin
+		#Create set
+		tupleOfNodes = ()
+		zList = np.linspace(0.0, design.B, 10)
+
+		tupleOfNodes = searchNodesForSequenceOfZ(xRange, ySkin, zList, tupleOfNodes, instanceToApplyLoadAndBC)
+
+		model.rootAssembly.Set(name=nameSet, nodes=tupleOfNodes)
+
+		#Enable coupling condition
+		if typeBC == 'couplingNodesUp':
+			model.Coupling(controlPoint= rfRegion, couplingType=
+			    KINEMATIC, influenceRadius=1.0, localCsys=None, name=
+			    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
+
+		elif typeBC == 'couplingNodesUp_x1_free':
+			model.Coupling(controlPoint= rfRegion, couplingType=
+			    KINEMATIC, influenceRadius=1.0, localCsys=None, name=
+			    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
+
+
 
 	if typeBC == 'clamped':
 
@@ -95,7 +162,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 			#Search more faces
 			facesNotFoundCounter = 0
 
-			yIncrement = (abs(design.cutDown) + design.cutUp)/50
+			yIncrement = (abs(design.cutDown_effective) + design.cutUp_effective)/50
 
 			y = design.cutDown
 
@@ -131,7 +198,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 			model.EncastreBC(createStepName='Initial', localCsys=None, 
 			    name='Encastre', region=mdb.models['Model-1'].rootAssembly.sets['fixed'])
 
-	elif typeBC == 'couplingAtLatticeNodes':
+	elif typeBC == 'couplingAtLatticeNodes' or typeBC != 'none':
 
 		totalLength = design.cutWingTip - design.cutWingRoot
 
@@ -145,45 +212,72 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 		P_i = np.arange(design.distanceCenterPoints * 3/2, totalLength + design.distanceCenterPoints, design.distanceCenterPoints)
 		P_j = np.arange(design.heightTriangle, totalHeight, 2 * design.heightTriangle)
 
-		facesNotFoundCounter = 0
+		if typeBC == 'couplingAtLatticeNodes':
 
-		#Iterate through Q
+			facesNotFoundCounter = 0
 
-		for q_i in Q_i:
+			#Iterate through Q
 
-			for q_j in Q_j:
+			for q_i in Q_i:
 
-				if (q_j == Q_j[0] and q_i == Q_i[0]) or (q_j == Q_j[-1] and q_i == Q_i[0]):
-					
-					print('Avoiding constraints interference')
+				for q_j in Q_j:
 
-				else:
+					if (q_j == Q_j[0] and q_i == Q_i[0]) or (q_j == Q_j[-1] and q_i == Q_i[0]):
+						
+						print('Avoiding constraints interference')
 
-					if q_j == Q_j[0]: #Lower node, half cut
-						angles = [45, 90, 135]
+					else:
 
-					elif q_j == Q_j[-1]: #Upper node, half cut
-						angles = [225, 270, 315]
+						if q_j == Q_j[0]: #Lower node, half cut
+							angles = [45, 90, 135]
 
-					elif q_i == Q_i[0] and design.rootRibShape == 'closed' and not (q_j == Q_j[0] or q_j == Q_j[-1]): #Avoids interface with nodes that are coupled to the reference point used to clamp the root
-						angles = [0, 45, 315]
+						elif q_j == Q_j[-1]: #Upper node, half cut
+							angles = [225, 270, 315]
 
-					else: #Nodes in the middle
-						angles = [0, 45, 90, 135, 180, 225, 270, 315]
+						elif q_i == Q_i[0] and design.rootRibShape == 'closed' and not (q_j == Q_j[0] or q_j == Q_j[-1]): #Avoids interface with nodes that are coupled to the reference point used to clamp the root
+							angles = [0, 45, 315]
 
-					facesNotFoundCounter = createCouplingLatticeNodeByRFpoint(q_i, q_j, angles, design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
+						else: #Nodes in the middle
+							angles = [0, 45, 90, 135, 180, 225, 270, 315]
 
-		#Iterate through P
+						facesNotFoundCounter = createCouplingLatticeNodeByRFpoint(q_i, q_j, angles, design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
 
-		for p_i in P_i:
+			#Iterate through P
 
-			for p_j in P_j:
+			for p_i in P_i:
 
-				facesNotFoundCounter = createCouplingLatticeNodeByRFpoint(p_i, p_j, [0, 45, 90, 135, 180, 225, 270, 315], design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
+				for p_j in P_j:
 
-		if facesNotFoundCounter > 10:
+					facesNotFoundCounter = createCouplingLatticeNodeByRFpoint(p_i, p_j, [0, 45, 90, 135, 180, 225, 270, 315], design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
 
-			raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')
+			if facesNotFoundCounter > 10:
+
+				raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')
+
+		else: #For coupling at the gap between lattice and skin
+
+			#Iterate through Q
+
+			for q_i in Q_i:
+
+				for q_j in Q_j:
+
+					rangeX = np.linspace(q_i - design.r, q_i + design.r, 10)
+
+					if (q_j == Q_j[0] and q_i == Q_i[0]) or (q_j == Q_j[-1] and q_i == Q_i[0]):
+						
+						print('Avoiding constraints interference')
+
+					else:
+
+						if q_j == Q_j[0]: #Lower node, half cut
+
+							createCouplingLatticeWithSkin(q_i, rangeX, q_j, q_j - (design.r + design.cutGap), design, instanceToApplyLoadAndBC, model, typeBC)
+
+						elif q_j == Q_j[-1]: #Upper node, half cut
+							
+							createCouplingLatticeWithSkin(q_i, rangeX, q_j, q_j + design.r + design.cutGap, design, instanceToApplyLoadAndBC, model, typeBC)
+
 
 	else:
 
