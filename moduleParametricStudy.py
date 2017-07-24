@@ -192,7 +192,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
 
 		for (keyCurrent, rangeCurrent) in studyDefDict.items():
 
-			if studyDefDict[keyCurrent][0] <= case.id <= studyDefDict[keyCurrent][1]:
+			if studyDefDict[keyCurrent][1] <= case.id <= studyDefDict[keyCurrent][2]:
 
 				#Store key
 				if not keyCurrent in keysUsed: keysUsed.append(keyCurrent)
@@ -228,8 +228,10 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
 					if plotSettings['typeOfPlot'] == 'UR1_frame':
 
 						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+						if 'Force' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+						elif 'displacement' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_frame(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 						counterNperKey[keyCurrent] += 1
 
@@ -238,8 +240,11 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
 					elif plotSettings['typeOfPlot'] == 'UR1_tau':
 
 						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
+						if 'Force' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+						elif 'displacement' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_tau(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 						counterNperKey[keyCurrent] += 1
 
@@ -249,7 +254,11 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
 
 						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 						flagDict[keyCurrent] = True
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N'+'/last frame', **plotSettings['title'])
+						if 'Force' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N'+'/last frame', **plotSettings['title'])
+						elif 'displacement' in case.typeLoad:
+							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $displ_y$=' + str(case.displ)+'mm'+'/last frame', **plotSettings['title'])
+
 						plotU2_z_LastTau(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 	if plotSettings['typeOfPlot'] == 'UR1_tau':
@@ -445,7 +454,7 @@ def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHand
 	b = classOfData.linear_ur1_xOverL[-1]
 
 	if ((abs(a - b) / b)*100) > 5: #If error > 5%
-		raise ValueError('ERROR: The error in twist for the linear solution is bigger than 5%, having it been obtained from different parts of the beam')	
+		raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')	
 	meanTwist_linear = np.mean([a, b])
 	ax.plot([0.0, 1.0] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 
