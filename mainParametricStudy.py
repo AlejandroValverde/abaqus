@@ -58,11 +58,12 @@ print('Parametric study processing started...')
 cwd = os.getcwd()
 
 #Read postProc folder name from CMD
-postProcFolderName, plotOptString = readCMDoptions(sys.argv[1:])
+CMDoptionsDict = {}
+CMDoptionsDict = readCMDoptions(sys.argv[1:], CMDoptionsDict)
 
 
 #Move to post-processing directory
-globalChangeDir(cwd, '-'+postProcFolderName)
+globalChangeDir(cwd, '-'+CMDoptionsDict['postProcFolderName'])
 postProcFolder = os.getcwd()
 
 #Read parameter study definition file
@@ -71,7 +72,7 @@ studyDefDict = importParametricStudyDeffile('parametricStudyDef.txt')
 #### IMPORT DATA ####
 data = []
 for file in os.listdir(postProcFolder):
-    globalChangeDir(cwd, '-'+postProcFolderName)
+    globalChangeDir(cwd, '-'+CMDoptionsDict['postProcFolderName'])
     if file.endswith('inputAbaqus_nonlinear.txt'):
         
         #Create case study class where store all the results obtained from Abaqus at termination of its computation
@@ -80,7 +81,7 @@ for file in os.listdir(postProcFolder):
         temp.importInputData(file)
 
         #Import data for case
-        globalChangeDir(cwd, '-'+postProcFolderName+'-'+str(temp.id))
+        globalChangeDir(cwd, '-'+CMDoptionsDict['postProcFolderName']+'-'+str(temp.id))
         postProcFolderForCase = os.getcwd()
 
         #Show warning message when there are not result files
@@ -170,46 +171,49 @@ for file in os.listdir(postProcFolder):
         #Return to original working folder
         globalChangeDir(cwd, '')
 
+#Return to original working folder
+globalChangeDir(cwd, '')
+
 #### PLOTTING ####
 
 ##Plot reaction force (RF-2) as a function of parameter values
 plotSettings['yLabel'] = 'Reaction force, $R_y$ (N)'
 plotSettings['typeOfPlot'] = 'RF'
-caseDistintion(data, studyDefDict, plotSettings)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
 
 #Plot initial stiffness (K) as a function of parameter values
 plotSettings['yLabel'] = 'Initial stiffness, $K$ (N/mm)'
 plotSettings['typeOfPlot'] = 'K'
-caseDistintion(data, studyDefDict, plotSettings)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
 
 #Plot UR-1 along the wing box length
 plotSettings['typeOfPlot'] = 'UR1'
 plotSettings['yLabel'] = 'Angular rotation $UR_1$ (deg)'
-caseDistintion(data, studyDefDict, plotSettings)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
 
 #Plot vertical displacement U2 along the wing box chordwise direction 
 plotSettings['typeOfPlot'] = 'U2_z'
 plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-caseDistintion(data, studyDefDict, plotSettings)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
 
 #Plot vertical displacement U2 along the wing box spanwise direction 
 plotSettings['typeOfPlot'] = 'U2_x'
 plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-caseDistintion(data, studyDefDict, plotSettings)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
 
 # NONLINEAR PLOTS
 # plotSettings['typeOfPlot'] = 'UR1_frame'
 # plotSettings['yLabel'] = 'Angular rotation (deg)'
-# caseDistintion(data, studyDefDict, plotSettings)
-if plotOptString == 'UR1_tau':
+# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+if CMDoptionsDict['plotOptString'] == 'UR1_tau':
     plotSettings['typeOfPlot'] = 'UR1_tau'
     plotSettings['yLabel'] = 'Angular rotation (deg)'
-    caseDistintion(data, studyDefDict, plotSettings)
+    caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
 
-if plotOptString == 'U2_z':
+if CMDoptionsDict['plotOptString'] == 'U2_z':
     plotSettings['typeOfPlot'] = 'plotU2_z_LastTau'
     plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-    caseDistintion(data, studyDefDict, plotSettings)
+    caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
 
 
 # plt.show(block = True)

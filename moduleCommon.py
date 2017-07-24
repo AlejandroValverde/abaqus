@@ -1,5 +1,6 @@
 import os
 import platform
+import pdb #pdb.set_trace()
 from shutil import copyfile
 
 def ConvertNumber(string):
@@ -50,7 +51,6 @@ def globalCreateDir(cwd, address):
 	else:
 	    newAddress = address.replace('-', '/')
 	    print('OS not recognized, assumed unix based')
-
 	if not os.path.isdir('.'+newAddress):
 		os.mkdir('.'+newAddress)
 

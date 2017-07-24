@@ -3,25 +3,35 @@ import numpy as np
 import pdb #pdb.set_trace()
 import math
 import getopt
+import os
 
 from moduleCommon import *
 
-def readCMDoptions(argv):
+def readCMDoptions(argv, CMDoptionsDict):
 
     try:
-    	opts, args = getopt.getopt(argv,"i:o:",["ifile=", "plotOptions="])
-
+    	opts, args = getopt.getopt(argv,"i:p:s:",["ifile=", "plotOptions=", "saveFigure="])
     except getopt.GetoptError:
         raise ValueError('ERROR: Not correct input to script')
 
     for opt, arg in opts:
 
         if opt in ("-i", "--ifile"):
-            postProcFolderName = arg
-        elif opt in ("-o", "--plotOptions"):
-            plotOptString = arg
+            # postProcFolderName = arg
+            CMDoptionsDict['postProcFolderName'] = arg
+        elif opt in ("-p", "--plotOptions"):
+            # plotOptString = arg
+            CMDoptionsDict['plotOptString'] = arg
+        elif opt in ("-s", "--saveFigure"):
+        	#Options: 'true' or 'false'
+        	if arg in ('true', 'True'):
+        		CMDoptionsDict['flagSaveFigure'] = True
+        	elif arg in ('false', 'False'):
+        		CMDoptionsDict['flagSaveFigure'] = False
+        	else:
+        		raise ValueError('ERROR: Incorrect option chosen to save figure')
 
-    return postProcFolderName, plotOptString
+    return CMDoptionsDict
 
 def importParametricStudyDeffile(fileName):
 
@@ -151,9 +161,9 @@ def applyPlottingSettingsToAxesTicks(ax, plotSettings):
 	for tick in ax.yaxis.get_major_ticks():
 		tick.label.set_fontsize(plotSettings['axesTicks']['size']) 
 
-def caseDistintion(data, studyDefDict, plotSettings):
+def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
 
-	def figureInitialization(flagDict, axDict, keyCurrent, plotSettings):
+	def figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings):
 
 		if flagDict[keyCurrent]: #Figure initialization
 
@@ -161,15 +171,18 @@ def caseDistintion(data, studyDefDict, plotSettings):
 			ax.grid(**plotSettings['grid'])
 			figure.set_size_inches(10, 6, forward=True)
 			axDict[keyCurrent] = ax
+			figDict[keyCurrent] = figure
 			flagDict[keyCurrent] = False
 
-		return flagDict, axDict
+		return flagDict, axDict, figDict
 
 	keysAll = [(key) for key in studyDefDict.keys()]
 	flagDict = studyDefDict.fromkeys(keysAll, True)
 	axDict = studyDefDict.fromkeys(keysAll, 0)
+	figDict = studyDefDict.fromkeys(keysAll, 0)
+	keysUsed = []
 	
-	if plotSettings['typeOfPlot'] == 'UR1_tau' or plotSettings['typeOfPlot'] == 'UR1_frame':
+	if plotSettings['typeOfPlot'] in ('UR1_tau', 'UR1_frame'):
 		counterNperKey = studyDefDict.fromkeys(keysAll, 0)
 		scatterHandles = studyDefDict.fromkeys(keysAll, [])
 		keysWith_UR1_tau_plot = []
@@ -181,29 +194,32 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 			if studyDefDict[keyCurrent][0] <= case.id <= studyDefDict[keyCurrent][1]:
 
+				#Store key
+				if not keyCurrent in keysUsed: keysUsed.append(keyCurrent)
+
 				#Plotting operations
 				if case.typeAnalysis == 'linear':
 
 					if plotSettings['typeOfPlot'] == 'RF':
-						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
+						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 						plotRF(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 					elif plotSettings['typeOfPlot'] == 'K':
-						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
+						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 						plotK(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 					elif plotSettings['typeOfPlot'] == 'UR1':
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
-						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
+						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 						plotUR1(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 					elif plotSettings['typeOfPlot'] == 'U2_z':
-						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
+						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
 						plotU2_z(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 					elif plotSettings['typeOfPlot'] == 'U2_x':
-						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
+						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
 						plotU2_x(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
@@ -211,7 +227,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 					if plotSettings['typeOfPlot'] == 'UR1_frame':
 
-						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
+						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_frame(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
@@ -221,7 +237,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 					elif plotSettings['typeOfPlot'] == 'UR1_tau':
 
-						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
+						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
 						scatterHandles[keyCurrent] = plotUR1_tau(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
@@ -231,7 +247,7 @@ def caseDistintion(data, studyDefDict, plotSettings):
 
 					elif plotSettings['typeOfPlot'] == 'plotU2_z_LastTau':
 
-						flagDict, axDict = figureInitialization(flagDict, axDict, keyCurrent, plotSettings)
+						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 						flagDict[keyCurrent] = True
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N'+'/last frame', **plotSettings['title'])
 						plotU2_z_LastTau(case, plotSettings, keyCurrent, axDict[keyCurrent])
@@ -241,6 +257,13 @@ def caseDistintion(data, studyDefDict, plotSettings):
 		for key in tuple(keysWith_UR1_tau_plot):
 
 			axDict[key].legend(handles = scatterHandles[key], **plotSettings['legend'])
+
+	#Save figures
+	if figDict[keysUsed[0]] != 0 and CMDoptionsDict['flagSaveFigure']: #If at least one plot was crated
+		globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
+		for keyUsed in keysUsed:
+
+			figDict[keyUsed].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyUsed+'.pdf'))
 
 
 def plotRF(classOfData, plotSettings, attr, ax):
@@ -311,10 +334,9 @@ def plotU2_z_LastTau(classOfData, plotSettings, attr, ax):
 
 	indexForMaxFrame = classOfData.framesCount.index(max(classOfData.framesCount))
 	j=0
-	# pdb.set_trace()
+
 	for x in classOfData.dataFrames[indexForMaxFrame].xPosForU2:
 
-		# pdb.set_trace()
 		ax.plot(classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].zOverC3, classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].u2_zOverC3, label='x='+str(round(x,2)), **plotSettings['line'])
 		j += 1
 
