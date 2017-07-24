@@ -94,7 +94,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 				print('Final radius utilized for finding the node: '+str(radius))
 
 
-		return tupleOfNodes
+		return tupleOfNodes, radius
 
 	def createCouplingLatticeWithSkin(xNode, xRange, yNode, ySkin, design, instanceToApplyLoadAndBC, model, typeBC):
 
@@ -112,20 +112,67 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 		tupleOfNodes = ()
 		zList = np.linspace(0.0, design.B, 10)
 
-		tupleOfNodes = searchNodesForSequenceOfZ(xRange, ySkin, zList, tupleOfNodes, instanceToApplyLoadAndBC)
+		tupleOfNodes, finalRadius = searchNodesForSequenceOfZ(xRange, ySkin, zList, tupleOfNodes, instanceToApplyLoadAndBC)
 
 		model.rootAssembly.Set(name=nameSet, nodes=tupleOfNodes)
 
 		#Enable coupling condition
 		if typeBC == 'couplingNodesUp':
 			model.Coupling(controlPoint= rfRegion, couplingType=
-			    KINEMATIC, influenceRadius=1.0, localCsys=None, name=
+			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
 			    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
 
 		elif typeBC == 'couplingNodesUp_x1_free':
 			model.Coupling(controlPoint= rfRegion, couplingType=
-			    KINEMATIC, influenceRadius=1.0, localCsys=None, name=
+			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
 			    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
+
+	def createCouplingLatticeWithSkin2(xNode, xRange, yNode, ySkin, design, instanceToApplyLoadAndBC, model, typeBC):
+
+		z = design.B / 2
+
+		nameSet = 'set_skin_x'+str(int(xNode))+'_y'+str(int(yNode))
+		nameConstraint = 'constraint_extra_x'+str(int(xNode))+'_y'+str(int(yNode))
+		nameSetLattice = 'set_lattice_nodes_x'+str(int(xNode))+'_y'+str(int(yNode))
+
+		#Reference -> nodes on lattice
+		#Find nodes in faces
+
+		#Search nodes
+		zList = np.linspace(0.0, design.B, 10)
+
+		tupleOfNodes = ()
+		angles = [0, 45, 90, 135, 180, 225, 270, 315]
+		for angle in angles: #xrange is the same as range
+			xFace = xNode + (design.r * math.cos(angle * (math.pi/180)) )
+			yFace = yNode + (design.r * math.sin(angle * (math.pi/180)) )
+
+
+			tupleOfNodes, finalRadius = searchNodesForSequenceOfZ([xFace], yFace, zList, tupleOfNodes, instanceToApplyLoadAndBC)
+
+		model.rootAssembly.Set(nodes = tupleOfNodes, name=nameSetLattice)
+
+		######################
+
+		#Search nodes on skin
+		#Create set
+		tupleOfNodes = ()
+		zList = np.linspace(0.0, design.B, 10)
+
+		tupleOfNodes, finalRadius = searchNodesForSequenceOfZ(xRange, ySkin, zList, tupleOfNodes, instanceToApplyLoadAndBC)
+
+		model.rootAssembly.Set(name=nameSet, nodes=tupleOfNodes)
+
+		#Enable coupling condition
+		if typeBC == 'couplingNodesUp':
+			model.Coupling(controlPoint= model.rootAssembly.sets[nameSet], couplingType=
+			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+			    nameConstraint, surface= model.rootAssembly.sets[nameSetLattice], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
+
+		elif typeBC == 'couplingNodesUp_x1_free':
+			model.Coupling(controlPoint= model.rootAssembly.sets[nameSet], couplingType=
+			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+			    nameConstraint, surface= model.rootAssembly.sets[nameSetLattice], u1=ON, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
 
 
 
@@ -229,10 +276,10 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 					else:
 
 						if q_j == Q_j[0]: #Lower node, half cut
-							angles = [45, 90, 135]
+							angles = [] #[45, 90, 135]
 
 						elif q_j == Q_j[-1]: #Upper node, half cut
-							angles = [225, 270, 315]
+							angles = [] #[225, 270, 315]
 
 						elif q_i == Q_i[0] and design.rootRibShape == 'closed' and not (q_j == Q_j[0] or q_j == Q_j[-1]): #Avoids interface with nodes that are coupled to the reference point used to clamp the root
 							angles = [0, 45, 315]
@@ -240,7 +287,8 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 						else: #Nodes in the middle
 							angles = [0, 45, 90, 135, 180, 225, 270, 315]
 
-						facesNotFoundCounter = createCouplingLatticeNodeByRFpoint(q_i, q_j, angles, design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
+						if angles: #If vector angles is not empty
+							facesNotFoundCounter = createCouplingLatticeNodeByRFpoint(q_i, q_j, angles, design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
 
 			#Iterate through P
 
@@ -272,11 +320,11 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, typeBC):
 
 						if q_j == Q_j[0]: #Lower node, half cut
 
-							createCouplingLatticeWithSkin(q_i, rangeX, q_j, q_j - (design.r + design.cutGap), design, instanceToApplyLoadAndBC, model, typeBC)
+							createCouplingLatticeWithSkin2(q_i, rangeX, q_j, q_j - (design.r + design.cutGap), design, instanceToApplyLoadAndBC, model, typeBC)
 
 						elif q_j == Q_j[-1]: #Upper node, half cut
 							
-							createCouplingLatticeWithSkin(q_i, rangeX, q_j, q_j + design.r + design.cutGap, design, instanceToApplyLoadAndBC, model, typeBC)
+							createCouplingLatticeWithSkin2(q_i, rangeX, q_j, q_j + design.r + design.cutGap, design, instanceToApplyLoadAndBC, model, typeBC)
 
 
 	else:
