@@ -47,7 +47,7 @@ tChiral
 typeBC
 coupling
 additionalBC
-none
+couplingNodesUp
 typeLoad
 singleForceOnLastRib_upper
 typeBC
@@ -87,6 +87,6 @@ False
 damp
 0.0
 typeAnalysis
-linear
+nonlinear
 typeAbaqus
 Standard

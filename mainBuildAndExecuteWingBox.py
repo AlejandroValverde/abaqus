@@ -49,7 +49,7 @@ design.B = float(paraRead.B)  #Node depth
 design.L = float(paraRead.L) #half length
 
 #Cutting operations - To cut by half of the ligaments
-design.cutGap = float(paraRead.cutGap) #Gap between the 
+design.cutGap = float(paraRead.cutGap) #Gap between the lattice and the skin
 
 ## Box structure
 #The rest of the dimensions of the box structure are calculated using the lattice final dimensions as a reference
@@ -128,6 +128,9 @@ load.damp = float(paraRead.damp)
 #BCs
 load.typeBC = paraRead.typeBC #'clamped', 'coupling', 'encastre'
 load.additionalBC = paraRead.additionalBC #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
+
+if load.additionalBC != 'none' and design.cutGap == 0.0:
+	design.cutGap = 5.0 #Assign gap between the lattice and the skin when running parametric study
 
 ## Job
 jobDef = structtype()
@@ -258,15 +261,15 @@ meshing(design, mesh, partToApplyMeshBCsLoads)
 
 #Boundary conditions and coupling restriction definition
 if not design.typeOfModel == 'onlyLattice':
-	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'coupling') #Type of BC: 'clamped' or 'coupling'
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'coupling') #Type of BC: 'clamped' or 'coupling'
 
 if design.typeOfModel == 'completeModel': #Standard design
-	defineBCs(model, design, instanceToApplyMeshBCsLoads, load.typeBC)
-	defineBCs(model, design, instanceToApplyMeshBCsLoads, 'couplingAtLatticeNodes')
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.typeBC)
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'couplingAtLatticeNodes')
 
 	if design.cutGap != 0.0 and load.additionalBC != 'none':
 
-		defineBCs(model, design, instanceToApplyMeshBCsLoads, load.additionalBC)
+		defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.additionalBC)
 
 
 #Load definition

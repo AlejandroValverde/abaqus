@@ -1,13 +1,12 @@
 # Define parameters range
-parameters=('typeOfModel', 'jobName', 'typeOfModel', 'E_ribOverE1', 'E1OverE2_simpleModel', 'N', 'M', 'r', 'B', 'L', 'cutGap', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
+parameters=('typeOfModel', 'jobName', 'E_ribOverE1', 'E1OverE2_simpleModel', 'N', 'M', 'r', 'B', 'L', 'cutGap', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
 			'eOverB', 'tChiral', 'typeLoad', 'typeBC', 'additionalBC', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
 			'courseSize', 'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
 			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')
 
 #Define nominal values of the parameters
-nominalDict={'typeOfModel' : 'simpleModel',
+nominalDict={'typeOfModel' : 'completeModel',
 			'jobName' : 'Job_current_parametric',
-			'typeOfModel' : 'completeModel',
 			'E_ribOverE1' : 10, #N/mm^2, for the rib, expressed as a fraction of the main material
 			'E1OverE2_simpleModel' : 1,
 			'N' : 8, #Number of unit cells in spanwise direction
@@ -15,13 +14,14 @@ nominalDict={'typeOfModel' : 'simpleModel',
 			'r' : 10.0,#Node radius 
 			'B' : 20.0, #Node depth
 			'L' : 50.0, #half length
-			'cutGap' : 5.0,
+			'cutGap' : 0.0, #Gap between the lattice and the skin (mm). Insert here a value if you want 'cutGap'!=5.0 when running script with 'additionalBC'!='none' 
 			'Cbox_t' : 0.8, #C-box wall thickness, $t_{C}$ (mm)
 			'rib_t' : 2, #Rib thickness, $t_{rib}$ (mm)
 			'rib_t_inner' : 2,
-			'rib_a' : 40, #Rib dimension frame width, $a$ (mm)
+			'innerRibs_n' : 0,
 			'rootRibShape' : 'closed', #'Shape of the outer rib, 'closed' or 'open'
 			'tipRibShape' : 'closed',
+			'rib_a' : 40, #Rib dimension frame width, $a$ (mm)
 			'C3' : 300, #C-box length in the chordwise direction (mm)
 			'wingBoxLength' : None, #Calculated using "N" as a parameter 
 			'eOverB' : 0.01, #Chiral ligament eccentricity, $e/B$ (%)
@@ -36,7 +36,6 @@ nominalDict={'typeOfModel' : 'simpleModel',
 			'forceXEnd' : 1, #Final x-coordinate of distributed force (mm)
 			'forceXn' : 2, #Number of points where the force is applied
 			'forceZPos' : 0.5, #Z-coordinate of distributed force, nondimensionalized with "C3"
-			'innerRibs_n' : 0,
 			'courseSize' : 25,
 			'fineSize' : 2.0,
 			'maxTimeIncrement' : 0.1, #A Float specifying the maximum time increment allowed. It has to be less than the total time period (1.0)
@@ -52,7 +51,6 @@ nominalDict={'typeOfModel' : 'simpleModel',
 #Define 
 rangesDict={'typeOfModel' : [],
 			'jobName' : [], #Name to be assigned to the job
-			'typeOfModel' : [],
 			'E_ribOverE1' : [], 
 			'E1OverE2_simpleModel' : [],
 			'N' : [], #[6, 8, 10],#[5, 10, 20, 30, 40, 50],
@@ -64,9 +62,10 @@ rangesDict={'typeOfModel' : [],
 			'Cbox_t' : [0.4, 0.6, 0.8],#[5, 10, 20],#5, 10, 20, 30, 40, 60, 80, 100],
 			'rib_t' : [],#[3, 5, 8, 10],#2, 6, 10, 20, 40],
 			'rib_t_inner' : [],
-			'rib_a' : [],#[50, 100, 150, 200],
+			'innerRibs_n' : 0,
 			'rootRibShape' : [], #'Shape of the root rib, 'closed' or 'open'
 			'tipRibShape' : [], #'Shape of the tip rib, 'closed' or 'open'
+			'rib_a' : [],#[50, 100, 150, 200],
 			'C3' : [], #[200, 300, 400],
 			'wingBoxLength' : [], 
 			'eOverB' : [0.005, 0.01, 0.03, 0.05],#[0.005, 0.01, 0.03, 0.05, 0.1, 0.15], 
