@@ -10,7 +10,7 @@ from moduleCommon import *
 def readCMDoptions(argv, CMDoptionsDict):
 
     try:
-    	opts, args = getopt.getopt(argv,"i:p:s:",["ifile=", "plotOptions=", "saveFigure="])
+    	opts, args = getopt.getopt(argv,"i:p:s:m:",["ifile=", "plotOptions=", "saveFigure=", "plotMean="])
     except getopt.GetoptError:
         raise ValueError('ERROR: Not correct input to script')
 
@@ -30,6 +30,14 @@ def readCMDoptions(argv, CMDoptionsDict):
         		CMDoptionsDict['flagSaveFigure'] = False
         	else:
         		raise ValueError('ERROR: Incorrect option chosen to save figure')
+        elif opt in ("-m", "--plotMean"):
+        	#Options: 'true' or 'false'
+        	if arg in ('true', 'True'):
+        		CMDoptionsDict['plotMean'] = True
+        	elif arg in ('false', 'False'):
+        		CMDoptionsDict['plotMean'] = False
+        	else:
+        		raise ValueError('ERROR: Incorrect option chosen to plot mean')
 
     return CMDoptionsDict
 
