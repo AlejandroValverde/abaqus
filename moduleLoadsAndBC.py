@@ -16,6 +16,9 @@ import regionToolset
 import numpy as np
 import math
 
+#User-defined modules
+from moduleCommon import *
+
 def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 	# BC specification
@@ -234,7 +237,45 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 			model.Coupling(controlPoint= model.rootAssembly.sets[nameSet], couplingType=
 			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
 			    nameConstraint, surface= model.rootAssembly.sets[nameSetLattice], u1=ON, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
+	
+	def createEquationWithTyre(xNode, xRange, yNode, ySkin, design, instanceToApplyLoadAndBC, model, load):
 
+		z = design.B / 2
+
+		nameSetSkin = 'set_double_skin_x'+str(int(xNode))+'_y'+str(int(yNode))
+		nameNodeTyre = 'node_tyre_x'+str(int(xNode))+'_y'+str(int(yNode))
+
+		#Set skin
+		tupleOfNodes = ()
+		zList = np.linspace(0.0, design.B, 10)
+		# tupleOfNodes, finalRadius = searchNodesForSequenceOfZ(xRange, ySkin, zList, tupleOfNodes, instanceToApplyLoadAndBC)
+		tupleOfNodes, finalRadius = searchNodesForSequenceOfZ([xNode], ySkin, [z], tupleOfNodes, instanceToApplyLoadAndBC)
+		model.rootAssembly.Set(name=nameSetSkin, nodes=tupleOfNodes)
+
+		#Node on tyre
+		tupleOfNodes = ()
+		tupleOfNodes, finalRadius = searchNodesForSequenceOfZ([xNode], yNode, [z], tupleOfNodes, instanceToApplyLoadAndBC)
+		model.rootAssembly.Set(name=nameNodeTyre, nodes=tupleOfNodes)
+
+
+		#Equation condition
+		# if load.additionalBC == 'couplingNodesUp':
+		# 	dof_vect = [1, 2, 3, 4, 5]
+		# elif load.additionalBC == 'couplingNodesUp_x1_free':
+		# 	dof_vect = [2, 3, 4, 5]
+
+		# for dof in dof_vect:
+		# 	model.Equation(name='eq_dof_'+str(dof)+'_x'+str(int(xNode))+'_y'+str(int(yNode)), terms=((1.0, 
+		# 	    nameSetSkin, dof), (-1.0, nameNodeTyre, dof)))
+
+		nameCoupling = 'constraint_extra_x'+str(int(xNode))+'_y'+str(int(yNode))
+		model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+					    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+					    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=ON, u2=ON, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
+		# nameCoupling = '2_constraint_extra_x'+str(int(xNode))+'_y'+str(int(yNode))
+		# model.Coupling(controlPoint= model.rootAssembly.sets[nameNodeTyre], couplingType=
+		# 			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+		# 			    nameCoupling, surface= model.rootAssembly.sets[nameSetSkin], u1=ON, u2=ON, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
 
 
 	if typeBC == 'clamped':
@@ -308,17 +349,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 	elif typeBC == 'couplingAtLatticeNodes' or typeBC != 'none':
 
-		totalLength = design.cutWingTip - design.cutWingRoot
-
-		totalHeight = design.cutUp + abs(design.cutDown)
-
-		#The vector Q iterates through the first set of columns of chiral nodes
-		Q_i = np.arange(design.distanceCenterPoints, totalLength + design.distanceCenterPoints, design.distanceCenterPoints)
-		Q_j = np.arange(0.0, totalHeight, 2 * design.heightTriangle)
-
-		#The vector P iterates through the second set of columns of chiral nodes
-		P_i = np.arange(design.distanceCenterPoints * 3/2, totalLength + design.distanceCenterPoints, design.distanceCenterPoints)
-		P_j = np.arange(design.heightTriangle, totalHeight, 2 * design.heightTriangle)
+		Q_i, Q_j, P_i, P_j = getQandPvectors(design)
 
 		if typeBC == 'couplingAtLatticeNodes':
 
@@ -391,11 +422,11 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 						if q_j == Q_j[0]: #Lower node, half cut
 
-							createDoubleCouplingLatticeWithSkin(q_i, rangeX, q_j, q_j - (design.r + design.cutGap), design, angles, instanceToApplyLoadAndBC, model, load)
+							createEquationWithTyre(q_i, rangeX, q_j, q_j - (design.r + design.cutGap), design, instanceToApplyLoadAndBC, model, load)
 
 						elif q_j == Q_j[-1]: #Upper node, half cut
 							
-							createDoubleCouplingLatticeWithSkin(q_i, rangeX, q_j, q_j + design.r + design.cutGap, design, angles, instanceToApplyLoadAndBC, model, load)
+							createEquationWithTyre(q_i, rangeX, q_j, q_j + design.r + design.cutGap, design, instanceToApplyLoadAndBC, model, load)
 
 
 	else:

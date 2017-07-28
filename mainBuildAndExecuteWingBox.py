@@ -197,6 +197,15 @@ if design.typeOfModel == 'completeModel': #Standard design
 	partToApplyMeshBCsLoads = model.parts['RibBoxLattice']
 	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLattice-1']
 
+	#Build tyre for nodes
+	if True:
+		instances_tyres = buildTyre(model, design, instanceToApplyMeshBCsLoads)
+		mergeInstances(model, (instanceToApplyMeshBCsLoads, )+instances_tyres, 'RibBoxLatticeTyres')
+
+		partToApplyMeshBCsLoads = model.parts['RibBoxLatticeTyres']
+		instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLatticeTyres-1']
+
+
 elif design.typeOfModel == 'simpleModel':
 
 	boxPartName, boxInstanceName = buildBasicBox(model, design)

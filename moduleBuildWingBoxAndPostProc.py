@@ -86,6 +86,10 @@ def loadMaterials(model, design, load, mat):
 		model.materials['ABS'].Density(table=((1.07E-6, ), )) #kg /mm^3
 		model.materials['Alu_rib'].Density(table=((2.7E-6, ), )) #kg /mm^3
 
+	#For the tyre
+	model.Material(name='mat_tyre_Alu_x100')
+	model.materials['mat_tyre_Alu_x100'].Elastic(table=((69000 * 100, mat.v_rib), ))
+
 
 def buildBasicChiral(model, design):
 
@@ -1215,7 +1219,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		#General set "all" for the part
 		model.parts[typeOfRib].Set(faces=
 		    model.parts[typeOfRib].faces.findAt(((design.a/2,design.a/2,0.0),),)
-		    , name='rib-all') 
+		    , name='rib-all'+typeOfRib) 
 
 		#Section
 		model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
@@ -1227,7 +1231,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		#Section assignment, assign material to part. This part is not a shell, therefore, no thickness is defined when specifying the section.
 		model.parts[typeOfRib].SectionAssignment(offset=0.0, offsetField=''
 		    , offsetType=MIDDLE_SURFACE, region=
-		    model.parts[typeOfRib].sets['rib-all'], sectionName=
+		    model.parts[typeOfRib].sets['rib-all'+typeOfRib], sectionName=
 		    'Section-Rib', thicknessAssignment=FROM_SECTION)
 
 		#### Instance operations ####
@@ -1275,7 +1279,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		#General set "all" for the part
 		model.parts['Rib-inner'].Set(faces=
 		    model.parts['Rib-inner'].faces.findAt(((design.a/2,design.a/2,0.0),),)
-		    , name='rib-all') 
+		    , name='rib-inner-all') 
 
 		#Section
 		model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
@@ -1287,7 +1291,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		#Section assignment, assign material to part. This part is not a shell, therefore, no thickness is defined when specifying the section.
 		model.parts['Rib-inner'].SectionAssignment(offset=0.0, offsetField=''
 		    , offsetType=MIDDLE_SURFACE, region=
-		    model.parts['Rib-inner'].sets['rib-all'], sectionName=
+		    model.parts['Rib-inner'].sets['rib-inner-all'], sectionName=
 		    'Section-Rib-inner', thicknessAssignment=FROM_SECTION)
 
 		#Wing root rib
@@ -1314,6 +1318,123 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 			instances_ribs += (instanceRib, )
 
 		return instances_ribs
+
+def buildTyre(model, design, instanceCurrent):
+	
+	model.ConstrainedSketch(name='__profile__', sheetSize=200.0)
+	model.sketches['__profile__'].ConstructionLine(point1=(0.0, 
+	    -100.0), point2=(0.0, 100.0))
+	model.sketches['__profile__'].FixedConstraint(entity=
+	    model.sketches['__profile__'].geometry[2])
+	model.sketches['__profile__'].Line(point1=(0.0, 0.0), point2=(
+	    -design.r, 0.0))
+	model.sketches['__profile__'].HorizontalConstraint(
+	    addUndoState=False, entity=
+	    model.sketches['__profile__'].geometry[3])
+	model.sketches['__profile__'].Line(point1=(-design.r, 0.0), point2=
+	    (-design.r, design.B/2))
+	model.sketches['__profile__'].VerticalConstraint(addUndoState=
+	    False, entity=model.sketches['__profile__'].geometry[4])
+	model.sketches['__profile__'].PerpendicularConstraint(
+	    addUndoState=False, entity1=
+	    model.sketches['__profile__'].geometry[3], entity2=
+	    model.sketches['__profile__'].geometry[4])
+	model.sketches['__profile__'].Line(point1=(-design.r, 0.0), point2=
+	    (-design.r, -design.B/2))
+	model.sketches['__profile__'].VerticalConstraint(addUndoState=
+	    False, entity=model.sketches['__profile__'].geometry[5])
+	model.Part(dimensionality=THREE_D, name='tyre', type=
+	    DEFORMABLE_BODY)
+	model.parts['tyre'].BaseShellRevolve(angle=360.0, 
+	    flipRevolveDirection=OFF, sketch=
+	    model.sketches['__profile__'])
+	del model.sketches['__profile__']
+
+	#Create section
+	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
+	    integrationRule=SIMPSON, material='mat_tyre_Alu_x100', name='Section-tyre', 
+	    numIntPts=5, poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=
+	    GRADIENT, thickness=design.tChiral, thicknessField='', thicknessModulus=None, 
+	    thicknessType=UNIFORM, useDensity=OFF)
+
+	#Create set from part
+	model.parts['tyre'].Set(faces=
+	    model.parts['tyre'].faces.findAt(((0,0,0),), 
+	    ((0.0,design.B/4,design.r),),
+	    ((0.0,-design.B/4,design.r),),), name='tyre_all')
+
+	#Assign section
+	model.parts['tyre'].SectionAssignment(offset=0.0, 
+	    offsetField='', offsetType=MIDDLE_SURFACE, region=
+	    mdb.models['Model-1'].parts['tyre'].sets['tyre_all'], sectionName=
+	    'Section-tyre', thicknessAssignment=FROM_SECTION)
+
+	#Instance operations
+	Q_i, Q_j, P_i, P_j = getQandPvectors(design)
+
+	#Iterate through Q
+	r = 0
+	instances_tyres = ()
+
+	for q_i in Q_i:
+
+		for q_j in Q_j:
+
+			rangeX = np.linspace(q_i - design.r, q_i + design.r, 10)
+
+			if (q_j == Q_j[0] and q_i == Q_i[0]) or (q_j == Q_j[-1] and q_i == Q_i[0]):
+				
+				print('Avoiding constraints interference')
+
+			elif q_j == Q_j[0] or q_j == Q_j[-1]: #q_i != Q_i[0]:# #Only up and down
+
+				#For each instance, destination is x, y, z of the center of the node
+				instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
+				    model.parts['tyre'])
+				model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
+				    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('tyre-'+str(r+1), ))
+				if q_i != 0.0:
+					model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+					    (q_i, 0.0, 0.0)) #Translate in x
+				if q_j != 0.0:
+					model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+					    (0.0, q_j, 0.0)) #Translate in y
+
+				#Translate in z
+				mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+				    (0.0, 0.0, design.B/2))
+
+				instances_tyres += (instanceTyre, )
+
+				r += 1
+
+	#Iterate through P
+
+	# for p_i in P_i:
+
+	# 	for p_j in P_j:
+
+	# 		#For each instance, destination is x, y, z of the center of the node
+	# 		instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
+	# 		    model.parts['tyre'])
+	# 		model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
+	# 		    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('tyre-'+str(r+1), ))
+	# 		if p_i != 0.0:
+	# 			model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+	# 			    (p_i, 0.0, 0.0)) #Translate in x
+	# 		if p_j != 0.0:
+	# 			model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+	# 			    (0.0, p_j, 0.0)) #Translate in y
+
+	# 		#Translate in z
+	# 		mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+	# 		    (0.0, 0.0, design.B/2))
+
+	# 		instances_tyres += (instanceTyre, )
+
+	# 		r += 1
+
+	return instances_tyres
 
 
 

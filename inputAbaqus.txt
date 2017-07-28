@@ -71,7 +71,7 @@ forceZPos
 courseSize
 25
 fineSize
-2.0
+2.5
 maxTimeIncrement
 0.1
 initialTimeIncrement
@@ -87,6 +87,6 @@ False
 damp
 0.0
 typeAnalysis
-nonlinear
+linear
 typeAbaqus
 Standard

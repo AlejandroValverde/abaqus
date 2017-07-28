@@ -2,6 +2,7 @@ import os
 import platform
 import pdb #pdb.set_trace()
 from shutil import copyfile
+import numpy as np
 
 def ConvertNumber(string):
 
@@ -24,6 +25,22 @@ def ConvertNumber(string):
 		exp = float(string[(index+1):])
 
 		return num * 10**(exp)
+
+def getQandPvectors(design):
+
+	totalLength = design.cutWingTip - design.cutWingRoot
+
+	totalHeight = design.cutUp + abs(design.cutDown)
+
+	#The vector Q iterates through the first set of columns of chiral nodes
+	Q_i = np.arange(design.distanceCenterPoints, totalLength + design.distanceCenterPoints, design.distanceCenterPoints)
+	Q_j = np.arange(0.0, totalHeight, 2 * design.heightTriangle)
+
+	#The vector P iterates through the second set of columns of chiral nodes
+	P_i = np.arange(design.distanceCenterPoints * 3/2, totalLength + design.distanceCenterPoints, design.distanceCenterPoints)
+	P_j = np.arange(design.heightTriangle, totalHeight, 2 * design.heightTriangle)
+
+	return Q_i, Q_j, P_i, P_j
 
 def globalChangeDir(cwd, address):
 
