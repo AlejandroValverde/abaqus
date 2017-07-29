@@ -178,27 +178,27 @@ globalChangeDir(cwd, '')
 ##Plot reaction force (RF-2) as a function of parameter values
 plotSettings['yLabel'] = 'Reaction force, $R_y$ (N)'
 plotSettings['typeOfPlot'] = 'RF'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
 #Plot initial stiffness (K) as a function of parameter values
 plotSettings['yLabel'] = 'Initial stiffness, $K$ (N/mm)'
 plotSettings['typeOfPlot'] = 'K'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
 #Plot UR-1 along the wing box length
 plotSettings['typeOfPlot'] = 'UR1'
 plotSettings['yLabel'] = 'Angular rotation $UR_1$ (deg)'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
 #Plot vertical displacement U2 along the wing box chordwise direction 
 plotSettings['typeOfPlot'] = 'U2_z'
 plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
 #Plot vertical displacement U2 along the wing box spanwise direction 
 plotSettings['typeOfPlot'] = 'U2_x'
 plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
 # NONLINEAR PLOTS
 # plotSettings['typeOfPlot'] = 'UR1_frame'
@@ -207,12 +207,13 @@ caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
 if CMDoptionsDict['plotOptString'] == 'UR1_tau':
     plotSettings['typeOfPlot'] = 'UR1_tau'
     plotSettings['yLabel'] = 'Angular rotation (deg)'
-    caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+    table = tableOutput('Angular rotation at tip UR1 (deg)', ['parameter', 'value', 'max Q_fr/Q_to', 'max UR1', 'error UR1 (%)', 'UR1, linear', 'error UR1, linear (%)'])
+    caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table)
 
 if CMDoptionsDict['plotOptString'] == 'U2_z':
     plotSettings['typeOfPlot'] = 'plotU2_z_LastTau'
     plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-    caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+    caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
 
 # plt.show(block = True)
@@ -224,6 +225,7 @@ if CMDoptionsDict['plotOptString'] == 'U2_z':
 #Return to main working directory
 os.chdir(cwd)
 
-plt.show(block = not isUnix())
+if not isUnix() and CMDoptionsDict['showFigures']:
+    plt.show(block = True)
 
 print('-> Parametric study finished')

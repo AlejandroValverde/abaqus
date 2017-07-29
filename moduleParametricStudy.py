@@ -4,15 +4,34 @@ import pdb #pdb.set_trace()
 import math
 import getopt
 import os
+import sys
 
 from moduleCommon import *
 
 def readCMDoptions(argv, CMDoptionsDict):
 
+    short_opts = "i:p:s:m:"
+    long_opts = ["ifile=", "plotOptions=", "saveFigure=", "plotMean="]
     try:
-    	opts, args = getopt.getopt(argv,"i:p:s:m:",["ifile=", "plotOptions=", "saveFigure=", "plotMean="])
+    	opts, args = getopt.getopt(argv,short_opts,long_opts)
     except getopt.GetoptError:
         raise ValueError('ERROR: Not correct input to script')
+
+    for opt in opts:
+    	if '-h' in opt or '-help' in opt:
+    		print('-> Input options:'+'\n')
+    		for long_opt in long_opts:
+    			print(long_opt),
+
+    		sys.exit()
+
+    # check input
+    if len(opts) != len(long_opts):
+    	raise ValueError('ERROR: Invalid number of inputs')
+    else:
+    	for opt in opts:
+    		opt[0][1] in short_opts
+    		raise ValueError('ERROR: Not found option in short options')	
 
     for opt, arg in opts:
 
@@ -24,17 +43,22 @@ def readCMDoptions(argv, CMDoptionsDict):
             CMDoptionsDict['plotOptString'] = arg
         elif opt in ("-s", "--saveFigure"):
         	#Options: 'true' or 'false'
-        	if arg in ('true', 'True'):
+        	if arg.lower() in ('true', 't'):
         		CMDoptionsDict['flagSaveFigure'] = True
-        	elif arg in ('false', 'False'):
+        		CMDoptionsDict['showFigures'] = True
+        	elif arg.lower() in ('false', 'f'):
         		CMDoptionsDict['flagSaveFigure'] = False
+        		CMDoptionsDict['showFigures'] = True
+        	elif arg.lower() in ('notshow'):
+        		CMDoptionsDict['flagSaveFigure'] = False
+        		CMDoptionsDict['showFigures'] = False
         	else:
         		raise ValueError('ERROR: Incorrect option chosen to save figure')
         elif opt in ("-m", "--plotMean"):
         	#Options: 'true' or 'false'
-        	if arg in ('true', 'True'):
+        	if arg.lower() in ('true', 't'):
         		CMDoptionsDict['plotMean'] = True
-        	elif arg in ('false', 'False'):
+        	elif arg.lower() in ('false', 'f'):
         		CMDoptionsDict['plotMean'] = False
         	else:
         		raise ValueError('ERROR: Incorrect option chosen to plot mean')
@@ -66,6 +90,43 @@ def importParametricStudyDeffile(fileName):
 
 	return dictOut
 
+
+class tableOutput(object):
+	"""docstring for ClassName"""
+	def __init__(self, titleStr, columns):
+		# super(ClassName, self).__init__()
+		#Initialize table to be print in CMD
+
+		#Print title
+		print('\n\n'+titleStr+'\n')
+
+		columnWidths = []		
+		for columnName in columns:
+
+			columnWidth = len(columnName)+2
+			print(str(columnName).rjust(columnWidth), end='')
+
+			columnWidths += [columnWidth]
+
+		self.columnWidths = columnWidths
+
+		print('\n')
+
+	def printRow(self, rowValues):
+
+		i = 0
+		for item in rowValues:
+			if isinstance(item, str): #Is string
+				print(item.rjust(self.columnWidths[i]), end='')
+
+			else: #Is number
+				formatSpec = '%'+str(self.columnWidths[i])+'.3f'
+				print(str(formatSpec % item).rjust(self.columnWidths[i]), end='')
+
+			i += 1
+
+		print('\n')
+		
 
 class caseStudy(object):
 
@@ -169,7 +230,7 @@ def applyPlottingSettingsToAxesTicks(ax, plotSettings):
 	for tick in ax.yaxis.get_major_ticks():
 		tick.label.set_fontsize(plotSettings['axesTicks']['size']) 
 
-def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
+def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 
 	def figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings):
 
@@ -253,7 +314,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict):
 						elif 'displacement' in case.typeLoad:
 							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 
-						scatterHandles[keyCurrent] = plotUR1_tau(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
+						scatterHandles[keyCurrent] = plotUR1_tau(case, table, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 						counterNperKey[keyCurrent] += 1
 
 						if not keyCurrent in keysWith_UR1_tau_plot: keysWith_UR1_tau_plot.append(keyCurrent)
@@ -422,11 +483,13 @@ def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHa
 	return scatterHandles[attr]
 
 
-def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles):
+def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scatterHandles):
 
 	ax.set_xlabel('$Q_{frame} / Q_{total}$', **plotSettings['axes_x'])
 	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
 
+	storeMeans = []
+	errorStore = []
 	i = 0
 	for fraction in classOfData.framesFraction:
 
@@ -441,6 +504,10 @@ def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHand
 		if plotSettings['meanOption']:
 
 			meanTwist = np.mean([dataThisFrame.ur1_xOverL_up[-1], dataThisFrame.ur1_xOverL_dn[-1], dataThisFrame.twistFromU2[indexForMaxX]])
+			storeMeans += [meanTwist]
+			
+			maxErrorFromMean = maxErrorFromMeanFunction([dataThisFrame.ur1_xOverL_up[-1]* (180/math.pi), dataThisFrame.ur1_xOverL_dn[-1]* (180/math.pi), dataThisFrame.twistFromU2[indexForMaxX]* (180/math.pi)])
+			errorStore += [maxErrorFromMean]
 			ax.plot(fraction , meanTwist * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 
 		else:
@@ -460,9 +527,10 @@ def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHand
 	#Check error if twist calculated from different parts
 	a = (classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3)
 	b = classOfData.linear_ur1_xOverL[-1]
+	errorLinear = (abs(a - b) / b)*100
 
-	if ((abs(a - b) / b)*100) > 5: #If error > 5%
-		raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')	
+	if errorLinear > 5: #If error > 5%
+		raise ValueError('ERROR: The error in the calculation of the twist from different parts is more than 5%')	
 	meanTwist_linear = np.mean([a, b])
 	ax.plot([0.0, 1.0] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 
@@ -483,5 +551,29 @@ def plotUR1_tau(classOfData, plotSettings, attr, ax, counterNperKey, scatterHand
 		scatterHandles[attr] = scatterHandles[attr] + [handle1]
 		scatterHandles[attr] = scatterHandles[attr] + [handle2]
 		scatterHandles[attr] = scatterHandles[attr] + [handle3]
+	
 
+	#Output on CMD
+	table.printRow([attr, getattr(classOfData, attr), float(max(classOfData.framesFraction)), min(storeMeans)*(180/math.pi), max(errorStore), meanTwist_linear * (180/math.pi), errorLinear])
+	
+	# pdb.set_trace()
 	return scatterHandles[attr]
+
+def maxErrorFromMeanFunction(values):
+
+	meanValues = np.mean(values)
+	errorList = []	
+	for v in values:
+
+		if meanValues < 0.0001: #Treat as zero
+			error = 0.0
+		else:
+			error = (abs(v - meanValues) / meanValues)*100
+
+		if error > 5: #If error > 5%
+			raise ValueError('ERROR: The error in the calculation of the twist from different parts is more than 5%. Error is '+str(error)+'%')
+
+		errorList += [error]
+
+	return max(errorList)
+
