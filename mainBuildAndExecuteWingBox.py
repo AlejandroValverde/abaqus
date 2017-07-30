@@ -274,7 +274,7 @@ if not design.typeOfModel == 'onlyLattice':
 
 if design.typeOfModel == 'completeModel': #Standard design
 	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.typeBC)
-	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'couplingAtLatticeNodes')
+	# defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'couplingAtLatticeNodes')
 
 	if design.cutGap != 0.0 and load.additionalBC != 'none':
 

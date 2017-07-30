@@ -1410,29 +1410,29 @@ def buildTyre(model, design, instanceCurrent):
 
 	#Iterate through P
 
-	# for p_i in P_i:
+	for p_i in P_i:
 
-	# 	for p_j in P_j:
+		for p_j in P_j:
 
-	# 		#For each instance, destination is x, y, z of the center of the node
-	# 		instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
-	# 		    model.parts['tyre'])
-	# 		model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
-	# 		    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('tyre-'+str(r+1), ))
-	# 		if p_i != 0.0:
-	# 			model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
-	# 			    (p_i, 0.0, 0.0)) #Translate in x
-	# 		if p_j != 0.0:
-	# 			model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
-	# 			    (0.0, p_j, 0.0)) #Translate in y
+			#For each instance, destination is x, y, z of the center of the node
+			instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
+			    model.parts['tyre'])
+			model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
+			    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('tyre-'+str(r+1), ))
+			if p_i != 0.0:
+				model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+				    (p_i, 0.0, 0.0)) #Translate in x
+			if p_j != 0.0:
+				model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+				    (0.0, p_j, 0.0)) #Translate in y
 
-	# 		#Translate in z
-	# 		mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
-	# 		    (0.0, 0.0, design.B/2))
+			#Translate in z
+			mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+			    (0.0, 0.0, design.B/2))
 
-	# 		instances_tyres += (instanceTyre, )
+			instances_tyres += (instanceTyre, )
 
-	# 		r += 1
+			r += 1
 
 	return instances_tyres
 

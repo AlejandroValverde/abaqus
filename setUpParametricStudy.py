@@ -14,7 +14,7 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'r' : 10.0,#Node radius 
 			'B' : 20.0, #Node depth
 			'L' : 50.0, #half length
-			'cutGap' : 0.0, #Gap between the lattice and the skin (mm). Insert here a value if you want 'cutGap'!=5.0 when running script with 'additionalBC'!='none' 
+			'cutGap' : 5.0, #Gap between the lattice and the skin (mm). Insert here a value if you want 'cutGap'!=5.0 when running script with 'additionalBC'!='none' 
 			'Cbox_t' : 0.8, #C-box wall thickness, $t_{C}$ (mm)
 			'rib_t' : 2, #Rib thickness, $t_{rib}$ (mm)
 			'rib_t_inner' : 2,
@@ -37,7 +37,7 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'forceXn' : 2, #Number of points where the force is applied
 			'forceZPos' : 0.5, #Z-coordinate of distributed force, nondimensionalized with "C3"
 			'courseSize' : 25,
-			'fineSize' : 2.0,
+			'fineSize' : 2.5,
 			'maxTimeIncrement' : 0.1, #A Float specifying the maximum time increment allowed. It has to be less than the total time period (1.0)
 			'initialTimeIncrement' : 0.001, #A Float specifying the initial time increment. The default value is the total time period for the step.
 			'minTimeIncrement' : 0.000000000000001,
