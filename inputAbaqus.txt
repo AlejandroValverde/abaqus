@@ -44,16 +44,14 @@ eOverB
 0.01
 tChiral
 0.5
-typeBC
-coupling
-additionalBC
-couplingNodesUp
 typeLoad
 singleForceOnLastRib_upper
 typeBC
 coupling
-addionalBC
+additionalBC
 couplingNodesUp
+conditionNodesInnerLattice
+tyre
 displImposed
 -50
 ForceMagnitude
@@ -87,6 +85,6 @@ False
 damp
 0.0
 typeAnalysis
-linear
+nonlinear
 typeAbaqus
 Standard

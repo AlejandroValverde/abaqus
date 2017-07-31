@@ -33,8 +33,8 @@ def getQandPvectors(design):
 	totalHeight = design.cutUp + abs(design.cutDown)
 
 	#The vector Q iterates through the first set of columns of chiral nodes
-	Q_i = np.arange(design.distanceCenterPoints, totalLength + design.distanceCenterPoints, design.distanceCenterPoints)
-	Q_j = np.arange(0.0, totalHeight, 2 * design.heightTriangle)
+	Q_i = np.arange(design.distanceCenterPoints, totalLength + design.distanceCenterPoints + 0.1, design.distanceCenterPoints)
+	Q_j = np.arange(0.0, totalHeight+0.1, 2 * design.heightTriangle)
 
 	#The vector P iterates through the second set of columns of chiral nodes
 	P_i = np.arange(design.distanceCenterPoints * 3/2, totalLength + design.distanceCenterPoints, design.distanceCenterPoints)

@@ -620,14 +620,20 @@ def cutLattice(model, design):
 	#Cutting dimensions
 	design.cutUp_effective = design.cutUp 
 	design.cutDown_effective = design.cutDown
+	design.cutWingRoot_effective = design.cutWingRoot
+	design.cutWingTip_effective = design.cutWingTip
 
 	#Redefine cutting dimensions if there is gap
 	if design.cutGap != 0.0:
 		design.cutUp = design.cutUp + design.r + design.cutGap
 		design.cutDown = design.cutDown - ( design.r + design.cutGap )
+		design.cutWingRoot = design.cutWingRoot - ( design.r + design.cutGap )
+		design.cutWingTip = design.cutWingTip + ( design.r + design.cutGap )
 
 		design.cutUp_effective = design.cutUp_effective + design.r + 1.0 #Small offset (1.0)
 		design.cutDown_effective = design.cutDown_effective - (design.r + 1.0) #Small offset (1.0)
+		design.cutWingRoot_effective = design.cutWingRoot_effective - ( design.r + 1.0 )
+		design.cutWingTip_effective = design.cutWingTip_effective + ( design.r + 1.0 )
 
 	#Create Datum plane
 	datumPlane = model.parts['All'].DatumPlaneByPrincipalPlane(offset=0.0, 
@@ -689,8 +695,8 @@ def cutLattice(model, design):
 	    sketchPlaneSide=SIDE1, 
 	    sketchUpEdge=model.parts['All'].datums[datumAxis.id], 
 	    sketchOrientation=TOP, origin=(0.0, 0.0, 0.0)))
-	model.sketches['__profile__'].rectangle(point1=(design.cutWingRoot, design.cutDown_effective - margin), 
-	    point2=(design.cutWingRoot - margin, design.cutUp_effective + margin))
+	model.sketches['__profile__'].rectangle(point1=(design.cutWingRoot_effective, design.cutDown_effective - margin), 
+	    point2=(design.cutWingRoot_effective - margin, design.cutUp_effective + margin))
 
 	#Cut - wingRoot
 	model.parts['All'].CutExtrude(flipExtrudeDirection=ON, sketch=
@@ -707,8 +713,8 @@ def cutLattice(model, design):
 	    sketchPlaneSide=SIDE1, 
 	    sketchUpEdge=model.parts['All'].datums[datumAxis.id], 
 	    sketchOrientation=TOP, origin=(0.0, 0.0, 0.0)))
-	model.sketches['__profile__'].rectangle(point1=(design.cutWingTip, design.cutDown_effective - margin), 
-	    point2=(design.cutWingTip + margin, design.cutUp_effective + margin))
+	model.sketches['__profile__'].rectangle(point1=(design.cutWingTip_effective, design.cutDown_effective - margin), 
+	    point2=(design.cutWingTip_effective + margin, design.cutUp_effective + margin))
 
 	#Cut - wingTip
 	model.parts['All'].CutExtrude(flipExtrudeDirection=ON, sketch=
@@ -1319,7 +1325,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 
 		return instances_ribs
 
-def buildTyre(model, design, instanceCurrent):
+def buildTyre(model, design, load, instanceCurrent):
 	
 	model.ConstrainedSketch(name='__profile__', sheetSize=200.0)
 	model.sketches['__profile__'].ConstructionLine(point1=(0.0, 
@@ -1372,33 +1378,86 @@ def buildTyre(model, design, instanceCurrent):
 	#Instance operations
 	Q_i, Q_j, P_i, P_j = getQandPvectors(design)
 
-	#Iterate through Q
 	r = 0
 	instances_tyres = ()
 
-	for q_i in Q_i:
+	#Create tyres for upper and down parts of the lattice to apply connection
+	if load.additionalBC != 'none':
+		for q_i in Q_i:
 
-		for q_j in Q_j:
+			for q_j in Q_j:
 
-			rangeX = np.linspace(q_i - design.r, q_i + design.r, 10)
+				rangeX = np.linspace(q_i - design.r, q_i + design.r, 10)
 
-			if (q_j == Q_j[0] and q_i == Q_i[0]) or (q_j == Q_j[-1] and q_i == Q_i[0]):
-				
-				print('Avoiding constraints interference')
+				if q_j == Q_j[0] or q_j == Q_j[-1]: # #Only up and down
 
-			elif q_j == Q_j[0] or q_j == Q_j[-1]: #q_i != Q_i[0]:# #Only up and down
+					#For each instance, destination is x, y, z of the center of the node
+					instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
+					    model.parts['tyre'])
+					model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
+					    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('tyre-'+str(r+1), ))
+					if q_i != 0.0:
+						model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+						    (q_i, 0.0, 0.0)) #Translate in x
+					if q_j != 0.0:
+						model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+						    (0.0, q_j, 0.0)) #Translate in y
+
+					#Translate in z
+					mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+					    (0.0, 0.0, design.B/2))
+
+					instances_tyres += (instanceTyre, )
+
+					r += 1
+
+	#Create tyres for inner nodes
+	if load.conditionNodesInnerLattice == 'tyre':
+		#Iterate through Q
+		for q_i in Q_i:
+
+			for q_j in Q_j:
+
+				rangeX = np.linspace(q_i - design.r, q_i + design.r, 10)
+
+				if not (q_j == Q_j[0] or q_j == Q_j[-1]): #Everywhere except up and down
+
+					#For each instance, destination is x, y, z of the center of the node
+					instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
+					    model.parts['tyre'])
+					model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
+					    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('tyre-'+str(r+1), ))
+					if q_i != 0.0:
+						model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+						    (q_i, 0.0, 0.0)) #Translate in x
+					if q_j != 0.0:
+						model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+						    (0.0, q_j, 0.0)) #Translate in y
+
+					#Translate in z
+					mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+					    (0.0, 0.0, design.B/2))
+
+					instances_tyres += (instanceTyre, )
+
+					r += 1
+		
+		#Iterate through P
+		for p_i in P_i:
+
+			for p_j in P_j:
 
 				#For each instance, destination is x, y, z of the center of the node
 				instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
 				    model.parts['tyre'])
 				model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
 				    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('tyre-'+str(r+1), ))
-				if q_i != 0.0:
+				if p_i != 0.0:
 					model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
-					    (q_i, 0.0, 0.0)) #Translate in x
-				if q_j != 0.0:
+					    (p_i, 0.0, 0.0)) #Translate in x
+				if p_j != 0.0:
 					model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
-					    (0.0, q_j, 0.0)) #Translate in y
+					    (0.0, p_j, 0.0)) #Translate in y
 
 				#Translate in z
 				mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
@@ -1408,33 +1467,7 @@ def buildTyre(model, design, instanceCurrent):
 
 				r += 1
 
-	#Iterate through P
-
-	for p_i in P_i:
-
-		for p_j in P_j:
-
-			#For each instance, destination is x, y, z of the center of the node
-			instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
-			    model.parts['tyre'])
-			model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
-			    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('tyre-'+str(r+1), ))
-			if p_i != 0.0:
-				model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
-				    (p_i, 0.0, 0.0)) #Translate in x
-			if p_j != 0.0:
-				model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
-				    (0.0, p_j, 0.0)) #Translate in y
-
-			#Translate in z
-			mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
-			    (0.0, 0.0, design.B/2))
-
-			instances_tyres += (instanceTyre, )
-
-			r += 1
-
-	return instances_tyres
+		return instances_tyres
 
 
 

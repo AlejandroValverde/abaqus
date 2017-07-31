@@ -23,13 +23,13 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 	# BC specification
 
-	def createCouplingLatticeNodeByRFpoint(xNode, yNode, angles, design, instanceToApplyLoadAndBC, model, facesNotFoundCounter):
+	def createCouplingLatticeNode(xNode, yNode, angles, design, instanceToApplyLoadAndBC, model, facesNotFoundCounter):
 
 		z = design.B / 2
 
 		nameSet = 'set_x'+str(int(xNode))+'_y'+str(int(yNode))
 
-		nameConstraint = 'constraint_x'+str(int(xNode))+'_y'+str(int(yNode))
+		nameConstraint = 'Local_sys_constraint_x'+str(int(xNode))+'_y'+str(int(yNode))
 
 		rf = model.rootAssembly.ReferencePoint(point=(xNode, yNode, z))
 		rfRegion = regionToolset.Region(referencePoints = (model.rootAssembly.referencePoints[rf.id], ))
@@ -54,47 +54,60 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 		faces_tuple = tuple(faces_list)
 
 		model.rootAssembly.Set(faces = faces_tuple, name=nameSet)
-		# faceRegion = regionToolset.Region(faces = faces_tuple)
 
 		#Enable coupling condition
-		model.Coupling(controlPoint= rfRegion, couplingType=
-		    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-		    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=OFF, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=ON)#u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
+		if load.conditionNodesInnerLattice == 'couplingThroughRF':
+			model.Coupling(controlPoint= rfRegion, couplingType=
+			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+			    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=OFF, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=ON)#u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
+
+		elif load.conditionNodesInnerLattice == 'couplingThroughCilSYS':
+
+			#Local SYS creation
+			localsys = model.rootAssembly.DatumCsysByThreePoints(coordSysType=
+			    CYLINDRICAL, name='Local_sys'+'_x'+str(int(xNode))+'_y'+str(int(yNode)), origin=model.rootAssembly.referencePoints[rf.id], point1=
+			    (xNode + (design.r * math.cos(0 * (math.pi/180)) ), yNode + (design.r * math.sin(0 * (math.pi/180)) ), 
+			    z), point2=(xNode + (design.r * math.cos(90 * (math.pi/180)) ), yNode + (design.r * math.sin(90 * (math.pi/180)) ), 
+			    z))
+
+			model.Coupling(controlPoint=rfRegion, couplingType=KINEMATIC, influenceRadius=
+			    WHOLE_SURFACE, localCsys=model.rootAssembly.datums[localsys.id], 
+			    name=nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=OFF, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
+
+
 
 		return facesNotFoundCounter
 
-	def searchNodesForSequenceOfZ(xRange, yPos, zList, tupleOfNodes, instanceToApplyLoadAndBC):
+	def searchNodesForSequenceOfZ(xRange, yRange, zList, tupleOfNodes, instanceToApplyLoadAndBC):
 
 		#Search nodes on upper part
-		for x in xRange:
-			for i in range(len(zList)):
+		for y in yRange:
+			for x in xRange:
+				for i in range(len(zList)):
 
-				radius = 1
+					radius = 1
 
-				FlagSearch = True
+					FlagSearch = True
 
-				while FlagSearch:
+					while FlagSearch:
 
-					node = instanceToApplyLoadAndBC.nodes.getByBoundingSphere((x, yPos, zList[i]), radius)
-					
-					if node: #Continue if node found
+						node = instanceToApplyLoadAndBC.nodes.getByBoundingSphere((x, y, zList[i]), radius)
+						
+						if node: #Continue if node found
 
-						#Apply force just to the first node found
-						nodeTuple = node.getMask()
-						maskStr0 = nodeTuple[0].split('#')
-						maskStr = '[#'+str(maskStr0[1])+'#'+str(maskStr0[2]) + ']'
-						tupleOfNodes += (instanceToApplyLoadAndBC.nodes.getSequenceFromMask(mask=(maskStr,),), )
+							#Get a single node from the MeshNodeArray object found (node)
+							tupleOfNodes += (instanceToApplyLoadAndBC.nodes.sequenceFromLabels(labels=(node[0].label,),), )
 
-						FlagSearch = False
+							FlagSearch = False
 
-					elif radius < 50:
-						print('Node to apply force not found, radius increased')
-						radius += 1
+						elif radius < 50:
+							print('Node to apply force not found, radius increased')
+							radius += 1
 
-					else:
-						raise ValueError('ERROR: Radius bigger than 50')
+						else:
+							raise ValueError('ERROR: Radius bigger than 50')
 
-				print('Final radius utilized for finding the node: '+str(radius))
+					print('Final radius utilized for finding the node: '+str(radius))
 
 
 		return tupleOfNodes, radius
@@ -238,23 +251,32 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
 			    nameConstraint, surface= model.rootAssembly.sets[nameSetLattice], u1=ON, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
 	
-	def createEquationWithTyre(xNode, xRange, yNode, ySkin, design, instanceToApplyLoadAndBC, model, load):
+	def createCouplingWithTyre(xNode, yNode, xSkin, ySkin, Range, design, instanceToApplyLoadAndBC, model, load):
 
 		z = design.B / 2
 
-		nameSetSkin = 'set_double_skin_x'+str(int(xNode))+'_y'+str(int(yNode))
+		if xNode == xSkin:
+			typeConnection = 'upper_and_lower'
+		elif yNode == ySkin:
+			typeConnection = 'middle'
+
+		nameSetSkin = 'set_aboveTyre_skin_x'+str(int(xNode))+'_y'+str(int(yNode))
 		nameNodeTyre = 'node_tyre_x'+str(int(xNode))+'_y'+str(int(yNode))
 
 		#Set skin
 		tupleOfNodes = ()
 		zList = np.linspace(0.0, design.B, 10)
-		# tupleOfNodes, finalRadius = searchNodesForSequenceOfZ(xRange, ySkin, zList, tupleOfNodes, instanceToApplyLoadAndBC)
-		tupleOfNodes, finalRadius = searchNodesForSequenceOfZ([xNode], ySkin, [z], tupleOfNodes, instanceToApplyLoadAndBC)
+		if typeConnection == 'upper_and_lower' and load.rangeOfNodesOnSkinForCouplingFlag:
+			tupleOfNodes, finalRadius = searchNodesForSequenceOfZ(Range, [ySkin], zList, tupleOfNodes, instanceToApplyLoadAndBC)
+		elif typeConnection == 'middle' and load.rangeOfNodesOnSkinForCouplingFlag:
+			tupleOfNodes, finalRadius = searchNodesForSequenceOfZ([xSkin], Range, zList, tupleOfNodes, instanceToApplyLoadAndBC)
+		else:
+			tupleOfNodes, finalRadius = searchNodesForSequenceOfZ([xSkin], [ySkin], [z], tupleOfNodes, instanceToApplyLoadAndBC)
 		model.rootAssembly.Set(name=nameSetSkin, nodes=tupleOfNodes)
 
 		#Node on tyre
 		tupleOfNodes = ()
-		tupleOfNodes, finalRadius = searchNodesForSequenceOfZ([xNode], yNode, [z], tupleOfNodes, instanceToApplyLoadAndBC)
+		tupleOfNodes, finalRadius = searchNodesForSequenceOfZ([xNode], [yNode], [z], tupleOfNodes, instanceToApplyLoadAndBC)
 		model.rootAssembly.Set(name=nameNodeTyre, nodes=tupleOfNodes)
 
 
@@ -268,16 +290,87 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 		# 	model.Equation(name='eq_dof_'+str(dof)+'_x'+str(int(xNode))+'_y'+str(int(yNode)), terms=((1.0, 
 		# 	    nameSetSkin, dof), (-1.0, nameNodeTyre, dof)))
 
-		nameCoupling = 'constraint_extra_x'+str(int(xNode))+'_y'+str(int(yNode))
-		model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-					    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-					    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=ON, u2=ON, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
+		nameCoupling = 'constraint_tyre_x'+str(int(xNode))+'_y'+str(int(yNode))
+		if load.additionalBC == 'couplingNodesUp':
+			if typeConnection == 'upper_and_lower':
+				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF)
+			elif typeConnection == 'middle':
+				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF)
+
+		elif load.additionalBC == 'couplingNodesUp_x1_free':
+			if typeConnection == 'upper_and_lower':
+				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=OFF, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF)
+			elif typeConnection == 'middle':
+				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=ON, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=OFF)
 		# nameCoupling = '2_constraint_extra_x'+str(int(xNode))+'_y'+str(int(yNode))
 		# model.Coupling(controlPoint= model.rootAssembly.sets[nameNodeTyre], couplingType=
 		# 			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
 		# 			    nameCoupling, surface= model.rootAssembly.sets[nameSetSkin], u1=ON, u2=ON, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
 
+	def createCouplingWithLocalSYS(xNode, yNode, xSkin, ySkin, Range, design, instanceToApplyLoadAndBC, model, load):
 
+		z = design.B / 2
+
+		nameSet = 'faces_x'+str(int(xNode))+'_y'+str(int(yNode))
+		nameSetSkin = 'set_skin_x'+str(int(xNode))+'_y'+str(int(yNode))
+		nameConstraint = 'Local_sys_constraint_x'+str(int(xNode))+'_y'+str(int(yNode))
+		nameCoupling = 'couplingWithSkin_x'+str(int(xNode))+'_y'+str(int(yNode))
+		nameRFset = 'referencePoint_x'+str(int(xNode))+'_y'+str(int(yNode))
+
+		rf = model.rootAssembly.ReferencePoint(point=(xNode, yNode, z))
+		rfRegion = regionToolset.Region(referencePoints = (model.rootAssembly.referencePoints[rf.id], ))
+		model.rootAssembly.Set(name=nameRFset, referencePoints=(model.rootAssembly.referencePoints[rf.id], ))
+
+		#Find faces
+		faces_list=[]
+		for angle in angles: #xrange is the same as range
+			xFace = xNode + (design.r * math.cos(angle * (math.pi/180)) )
+			yFace = yNode + (design.r * math.sin(angle * (math.pi/180)) )
+
+			face_found = instanceToApplyLoadAndBC.faces.findAt(((xFace, yFace, z),))
+
+			if not face_found: #if empty, face couldn't be found
+				facesNotFoundCounter += 1
+			
+			if face_found not in faces_list: #if the face hasn't already been found
+				faces_list.append(face_found)
+			else:
+				print('Face found is being neglected, it was already found')
+		
+		faces_tuple = tuple(faces_list)
+		model.rootAssembly.Set(faces = faces_tuple, name=nameSet)
+
+		#Internal coupling through local SYS 
+		localsys = model.rootAssembly.DatumCsysByThreePoints(coordSysType=
+		    CYLINDRICAL, name='Local_sys'+'_x'+str(int(xNode))+'_y'+str(int(yNode)), origin=model.rootAssembly.referencePoints[rf.id], point1=
+		    (xNode + (design.r * math.cos(0 * (math.pi/180)) ), yNode + (design.r * math.sin(0 * (math.pi/180)) ), 
+		    z), point2=(xNode + (design.r * math.cos(90 * (math.pi/180)) ), yNode + (design.r * math.sin(90 * (math.pi/180)) ), 
+		    z))
+
+		model.Coupling(controlPoint=rfRegion, couplingType=KINEMATIC, influenceRadius=
+		    WHOLE_SURFACE, localCsys=model.rootAssembly.datums[localsys.id], 
+		    name=nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=OFF, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
+
+		#Skin
+		tupleOfNodes = ()
+		tupleOfNodes, finalRadius = searchNodesForSequenceOfZ([xSkin], [ySkin], [z], tupleOfNodes, instanceToApplyLoadAndBC)
+		model.rootAssembly.Set(name=nameSetSkin, nodes=tupleOfNodes)
+
+		#Coupling
+		model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+		    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+		    nameCoupling, surface= model.rootAssembly.sets[nameRFset], u1=ON, u2=ON, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
+
+	########################################
+	#Main code for BC's
 	if typeBC == 'clamped':
 
 		#Create set for fixed condition
@@ -315,7 +408,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 			y = design.cutDown
 
-			for i in range(50):
+			for i in range(48):
 
 				y = y + yIncrement
 				face_found = instanceToApplyLoadAndBC.faces.findAt(((design.cutWingRoot, y, design.B/2),),)
@@ -361,7 +454,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 				for q_j in Q_j:
 
-					if (q_j == Q_j[0] and q_i == Q_i[0]) or (q_j == Q_j[-1] and q_i == Q_i[0]):
+					if (q_j in [Q_j[0], Q_j[-1]] and q_i in [Q_i[0], Q_i[-1]]) and design.cutGap == 0.0:
 						
 						print('Avoiding constraints interference')
 
@@ -369,26 +462,33 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 						if q_j == Q_j[0]: #Lower node, half cut
 
-							if load.typeBC != 'none':
+							if load.additionalBC != 'none':
 								angles = []
+							elif design.cutGap == 0.0:
+								angles = [45, 90, 135]
 							else:
-								[45, 90, 135]
+								angles = [0, 45, 90, 135, 180, 225, 270, 315]
 
 						elif q_j == Q_j[-1]: #Upper node, half cut
 
-							if load.typeBC != 'none':
+							if load.additionalBC != 'none':
 								angles = []
+							elif design.cutGap == 0.0:
+								angles = [225, 270, 315]
 							else:
-								[225, 270, 315]
+								angles = [0, 45, 90, 135, 180, 225, 270, 315]
 
 						elif q_i == Q_i[0] and design.rootRibShape == 'closed' and not (q_j == Q_j[0] or q_j == Q_j[-1]): #Avoids interface with nodes that are coupled to the reference point used to clamp the root
 							angles = [0, 45, 315]
 
 						else: #Nodes in the middle
-							angles = [0, 45, 90, 135, 180, 225, 270, 315]
+							if (q_i == Q_i[0] or q_i == Q_i[-1]) and design.cutGap == 0.0 and load.additionalBC != 'none': #Node at the extremes with no gap
+								angles = []
+							else:
+								angles = [0, 45, 90, 135, 180, 225, 270, 315]
 
 						if angles: #If vector angles is not empty
-							facesNotFoundCounter = createCouplingLatticeNodeByRFpoint(q_i, q_j, angles, design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
+							facesNotFoundCounter = createCouplingLatticeNode(q_i, q_j, angles, design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
 
 			#Iterate through P
 
@@ -396,13 +496,15 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 				for p_j in P_j:
 
-					facesNotFoundCounter = createCouplingLatticeNodeByRFpoint(p_i, p_j, [0, 45, 90, 135, 180, 225, 270, 315], design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
+					facesNotFoundCounter = createCouplingLatticeNode(p_i, p_j, [0, 45, 90, 135, 180, 225, 270, 315], design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
 
 			if facesNotFoundCounter > 10:
 
 				raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')
 
 		else: #For coupling at the gap between lattice and skin
+
+			load.rangeOfNodesOnSkinForCouplingFlag = False
 
 			#Iterate through Q
 
@@ -411,10 +513,15 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 				for q_j in Q_j:
 
 					rangeX = np.linspace(q_i - design.r, q_i + design.r, 10)
+					rangeY = np.linspace(q_j - design.r, q_j + design.r, 10)
 
-					if (q_j == Q_j[0] and q_i == Q_i[0]) or (q_j == Q_j[-1] and q_i == Q_i[0]):
-						
-						print('Avoiding constraints interference')
+					if (not (q_j == Q_j[0] or q_j == Q_j[-1])) and (q_i == Q_i[0] or q_i == Q_i[-1]):
+
+						if q_i == Q_i[0]: #Root
+							createCouplingWithLocalSYS(q_i, q_j, q_i - (design.r + design.cutGap), q_j, rangeY, design, instanceToApplyLoadAndBC, model, load)
+
+						elif q_i == Q_i[-1]: #Tip
+							createCouplingWithLocalSYS(q_i, q_j, q_i + (design.r + design.cutGap), q_j, rangeY, design, instanceToApplyLoadAndBC, model, load)
 
 					else:
 
@@ -422,12 +529,11 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 						if q_j == Q_j[0]: #Lower node, half cut
 
-							createEquationWithTyre(q_i, rangeX, q_j, q_j - (design.r + design.cutGap), design, instanceToApplyLoadAndBC, model, load)
+							createCouplingWithLocalSYS(q_i, q_j, q_i, q_j - (design.r + design.cutGap), rangeX, design, instanceToApplyLoadAndBC, model, load)
 
 						elif q_j == Q_j[-1]: #Upper node, half cut
 							
-							createEquationWithTyre(q_i, rangeX, q_j, q_j + design.r + design.cutGap, design, instanceToApplyLoadAndBC, model, load)
-
+							createCouplingWithLocalSYS(q_i, q_j, q_i, q_j + design.r + design.cutGap, rangeX, design, instanceToApplyLoadAndBC, model, load)
 
 	else:
 
@@ -474,11 +580,8 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 				
 				if node: #Continue if node found
 
-					#Apply force just to the first node found
-					nodeTuple = node.getMask()
-					maskStr0 = nodeTuple[0].split('#')
-					maskStr = '[#'+str(maskStr0[1])+'#'+str(maskStr0[2]) + ']'
-					tupleOfNodes += (instanceToApplyLoadAndBC.nodes.getSequenceFromMask(mask=(maskStr,),), )
+					#Get a single node from the MeshNodeArray object found (node)
+					tupleOfNodes += (instanceToApplyLoadAndBC.nodes.sequenceFromLabels(labels=(node[0].label,),), )
 
 					FlagSearch = False
 

@@ -127,10 +127,14 @@ load.damp = float(paraRead.damp)
 
 #BCs
 load.typeBC = paraRead.typeBC #'clamped', 'coupling', 'encastre'
-load.additionalBC = paraRead.additionalBC #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
+load.additionalBC = paraRead.additionalBC #'none', 'couplingNodesUp', 'couplingNodesUp_x_free', 'couplingNodesUp_tyre', 'couplingNodesUp_x_free_tyre'
+load.conditionNodesInnerLattice = paraRead.conditionNodesInnerLattice #'coupling', 'tyre', 'couplingThroughCilSYS'
 
 if load.additionalBC != 'none' and design.cutGap == 0.0:
 	design.cutGap = 5.0 #Assign gap between the lattice and the skin when running parametric study
+
+if load.conditionNodesInnerLattice == 'tyre' and design.cutGap == 0.0:
+	design.cutGap = 5.0 #Assign gap between the lattice and the skin when has not been already done
 
 ## Job
 jobDef = structtype()
@@ -165,8 +169,8 @@ if design.typeOfModel == 'completeModel': #Standard design
 	#Cut lattice
 	design.cutUp = 2 * (design.M - 1) * design.heightTriangle
 	design.cutDown = 0 #-60 #Obtain from inspection
-	design.cutWingRoot = 65 + 36 #Obtain from inspection
-	design.cutWingTip = 105 * design.N - 50 #Obtain from inspection
+	design.cutWingRoot = design.distanceCenterPoints
+	design.cutWingTip = design.distanceCenterPoints * design.N
 
 	cutLattice(model, design)
 
@@ -198,8 +202,8 @@ if design.typeOfModel == 'completeModel': #Standard design
 	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLattice-1']
 
 	#Build tyre for nodes
-	if True:
-		instances_tyres = buildTyre(model, design, instanceToApplyMeshBCsLoads)
+	if 'tyre' in load.additionalBC or load.conditionNodesInnerLattice == 'tyre':
+		instances_tyres = buildTyre(model, design, load, instanceToApplyMeshBCsLoads)
 		mergeInstances(model, (instanceToApplyMeshBCsLoads, )+instances_tyres, 'RibBoxLatticeTyres')
 
 		partToApplyMeshBCsLoads = model.parts['RibBoxLatticeTyres']
@@ -274,9 +278,11 @@ if not design.typeOfModel == 'onlyLattice':
 
 if design.typeOfModel == 'completeModel': #Standard design
 	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.typeBC)
-	# defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'couplingAtLatticeNodes')
 
-	if design.cutGap != 0.0 and load.additionalBC != 'none':
+	if load.conditionNodesInnerLattice in ['couplingThroughRF', 'couplingThroughCilSYS']:
+		defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'couplingAtLatticeNodes')
+
+	if (design.cutGap != 0.0 and load.additionalBC != 'none') or load.conditionNodesInnerLattice == 'tyre':
 
 		defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.additionalBC)
 

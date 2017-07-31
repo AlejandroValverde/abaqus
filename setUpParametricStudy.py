@@ -1,6 +1,6 @@
 # Define parameters range
 parameters=('typeOfModel', 'jobName', 'E_ribOverE1', 'E1OverE2_simpleModel', 'N', 'M', 'r', 'B', 'L', 'cutGap', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
-			'eOverB', 'tChiral', 'typeLoad', 'typeBC', 'additionalBC', 'displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
+			'eOverB', 'tChiral', 'typeLoad', 'typeBC', 'additionalBC', 'conditionNodesInnerLattice','displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
 			'courseSize', 'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
 			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')
 
@@ -29,6 +29,7 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'typeLoad' : 'singleForceOnLastRib_upper', #'moment', 'force1', 'force2', 'displacement', 'linForce', 'linForceInnerRibs_(upper, middle, upper_down)', 'singleForceOnLastRib_(upper, down)'
 			'typeBC' : 'coupling', #'coupling', 'encastre'
 			'additionalBC' : 'couplingNodesUp', #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
+			'conditionNodesInnerLattice' : 'tyre', #'tyre', 'coupling', 'couplingThroughCilSYS'
 			'displImposed' : -50,
 			'ForceMagnitude' : -1200, #Applied force magnitude  (N)
 			'momentMagnitude' : -200000,
@@ -73,6 +74,7 @@ rangesDict={'typeOfModel' : [],
 			'typeLoad' : [],
 			'typeBC' : [],
 			'additionalBC' : [],
+			'conditionNodesInnerLattice' : [],
 			'displImposed' : [],
 			'ForceMagnitude' : [],
 			'momentMagnitude' : [],

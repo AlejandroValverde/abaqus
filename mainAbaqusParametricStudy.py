@@ -58,7 +58,7 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 		if len(rangeCurrent) == 0.0:	
 
-			file.write(str(lineNumberForRange)+','+str(0)+','+str(0)+'\n')
+			file.write(str(0)+','+str(0)+'\n')
 
 		else:
 
