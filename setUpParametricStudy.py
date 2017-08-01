@@ -28,7 +28,7 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'tChiral' : 0.5, #Chiral lattice section thickness, $t_{chiral}$ (mm)
 			'typeLoad' : 'singleForceOnLastRib_upper', #'moment', 'force1', 'force2', 'displacement', 'linForce', 'linForceInnerRibs_(upper, middle, upper_down)', 'singleForceOnLastRib_(upper, down)'
 			'typeBC' : 'coupling', #'coupling', 'encastre'
-			'additionalBC' : 'couplingNodesUp', #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free'
+			'additionalBC' : 'couplingNodesUp_tyre', #'none', 'couplingNodesUp', 'couplingNodesUp_x1_free', 'couplingNodesUp_tyre', 'couplingNodesUp_tyre_x1_free'
 			'conditionNodesInnerLattice' : 'tyre', #'tyre', 'coupling', 'couplingThroughCilSYS'
 			'displImposed' : -50,
 			'ForceMagnitude' : -1200, #Applied force magnitude  (N)

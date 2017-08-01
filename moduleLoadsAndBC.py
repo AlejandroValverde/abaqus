@@ -506,6 +506,14 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 			load.rangeOfNodesOnSkinForCouplingFlag = False
 
+			#Assign current coupling function
+			if 'tyre' in load.conditionNodesInnerLattice:
+				functionCurrentCoupling = createCouplingWithTyre
+			elif 'SYS' in load.conditionNodesInnerLattice:
+				functionCurrentCoupling = createCouplingWithLocalSYS
+			else:
+				raise ValueError('Not correct option chosen for coupling function') 
+
 			#Iterate through Q
 
 			for q_i in Q_i:
@@ -517,11 +525,11 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 					if (not (q_j == Q_j[0] or q_j == Q_j[-1])) and (q_i == Q_i[0] or q_i == Q_i[-1]):
 
-						if q_i == Q_i[0]: #Root
-							createCouplingWithLocalSYS(q_i, q_j, q_i - (design.r + design.cutGap), q_j, rangeY, design, instanceToApplyLoadAndBC, model, load)
+						if q_i == Q_i[0]: #Root, middle rows of lattice nodes
+							functionCurrentCoupling(q_i, q_j, q_i - (design.r + design.cutGap), q_j, rangeY, design, instanceToApplyLoadAndBC, model, load)
 
-						elif q_i == Q_i[-1]: #Tip
-							createCouplingWithLocalSYS(q_i, q_j, q_i + (design.r + design.cutGap), q_j, rangeY, design, instanceToApplyLoadAndBC, model, load)
+						elif q_i == Q_i[-1]: #Tip, middle rows of lattice nodes
+							functionCurrentCoupling(q_i, q_j, q_i + (design.r + design.cutGap), q_j, rangeY, design, instanceToApplyLoadAndBC, model, load)
 
 					else:
 
@@ -529,11 +537,11 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 						if q_j == Q_j[0]: #Lower node, half cut
 
-							createCouplingWithLocalSYS(q_i, q_j, q_i, q_j - (design.r + design.cutGap), rangeX, design, instanceToApplyLoadAndBC, model, load)
+							functionCurrentCoupling(q_i, q_j, q_i, q_j - (design.r + design.cutGap), rangeX, design, instanceToApplyLoadAndBC, model, load)
 
 						elif q_j == Q_j[-1]: #Upper node, half cut
 							
-							createCouplingWithLocalSYS(q_i, q_j, q_i, q_j + design.r + design.cutGap, rangeX, design, instanceToApplyLoadAndBC, model, load)
+							functionCurrentCoupling(q_i, q_j, q_i, q_j + design.r + design.cutGap, rangeX, design, instanceToApplyLoadAndBC, model, load)
 
 	else:
 
