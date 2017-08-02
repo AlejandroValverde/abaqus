@@ -1,6 +1,8 @@
 # Define parameters range
-parameters=('typeOfModel', 'jobName', 'E_ribOverE1', 'E1OverE2_simpleModel', 'N', 'M', 'r', 'B', 'L', 'cutGap', 'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
-			'eOverB', 'tChiral', 'typeLoad', 'typeBC', 'additionalBC', 'conditionNodesInnerLattice','displImposed', 'ForceMagnitude', 'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
+parameters=('typeOfModel', 'jobName', 'E_ribOverE1', 'E1OverE2_simpleModel', 'N', 'M', 'r', 'B', 'L', 'cutGap_x', 'cutGap_y' 
+			'Cbox_t', 'rib_t', 'rib_t_inner', 'innerRibs_n', 'rootRibShape', 'tipRibShape', 'rib_a', 'C3', 'wingBoxLength', 
+			'eOverB', 'tChiral', 'typeLoad', 'typeBC', 'additionalBC', 'conditionNodesInnerLattice','displImposed', 'ForceMagnitude', 
+			'momentMagnitude', 'forceXStart', 'forceXEnd', 'forceXn', 'forceZPos',
 			'courseSize', 'fineSize', 'maxTimeIncrement', 'initialTimeIncrement', 'minTimeIncrement',
 			'maxNumInc', 'executeJob', 'executePostProc', 'damp', 'typeAnalysis', 'typeAbaqus')
 
@@ -14,7 +16,8 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'r' : 10.0,#Node radius 
 			'B' : 20.0, #Node depth
 			'L' : 50.0, #half length
-			'cutGap' : 5.0, #Gap between the lattice and the skin (mm). Insert here a value if you want 'cutGap'!=5.0 when running script with 'additionalBC'!='none' 
+			'cutGap_y' : 5.0, #Gap between the lattice and the skin (mm) in the y direction. Insert here a value if you want 'cutGap_y'!=5.0 when running script with 'additionalBC'!='none' 
+			'cutGap_x' : 0.0, #Gap between the lattice and the skin (mm) in the x direction.
 			'Cbox_t' : 0.8, #C-box wall thickness, $t_{C}$ (mm)
 			'rib_t' : 2, #Rib thickness, $t_{rib}$ (mm)
 			'rib_t_inner' : 2,
@@ -59,7 +62,8 @@ rangesDict={'typeOfModel' : [],
 			'r' : [], #[5, 10, 15],
 			'B' : [], #[10.0, 20.0, 30.0],
 			'L' : [], #[30.0, 50.0, 70.0],
-			'cutGap' : [],
+			'cutGap_y' : [],
+			'cutGap_x' : [],
 			'Cbox_t' : [0.4, 0.6, 0.8],#[5, 10, 20],#5, 10, 20, 30, 40, 60, 80, 100],
 			'rib_t' : [],#[3, 5, 8, 10],#2, 6, 10, 20, 40],
 			'rib_t_inner' : [],

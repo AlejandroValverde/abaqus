@@ -28,10 +28,10 @@ def readCMDoptions(argv, CMDoptionsDict):
     # check input
     if len(opts) != len(long_opts):
     	raise ValueError('ERROR: Invalid number of inputs')
-    else:
-    	for opt in opts:
-    		opt[0][1] in short_opts
-    		raise ValueError('ERROR: Not found option in short options')	
+    # else:
+    # 	for opt in opts:
+    # 		opt[0][1] in short_opts
+    # 		raise ValueError('ERROR: Not found option in short options')	
 
     for opt, arg in opts:
 
@@ -84,7 +84,7 @@ def importParametricStudyDeffile(fileName):
 		lineRange = lineRange.replace('\r\n','')
 		nameParater = nameParater.replace('\r\n','')
 
-		dictOut[nameParater] = [float(lineRange.split(',')[0]), float(lineRange.split(',')[1]), float(lineRange.split(',')[2])]
+		dictOut[nameParater] = [float(lineRange.split(',')[0]), float(lineRange.split(',')[1])]
 
 	file.close()
 
@@ -261,7 +261,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 
 		for (keyCurrent, rangeCurrent) in studyDefDict.items():
 
-			if studyDefDict[keyCurrent][1] <= case.id <= studyDefDict[keyCurrent][2]:
+			if studyDefDict[keyCurrent][0] <= case.id <= studyDefDict[keyCurrent][1]:
 
 				#Store key
 				if not keyCurrent in keysUsed: keysUsed.append(keyCurrent)

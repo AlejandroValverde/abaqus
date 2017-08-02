@@ -624,14 +624,17 @@ def cutLattice(model, design):
 	design.cutWingTip_effective = design.cutWingTip
 
 	#Redefine cutting dimensions if there is gap
-	if design.cutGap != 0.0:
-		design.cutUp = design.cutUp + design.r + design.cutGap
-		design.cutDown = design.cutDown - ( design.r + design.cutGap )
-		design.cutWingRoot = design.cutWingRoot - ( design.r + design.cutGap )
-		design.cutWingTip = design.cutWingTip + ( design.r + design.cutGap )
+	if design.cutGap_y != 0.0:
+		design.cutUp = design.cutUp + design.r + design.cutGap_y
+		design.cutDown = design.cutDown - ( design.r + design.cutGap_y )
 
 		design.cutUp_effective = design.cutUp_effective + design.r + 1.0 #Small offset (1.0)
 		design.cutDown_effective = design.cutDown_effective - (design.r + 1.0) #Small offset (1.0)
+		
+	if design.cutGap_x != 0.0:
+		design.cutWingRoot = design.cutWingRoot - ( design.r + design.cutGap_x )
+		design.cutWingTip = design.cutWingTip + ( design.r + design.cutGap_x )
+
 		design.cutWingRoot_effective = design.cutWingRoot_effective - ( design.r + 1.0 )
 		design.cutWingTip_effective = design.cutWingTip_effective + ( design.r + 1.0 )
 
@@ -1382,14 +1385,14 @@ def buildTyre(model, design, load, instanceCurrent):
 	instances_tyres = ()
 
 	#Create tyres for upper and down parts of the lattice to apply connection
-	if load.additionalBC != 'none':
+	if 'tyre' in load.additionalBC and design.cutGap_y != 0.0:
 		for q_i in Q_i:
 
 			for q_j in Q_j:
 
 				rangeX = np.linspace(q_i - design.r, q_i + design.r, 10)
 
-				if q_j == Q_j[0] or q_j == Q_j[-1]: # #Only up and down
+				if q_j in [Q_j[0], Q_j[-1]] and not (q_i in [Q_i[0], Q_i[-1]] and design.cutGap_x == 0.0): # #Only up and down
 
 					#For each instance, destination is x, y, z of the center of the node
 					instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
@@ -1420,7 +1423,7 @@ def buildTyre(model, design, load, instanceCurrent):
 
 				rangeX = np.linspace(q_i - design.r, q_i + design.r, 10)
 
-				if not (q_j == Q_j[0] or q_j == Q_j[-1]): #Everywhere except up and down
+				if not q_j in [Q_j[0], Q_j[-1]] and not (q_i in [Q_i[0], Q_i[-1]] and design.cutGap_x == 0.0): #Everywhere except up and down
 
 					#For each instance, destination is x, y, z of the center of the node
 					instanceTyre = model.rootAssembly.Instance(dependent=ON, name='tyre-'+str(r+1), part=
@@ -1467,7 +1470,7 @@ def buildTyre(model, design, load, instanceCurrent):
 
 				r += 1
 
-		return instances_tyres
+	return instances_tyres
 
 
 

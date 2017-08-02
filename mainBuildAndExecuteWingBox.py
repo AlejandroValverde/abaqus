@@ -49,7 +49,8 @@ design.B = float(paraRead.B)  #Node depth
 design.L = float(paraRead.L) #half length
 
 #Cutting operations - To cut by half of the ligaments
-design.cutGap = float(paraRead.cutGap) #Gap between the lattice and the skin
+design.cutGap_y = float(paraRead.cutGap_y) #Gap between the lattice and the skin in the y direction
+design.cutGap_x = float(paraRead.cutGap_x) #Gap between the lattice and the skin in the x direction
 
 ## Box structure
 #The rest of the dimensions of the box structure are calculated using the lattice final dimensions as a reference
@@ -127,14 +128,11 @@ load.damp = float(paraRead.damp)
 
 #BCs
 load.typeBC = paraRead.typeBC #'clamped', 'coupling', 'encastre'
-load.additionalBC = paraRead.additionalBC #'none', 'couplingNodesUp', 'couplingNodesUp_x_free', 'couplingNodesUp_tyre', 'couplingNodesUp_x_free_tyre'
-load.conditionNodesInnerLattice = paraRead.conditionNodesInnerLattice #'coupling', 'tyre', 'couplingThroughCilSYS'
+load.additionalBC = paraRead.additionalBC #'none', 'connection', 'connection_x_free', 'connection_tyre', 'connection_x_free_tyre', 'connection_SYS', 'connection_x_free_SYS'
+load.conditionNodesInnerLattice = paraRead.conditionNodesInnerLattice #'couplingThroughRF', 'tyre', 'couplingThroughCilSYS'
 
-if load.additionalBC != 'none' and design.cutGap == 0.0:
-	design.cutGap = 5.0 #Assign gap between the lattice and the skin when running parametric study
-
-if load.conditionNodesInnerLattice == 'tyre' and design.cutGap == 0.0:
-	design.cutGap = 5.0 #Assign gap between the lattice and the skin when has not been already done
+if load.additionalBC != 'none' and design.cutGap_y == 0.0:
+	raise ValueError('Not correct option chosen for combination of gap between lattice and skin, and coupling condition for the lattice nodes')
 
 ## Job
 jobDef = structtype()
@@ -282,7 +280,7 @@ if design.typeOfModel == 'completeModel': #Standard design
 	if load.conditionNodesInnerLattice in ['couplingThroughRF', 'couplingThroughCilSYS']:
 		defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'couplingAtLatticeNodes')
 
-	if (design.cutGap != 0.0 and load.additionalBC != 'none') or load.conditionNodesInnerLattice == 'tyre':
+	if (design.cutGap_y != 0.0 and load.additionalBC != 'none') or load.conditionNodesInnerLattice == 'tyre':
 
 		defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.additionalBC)
 

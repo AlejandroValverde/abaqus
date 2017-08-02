@@ -20,8 +20,10 @@ B
 20.0
 L
 50.0
-cutGap
+cutGap_y
 5.0
+cutGap_x
+0.0
 Cbox_t
 0.8
 rib_t
@@ -49,7 +51,7 @@ singleForceOnLastRib_upper
 typeBC
 coupling
 additionalBC
-couplingNodesUp
+connection
 conditionNodesInnerLattice
 tyre
 displImposed
