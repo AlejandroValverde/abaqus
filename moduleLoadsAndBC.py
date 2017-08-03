@@ -223,12 +223,11 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 		if 'equation' in load.additionalBC:
 			#Equation condition
-			if 'x1_free' in load.additionalBC and typeConnection == 'upper_and_lower':
-				dof_vect = [2, 3, 4, 5]
-			elif 'x1_free' in load.additionalBC and typeConnection == 'middle':
-				dof_vect = [1, 3, 4, 5]
-			else:
-				dof_vect = [1, 2, 3, 4, 5]
+			if typeConnection == 'upper_and_lower':
+				dof_vect = [int(dof_string) for dof_string in load.dofContraint]
+			elif typeConnection == 'middle':
+				dof_vect = [int(dof_string) for dof_string in load.dofContraint]
+				dof_vect[1], dof_vect[0] = dof_vect[0], dof_vect[1]
 
 			for dof in dof_vect:
 				model.Equation(name='eq_dof_'+str(dof)+'_x'+str(int(xNode))+'_y'+str(int(yNode)), terms=((1.0, 
