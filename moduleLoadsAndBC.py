@@ -22,6 +22,13 @@ from moduleCommon import *
 def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 	# BC specification
+	def dofCoupling(load, ID):
+
+		if str(ID) in load.dofContraint:
+			return ON
+		else:
+			return OFF
+
 	def searchNodesForSequenceOfZ(xRange, yRange, zList, tupleOfNodes, instanceToApplyLoadAndBC):
 
 		#Search nodes on upper part
@@ -173,24 +180,14 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 		model.rootAssembly.Set(name=nameSetSkin, nodes=tupleOfNodes)
 
 		#Enable coupling condition
-		if 'x1_free' in load.additionalBC:
-			if typeConnection == 'upper_and_lower':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-							    'skin_'+nameConstraint, surface= model.rootAssembly.sets[nameRFset], u1=OFF, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
-			elif typeConnection == 'middle':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-							    'skin_'+nameConstraint, surface= model.rootAssembly.sets[nameRFset], u1=ON, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
-		else:
-			if typeConnection == 'upper_and_lower':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-							    'skin_'+nameConstraint, surface= model.rootAssembly.sets[nameRFset], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
-			elif typeConnection == 'middle':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-							    'skin_'+nameConstraint, surface= model.rootAssembly.sets[nameRFset], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF) #influenceRadius?? = WHOLE_SURFACE or float?
+		if typeConnection == 'upper_and_lower':
+			model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+						    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+						    'skin_'+nameConstraint, surface= model.rootAssembly.sets[nameRFset], u1=dofCoupling(load, 1), u2=dofCoupling(load, 2), u3=dofCoupling(load, 3), ur1=dofCoupling(load, 4), ur2=dofCoupling(load, 5), ur3=dofCoupling(load, 6))
+		elif typeConnection == 'middle':
+			model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+						    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+						    'skin_'+nameConstraint, surface= model.rootAssembly.sets[nameRFset], u1=dofCoupling(load, 2), u2=dofCoupling(load, 1), u3=dofCoupling(load, 3), ur1=dofCoupling(load, 4), ur2=dofCoupling(load, 5), ur3=dofCoupling(load, 6))
 	
 	def createCouplingWithTyre(xNode, yNode, xSkin, ySkin, Range, design, angles, instanceToApplyLoadAndBC, model, load):
 
@@ -223,17 +220,8 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 		model.rootAssembly.Set(name=nameNodeTyre, nodes=tupleOfNodes)
 
 		nameCoupling = 'constraint_tyre_x'+str(int(xNode))+'_y'+str(int(yNode))
-		if 'x1_free' in load.additionalBC:
-			if typeConnection == 'upper_and_lower':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=OFF, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF)
-			elif typeConnection == 'middle':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=ON, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=OFF)
 
-		elif 'equation' in load.additionalBC:
+		if 'equation' in load.additionalBC:
 			#Equation condition
 			if 'x1_free' in load.additionalBC and typeConnection == 'upper_and_lower':
 				dof_vect = [2, 3, 4, 5]
@@ -249,11 +237,11 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 			if typeConnection == 'upper_and_lower':
 				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
 							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF)
+							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=dofCoupling(load, 1), u2=dofCoupling(load, 2), u3=dofCoupling(load, 3), ur1=dofCoupling(load, 4), ur2=dofCoupling(load, 5), ur3=dofCoupling(load, 6))
 			elif typeConnection == 'middle':
 				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
 							    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=OFF)
+							    nameCoupling, surface= model.rootAssembly.sets[nameNodeTyre], u1=dofCoupling(load, 2), u2=dofCoupling(load, 1), u3=dofCoupling(load, 3), ur1=dofCoupling(load, 4), ur2=dofCoupling(load, 5), ur3=dofCoupling(load, 6))
 
 		# nameCoupling = '2_constraint_extra_x'+str(int(xNode))+'_y'+str(int(yNode))
 		# model.Coupling(controlPoint= model.rootAssembly.sets[nameNodeTyre], couplingType=
@@ -319,24 +307,14 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 		#Coupling
 		nameCoupling = 'constraint_tyre_x'+str(int(xNode))+'_y'+str(int(yNode))
-		if 'x1_free' in load.additionalBC:
-			if typeConnection == 'upper_and_lower':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-						    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-						    nameCoupling, surface= model.rootAssembly.sets[nameRFset], u1=OFF, u2=ON, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
-			elif typeConnection == 'middle':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-				    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-				    nameCoupling, surface= model.rootAssembly.sets[nameRFset], u1=ON, u2=OFF, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
-		else:
-			if typeConnection == 'upper_and_lower':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-						    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-						    nameCoupling, surface= model.rootAssembly.sets[nameRFset], u1=ON, u2=ON, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
-			elif typeConnection == 'middle':
-				model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
-						    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-						    nameCoupling, surface= model.rootAssembly.sets[nameRFset], u1=ON, u2=ON, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
+		if typeConnection == 'upper_and_lower':
+			model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+					    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+					    nameCoupling, surface= model.rootAssembly.sets[nameRFset], u1=dofCoupling(load, 1), u2=dofCoupling(load, 2), u3=dofCoupling(load, 3), ur1=dofCoupling(load, 4), ur2=dofCoupling(load, 5), ur3=dofCoupling(load, 6))
+		elif typeConnection == 'middle':
+			model.Coupling(controlPoint= model.rootAssembly.sets[nameSetSkin], couplingType=
+					    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+					    nameCoupling, surface= model.rootAssembly.sets[nameRFset], u1=dofCoupling(load, 2), u2=dofCoupling(load, 1), u3=dofCoupling(load, 3), ur1=dofCoupling(load, 4), ur2=dofCoupling(load, 5), ur3=dofCoupling(load, 6))
 
 	########################################
 	#Main code for BC's and coupling

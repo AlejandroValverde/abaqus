@@ -128,8 +128,9 @@ load.damp = float(paraRead.damp)
 
 #BCs
 load.typeBC = paraRead.typeBC #'clamped', 'coupling', 'encastre'
-load.additionalBC = paraRead.additionalBC #'none', 'connection', 'connection_x_free', 'connection_tyre', 'connection_x_free_tyre', 'connection_SYS', 'connection_x_free_SYS'
+load.additionalBC = paraRead.additionalBC #'none', 'connection', 'connection_tyre', 'connection_SYS'
 load.conditionNodesInnerLattice = paraRead.conditionNodesInnerLattice #'couplingThroughRF', 'tyre', 'couplingThroughCilSYS'
+load.dofContraint = paraRead.dofContraint.split(',')
 
 if load.additionalBC != 'none' and design.cutGap_y == 0.0:
 	raise ValueError('Not correct option chosen for combination of gap between lattice and skin, and coupling condition for the lattice nodes')
