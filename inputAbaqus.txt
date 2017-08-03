@@ -54,6 +54,8 @@ additionalBC
 connection
 conditionNodesInnerLattice
 tyre
+dofContraint
+1,2,3
 displImposed
 -50
 ForceMagnitude
