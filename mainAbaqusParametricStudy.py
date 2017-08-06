@@ -1,7 +1,9 @@
 import os
 import sys
 import platform
+import math
 import pdb #pdb.set_trace()
+import getopt
 
 from moduleCommon import *
 
@@ -28,13 +30,16 @@ def writeInputParaToFile(fileName, iter, parameters, valueCurrent, keyCurrent, n
 
 			if parameter == 'wingBoxLength':
 
+				#Calculate total length
+				AbstandMittelpunkte=math.sqrt( math.pow((2*nominalDict['r']),2) + math.pow((2*nominalDict['L']),2))
+
 				if keyCurrent == 'N': #If a range of N is being considered
 
-					file.write(str((105*valueCurrent)-151) + '\n')
+					file.write(str((AbstandMittelpunkte*valueCurrent)-AbstandMittelpunkte) + '\n')
 
 				else:
 
-					file.write(str((105*nominalDict['N'])-151) + '\n')
+					file.write(str((AbstandMittelpunkte*nominalDict['N'])-AbstandMittelpunkte) + '\n')
 
 			else:
 
@@ -68,12 +73,37 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 	file.close()
 
-if sys.version_info.major == 2:
-	execfile('setUpParametricStudy.py') #Load parametric study values
-elif sys.version_info.major == 3:
-	exec(open("./setUpParametricStudy.py").read())
+def readCMDoptions(argv, CMDoptionsDict):
+
+	short_opts = "i:"
+	long_opts = ["ifile="]
+	try:
+		opts, args = getopt.getopt(argv,short_opts,long_opts)
+	except getopt.GetoptError:
+		raise ValueError('ERROR: Not correct input to script')
+
+	# check input
+	if len(opts) != len(long_opts):
+		raise ValueError('ERROR: Invalid number of inputs')	
+
+	for opt, arg in opts:
+
+		if opt in ("-i", "--ifile"):
+			# postProcFolderName = arg
+			CMDoptionsDict['setUpParametricStudyFile'] = arg
+
+	return CMDoptionsDict
 
 ########################################
+
+#Read postProc folder name from CMD
+CMDoptionsDict = {}
+CMDoptionsDict = readCMDoptions(sys.argv[1:], CMDoptionsDict)
+
+if sys.version_info.major == 2:
+	execfile(CMDoptionsDict['setUpParametricStudyFile']) #Load parametric study values
+elif sys.version_info.major == 3:
+	exec(open("./"+CMDoptionsDict['setUpParametricStudyFile']).read())
 
 #Write parameter study definition file
 writeParametricStudyDeffile('parametricStudyDef.txt', rangesDict, parameters)

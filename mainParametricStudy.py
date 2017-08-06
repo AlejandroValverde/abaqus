@@ -213,7 +213,8 @@ if CMDoptionsDict['plotOptString'] == 'UR1_tau':
 if CMDoptionsDict['plotOptString'] == 'U2_z':
     plotSettings['typeOfPlot'] = 'plotU2_z_LastTau'
     plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-    caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
+    table = tableOutput('Vertical displacement U2 (mm)', ['parameter', 'value', 'max Q_fr/Q_to', 'max U2', 'zOverC3_maxU2', 'xOverL_maxU2','min U2', 'zOverC3_minU2', 'xOverL_minU2'])
+    caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table)
 
 
 # plt.show(block = True)

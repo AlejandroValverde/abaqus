@@ -16,7 +16,7 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'r' : 10.0,#Node radius 
 			'B' : 20.0, #Node depth
 			'L' : 50.0, #half length
-			'cutGap_y' : 5.0, #Gap between the lattice and the skin (mm) in the y direction. Insert here a value if you want 'cutGap_y'!=5.0 when running script with 'additionalBC'!='none' 
+			'cutGap_y' : 0.0, #Gap between the lattice and the skin (mm) in the y direction. Insert here a value if you want 'cutGap_y'!=5.0 when running script with 'additionalBC'!='none' 
 			'cutGap_x' : 0.0, #Gap between the lattice and the skin (mm) in the x direction.
 			'Cbox_t' : 0.8, #C-box wall thickness, $t_{C}$ (mm)
 			'rib_t' : 2, #Rib thickness, $t_{rib}$ (mm)
@@ -31,8 +31,8 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'tChiral' : 0.5, #Chiral lattice section thickness, $t_{chiral}$ (mm)
 			'typeLoad' : 'singleForceOnLastRib_upper', #'moment', 'force1', 'force2', 'displacement', 'linForce', 'linForceInnerRibs_(upper, middle, upper_down)', 'singleForceOnLastRib_(upper, down)'
 			'typeBC' : 'coupling', #'coupling', 'encastre'
-			'additionalBC' : 'connection_tyre', #'none', 'connection', 'connection_tyre', 'connection_SYS'
-			'conditionNodesInnerLattice' : 'tyre', #'tyre', 'couplingThroughRF', 'couplingThroughCilSYS'
+			'additionalBC' : 'none', #'none', 'connection', 'connection_tyre', 'connection_SYS'
+			'conditionNodesInnerLattice' : 'couplingThroughRF', #'tyre', 'couplingThroughRF', 'couplingThroughCilSYS'
 			'dofContraint' : '1,2,3',
 			'displImposed' : -50,
 			'ForceMagnitude' : -1200, #Applied force magnitude  (N)
@@ -42,7 +42,7 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'forceXn' : 2, #Number of points where the force is applied
 			'forceZPos' : 0.5, #Z-coordinate of distributed force, nondimensionalized with "C3"
 			'courseSize' : 25,
-			'fineSize' : 2.5,
+			'fineSize' : 3,
 			'maxTimeIncrement' : 0.1, #A Float specifying the maximum time increment allowed. It has to be less than the total time period (1.0)
 			'initialTimeIncrement' : 0.001, #A Float specifying the initial time increment. The default value is the total time period for the step.
 			'minTimeIncrement' : 0.000000000000001,
@@ -58,14 +58,14 @@ rangesDict={'typeOfModel' : [],
 			'jobName' : [], #Name to be assigned to the job
 			'E_ribOverE1' : [], 
 			'E1OverE2_simpleModel' : [],
-			'N' : [], #[6, 8, 10],#[5, 10, 20, 30, 40, 50],
-			'M' : [], #[3, 4, 5],
-			'r' : [], #[5, 10, 15],
-			'B' : [], #[10.0, 20.0, 30.0],
-			'L' : [], #[30.0, 50.0, 70.0],
+			'N' : [6,7,8,9], #[6, 8, 10],#[5, 10, 20, 30, 40, 50],
+			'M' : [3, 4, 5],
+			'r' : [5, 10, 15],
+			'B' : [10.0, 20.0, 30.0],
+			'L' : [30.0, 50.0, 70.0],
 			'cutGap_y' : [],
 			'cutGap_x' : [],
-			'Cbox_t' : [0.4, 0.6, 0.8],#[5, 10, 20],#5, 10, 20, 30, 40, 60, 80, 100],
+			'Cbox_t' : [],#[5, 10, 20],#5, 10, 20, 30, 40, 60, 80, 100],
 			'rib_t' : [],#[3, 5, 8, 10],#2, 6, 10, 20, 40],
 			'rib_t_inner' : [],
 			'innerRibs_n' : [],
@@ -74,8 +74,8 @@ rangesDict={'typeOfModel' : [],
 			'rib_a' : [],#[50, 100, 150, 200],
 			'C3' : [], #[200, 300, 400],
 			'wingBoxLength' : [], 
-			'eOverB' : [0.005, 0.01, 0.03, 0.05],#[0.005, 0.01, 0.03, 0.05, 0.1, 0.15], 
-			'tChiral' : [0.3, 0.5, 0.7],#[0.05, 0.1, 0.5, 2.0, 2.5],
+			'eOverB' : [],#[0.005, 0.01, 0.03, 0.05, 0.1, 0.15], 
+			'tChiral' : [],#[0.05, 0.1, 0.5, 2.0, 2.5],
 			'typeLoad' : [],
 			'typeBC' : [],
 			'additionalBC' : [],

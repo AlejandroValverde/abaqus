@@ -102,7 +102,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 		if load.conditionNodesInnerLattice == 'couplingThroughRF':
 			model.Coupling(controlPoint= rfRegion, couplingType=
 			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-			    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=OFF, u2=OFF, u3=ON, ur1=ON, ur2=ON, ur3=ON)#u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON)
+			    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON) #It has to be everything coupled!
 
 		elif load.conditionNodesInnerLattice == 'couplingThroughCilSYS':
 

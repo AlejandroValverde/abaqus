@@ -328,7 +328,14 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 						elif 'displacement' in case.typeLoad:
 							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $displ_y$=' + str(case.displ)+'mm'+'/last frame', **plotSettings['title'])
 
-						plotU2_z_LastTau(case, plotSettings, keyCurrent, axDict[keyCurrent])
+						plotU2_z_LastTau(case, table, plotSettings, keyCurrent, axDict[keyCurrent])
+
+				#Saving for plots that have more than one figure per parameter used
+				if CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['plotU2_z_LastTau']:
+					globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
+					# pdb.set_trace()
+					figDict[keyCurrent].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyCurrent+'_'+str(getattr(case, keyCurrent))+'.pdf'))
+
 
 	if plotSettings['typeOfPlot'] == 'UR1_tau':
 
@@ -337,7 +344,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 			axDict[key].legend(handles = scatterHandles[key], **plotSettings['legend'])
 
 	#Save figures
-	if figDict[keysUsed[0]] != 0 and CMDoptionsDict['flagSaveFigure']: #If at least one plot was crated
+	if figDict[keysUsed[0]] != 0 and CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['UR1_tau']: #If at least one plot was crated
 		globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
 		for keyUsed in keysUsed:
 
@@ -405,20 +412,41 @@ def plotU2_x(classOfData, plotSettings, attr, ax):
 
 	ax.legend(**plotSettings['legend'])
 
-def plotU2_z_LastTau(classOfData, plotSettings, attr, ax):
+def plotU2_z_LastTau(classOfData, table, plotSettings, attr, ax):
 
 	ax.set_xlabel('$z / C_3$', **plotSettings['axes_x'])
 	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
 
 	indexForMaxFrame = classOfData.framesCount.index(max(classOfData.framesCount))
 	j=0
+	maxXforModel = 105*float(classOfData.N) #Approximate maximum x position for the model
+	maxU2, minU2, posZ_maxU2, posZ_minU2, posX_maxU2, posX_minU2 = 0,0,0,0,0,0
 
 	for x in classOfData.dataFrames[indexForMaxFrame].xPosForU2:
 
-		ax.plot(classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].zOverC3, classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].u2_zOverC3, label='x='+str(round(x,2)), **plotSettings['line'])
+		zOverC3_vector = classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].zOverC3
+		u2_zOverC3_vector = classOfData.dataFrames[indexForMaxFrame].dataU2OverX[j].u2_zOverC3
+		ax.plot(zOverC3_vector, u2_zOverC3_vector, label='x/L='+str(round(x/maxXforModel,2)), **plotSettings['line'])
+		
+		#Store info of max and min U2
+		indexMaxU2 = np.argmax(u2_zOverC3_vector)
+		indexMinU2 = np.argmin(u2_zOverC3_vector)
+		# pdb.set_trace()
+		if j == 0:
+			maxU2, minU2, posZ_maxU2, posZ_minU2, posX_maxU2, posX_minU2 = max(u2_zOverC3_vector),min(u2_zOverC3_vector),zOverC3_vector[indexMaxU2],zOverC3_vector[indexMinU2],x/maxXforModel,x/maxXforModel
+		else:
+			if max(u2_zOverC3_vector)>maxU2:
+				maxU2, posZ_maxU2, posX_maxU2 = max(u2_zOverC3_vector),zOverC3_vector[indexMaxU2],x/maxXforModel
+			if min(u2_zOverC3_vector)<minU2:
+				minU2, posZ_minU2, posX_minU2 = min(u2_zOverC3_vector),zOverC3_vector[indexMinU2],x/maxXforModel
+			# pdb.set_trace()
+
 		j += 1
 
 	ax.legend(**plotSettings['legend'])
+
+	#Output on CMD
+	table.printRow([attr, getattr(classOfData, attr), float(max(classOfData.framesFraction)), maxU2, posZ_maxU2, posX_maxU2, minU2, posZ_minU2, posX_minU2])
 
 
 def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles): #NOT IN USE
