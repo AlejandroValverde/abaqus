@@ -100,7 +100,7 @@ load.typeLoad = paraRead.typeLoad
 # - 'singleForceOnLastRib_bootom': Single force applied on the tip outer rib, at the lower flange
 #		*Parameters: ForceMagnitude, zPos
 #Step
-load.typeAnalysis = paraRead.typeAnalysis #'linear' or 'nonlinear'
+load.typeAnalysis = paraRead.typeAnalysis #'linear', 'nonlinear' or 'double_linear_nonlinear'
 load.typeAbaqus = paraRead.typeAbaqus #'Standard' or 'Explicit'
 load.maxTimeIncrement = float(paraRead.maxTimeIncrement) # A Float specifying the maximum time increment allowed. It has to be less than the total time period (1.0)
 load.minTimeIncrement = float(paraRead.minTimeIncrement) # A Float specifying the minimum time increment allowed. The default value is the smaller of the suggested initial time increment
@@ -137,7 +137,10 @@ if load.additionalBC != 'none' and design.cutGap_y == 0.0:
 
 ## Job
 jobDef = structtype()
-jobDef.jobName = paraRead.jobName + '_' +paraRead.typeAnalysis
+if 'nonlinear' in paraRead.typeAnalysis:
+	jobDef.jobName = paraRead.jobName + '_nonlinear'
+else:
+	jobDef.jobName = paraRead.jobName + '_linear'
 jobDef.saveJob = False
 jobDef.numCpus = 4
 
@@ -292,61 +295,90 @@ loads(model, design, mesh, load, instanceToApplyMeshBCsLoads, load.typeLoad, loa
 ################################
 #Job operations
 
-#Create job
-mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF, 
-    explicitPrecision=SINGLE, getMemoryFromAnalysis=True, historyPrint=OFF, 
-    memory=90, memoryUnits=PERCENTAGE, model='Model-1', modelPrint=OFF, 
-    multiprocessingMode=DEFAULT, name=jobDef.jobName, nodalOutputPrecision=SINGLE, 
-    numCpus=jobDef.numCpus, numDomains=jobDef.numCpus, numGPUs=0, queue=None, resultsFormat=ODB, scratch='', type=
-    ANALYSIS, userSubroutine='', waitHours=0, waitMinutes=0)
+#Variables
+jobCurrentName = jobDef.jobName
+jobExecutionFlag = True
+modelName = 'Model-1'
 
-#Write job to file
-if jobDef.saveJob:
+while jobExecutionFlag:
 
-	print('Job saved...')
-	mdb.jobs[jobDef.jobName].writeInput(consistencyChecking=OFF)
+	#Create job
+	mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF, 
+	    explicitPrecision=SINGLE, getMemoryFromAnalysis=True, historyPrint=OFF, 
+	    memory=90, memoryUnits=PERCENTAGE, model=modelName, modelPrint=OFF, 
+	    multiprocessingMode=DEFAULT, name=jobCurrentName, nodalOutputPrecision=SINGLE, 
+	    numCpus=jobDef.numCpus, numDomains=jobDef.numCpus, numGPUs=0, queue=None, resultsFormat=ODB, scratch='', type=
+	    ANALYSIS, userSubroutine='', waitHours=0, waitMinutes=0)
 
-#Submit job
-if session.executeJob:
+	#Create job variable
+	jobCurrent = mdb.jobs[jobCurrentName]
 
-	model.rootAssembly.regenerate()
+	#Write job to file
+	if jobDef.saveJob:
 
-	try:
-		executionFlag = True
-		print('Job submitted and calculating...')
+		print('Job saved...')
+		jobCurrent.writeInput(consistencyChecking=OFF)
 
-		mdb.jobs[jobDef.jobName].submit(consistencyChecking=OFF)
-		mdb.jobs[jobDef.jobName].waitForCompletion()
+	#Submit job
+	if session.executeJob:
 
-	except Exception as e:
-		executionFlag = False
+		model.rootAssembly.regenerate()
 
-	if executionFlag:
-		print('Job successfully completed')
+		try:
+			#The job will be submitted here. It the simulation aborts, then another
+			executionFlag = True
+			print('Job submitted and calculating...')
+
+			jobCurrent.submit(consistencyChecking=OFF)
+			jobCurrent.waitForCompletion()
+
+		except Exception as e:
+			executionFlag = False
+
+		if executionFlag:
+			print('Job successfully completed')
+		else:
+			print('Job aborted')
+
+	#Post-processing
+	if session.executePostProc:
+		print('Running post-processing...')
+
+		#Get current folder
+		cwd = os.getcwd()
+
+		#Check if postProc folder already exists
+		globalCreateDir(cwd, '-postProc')
+		
+		#Create folder for simulation results
+		globalCreateDir(cwd, '-postProc-'+paraRead.Iter)
+
+		if load.typeAnalysis == 'linear':
+			PostProc_linear(paraRead.Iter, design, load, jobDef)
+
+		elif 'nonlinear' in load.typeAnalysis:
+			PostProc_nonlinear(paraRead.Iter, design, load, jobDef)
+
+		#Copy input file to postProc folder
+		globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName.replace('.txt', '_'+paraRead.typeAnalysis+'.txt'))
+
+		#Return to original working folder
+		globalChangeDir(cwd, '.')
+
+	if 'double' in load.typeAnalysis:
+		#Now the job will be submitted for linear analysis
+		load.typeAnalysis = 'linear' #The program won't enter again in this if statement
+
+		#New model
+		modelName = 'Model-linear'
+		mdb.Model(name=modelName, objectToCopy=mdb.models['Model-1'])
+		model = mdb.models[modelName]
+		
+		#Change step
+		model.steps['load'].setValues(nlgeom=OFF,initialInc=1.0, maxInc=1.0, minInc=1e-05)
+		
+		jobCurrentName = jobCurrentName.replace('nonlinear', 'linear')
+
 	else:
-		print('Job aborted')
 
-#Post-processing
-if session.executePostProc:
-	print('Running post-processing...')
-
-	#Get current folder
-	cwd = os.getcwd()
-
-	#Check if postProc folder already exists
-	globalCreateDir(cwd, '-postProc')
-	
-	#Create folder for simulation results
-	globalCreateDir(cwd, '-postProc-'+paraRead.Iter)
-
-	if load.typeAnalysis == 'linear':
-		PostProc_linear(paraRead.Iter, design, load, jobDef)
-
-	elif load.typeAnalysis == 'nonlinear':
-		PostProc_nonlinear(paraRead.Iter, design, load, jobDef)
-
-	#Copy input file to postProc folder
-	globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName.replace('.txt', '_'+paraRead.typeAnalysis+'.txt'))
-
-	#Return to original working folder
-	globalChangeDir(cwd, '.')
+		jobExecutionFlag = False #Terminate execution

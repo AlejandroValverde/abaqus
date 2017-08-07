@@ -101,7 +101,7 @@ for file in os.listdir(postProcFolder):
             temp.calculateK()
 
         #NONLINEAR
-        elif temp.typeAnalysis == 'nonlinear':
+        elif 'nonlinear' in temp.typeAnalysis:
 
             #Obtain information of the fraction of load applied at each frame
             temp.framesFraction = temp.obtainFrameLoadFractionInfo('frameInfo.txt')
@@ -173,37 +173,40 @@ for file in os.listdir(postProcFolder):
 #Return to original working folder
 globalChangeDir(cwd, '')
 
+print('-> Data loaded...')
+
 #### PLOTTING ####
 
 ##Plot reaction force (RF-2) as a function of parameter values
-plotSettings['yLabel'] = 'Reaction force, $R_y$ (N)'
-plotSettings['typeOfPlot'] = 'RF'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
+# plotSettings['yLabel'] = 'Reaction force, $R_y$ (N)'
+# plotSettings['typeOfPlot'] = 'RF'
+# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
-#Plot initial stiffness (K) as a function of parameter values
-plotSettings['yLabel'] = 'Initial stiffness, $K$ (N/mm)'
-plotSettings['typeOfPlot'] = 'K'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
+# #Plot initial stiffness (K) as a function of parameter values
+# plotSettings['yLabel'] = 'Initial stiffness, $K$ (N/mm)'
+# plotSettings['typeOfPlot'] = 'K'
+# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
-#Plot UR-1 along the wing box length
-plotSettings['typeOfPlot'] = 'UR1'
-plotSettings['yLabel'] = 'Angular rotation $UR_1$ (deg)'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
+# #Plot UR-1 along the wing box length
+# plotSettings['typeOfPlot'] = 'UR1'
+# plotSettings['yLabel'] = 'Angular rotation $UR_1$ (deg)'
+# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
-#Plot vertical displacement U2 along the wing box chordwise direction 
-plotSettings['typeOfPlot'] = 'U2_z'
-plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
+# #Plot vertical displacement U2 along the wing box chordwise direction 
+# plotSettings['typeOfPlot'] = 'U2_z'
+# plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
+# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
-#Plot vertical displacement U2 along the wing box spanwise direction 
-plotSettings['typeOfPlot'] = 'U2_x'
-plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
+# #Plot vertical displacement U2 along the wing box spanwise direction 
+# plotSettings['typeOfPlot'] = 'U2_x'
+# plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
+# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
 # NONLINEAR PLOTS
 # plotSettings['typeOfPlot'] = 'UR1_frame'
 # plotSettings['yLabel'] = 'Angular rotation (deg)'
 # caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+
 if CMDoptionsDict['plotOptString'] == 'UR1_tau':
     plotSettings['typeOfPlot'] = 'UR1_tau'
     plotSettings['yLabel'] = 'Angular rotation (deg)'
@@ -229,4 +232,4 @@ os.chdir(cwd)
 if not isUnix() and CMDoptionsDict['showFigures']:
     plt.show(block = True)
 
-print('-> Parametric study finished')
+print('---> Parametric study finished')

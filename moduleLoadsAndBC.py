@@ -562,7 +562,7 @@ def loads(model, design, mesh, load, instanceToApplyLoadAndBC, typeLoad, typeAna
 		    'Step for load, standard, linear', name='load', previous=
 		    'Initial', nlgeom = OFF)
 
-	elif typeAnalysis == 'nonlinear' and typeAbaqus.lower() == 'standard':
+	elif 'nonlinear' in typeAnalysis and typeAbaqus.lower() == 'standard':
 		model.StaticStep(description=
 		    'Step for load, standard, nonlinear', name='load', previous=
 		    'Initial', nlgeom = ON, initialInc=0.001, maxInc=load.maxTimeIncrement, minInc=load.minTimeIncrement, maxNumInc=load.maxNumInc)

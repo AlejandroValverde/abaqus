@@ -90,6 +90,32 @@ def importParametricStudyDeffile(fileName):
 
 	return dictOut
 
+def readFrameInfoFile(fileName):
+
+	file = open(fileName, 'r')
+
+	lines = file.readlines()
+
+	frameIDs, frameFractions = [], []
+
+	for i in range(int(len(lines)/2)): #int(len(lines)/2: Number of frames, each frame comprises two lines for name and for range
+
+		frameID = lines[(i*2)]
+		frameFraction = lines[(2*i)+1]
+
+		frameID = frameID.replace('\n','')
+		frameFraction = frameFraction.replace('\n','')
+
+		frameID = frameID.replace('\r\n','')
+		frameFraction = frameFraction.replace('\r\n','')
+
+		frameIDs += [float(frameID)]
+		frameFractions += [float(frameFraction)]
+
+	file.close()
+
+	return frameIDs, frameFractions
+
 
 class tableOutput(object):
 	"""docstring for ClassName"""
@@ -235,7 +261,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 	def figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings):
 
 		if flagDict[keyCurrent]: #Figure initialization
-
+			
 			figure, ax = plt.subplots(1, 1)
 			ax.grid(**plotSettings['grid'])
 			figure.set_size_inches(10, 6, forward=True)
@@ -252,10 +278,11 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 	keysUsed = []
 	
 	if plotSettings['typeOfPlot'] in ('UR1_tau', 'UR1_frame'):
+		
 		counterNperKey = studyDefDict.fromkeys(keysAll, 0)
 		scatterHandles = studyDefDict.fromkeys(keysAll, [])
 		keysWith_UR1_tau_plot = []
-	
+
 	rangeID = 1
 	for case in data:
 
@@ -292,7 +319,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
 						plotU2_x(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
-				elif case.typeAnalysis == 'nonlinear':
+				elif 'nonlinear' in case.typeAnalysis:
 
 					if plotSettings['typeOfPlot'] == 'UR1_frame':
 
@@ -344,7 +371,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 			axDict[key].legend(handles = scatterHandles[key], **plotSettings['legend'])
 
 	#Save figures
-	if figDict[keysUsed[0]] != 0 and CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['UR1_tau']: #If at least one plot was crated
+	if keysUsed and CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['UR1_tau']: #If at least one plot was crated: if keysUsed
 		globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
 		for keyUsed in keysUsed:
 

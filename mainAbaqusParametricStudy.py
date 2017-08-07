@@ -112,7 +112,7 @@ cwd = os.getcwd() #Get working directory
 
 #Study loop
 iterationID = 1
-# for (keyCurrent, rangeCurrent) in rangesDict.items(): #For all the parameters defined
+currentExecutionFlag = True
 for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in parameters]):
 
 	if rangesDict[keyCurrent]: #Continue if range is not empty
@@ -121,8 +121,11 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 			print('\n'+'\n'+'### Abaqus parametric study initialized, iteration: ' + str(iterationID))
 
-			#Update name
-			jobNameComplete = nominalDict['jobName'] + '_' + nominalDict['typeAnalysis']
+			#Update job name
+			if 'nonlinear' in nominalDict['typeAnalysis']:
+				jobNameComplete = nominalDict['jobName'] + '_nonlinear'
+			else:
+				jobNameComplete = nominalDict['jobName'] + '_linear'
 
 			#Clear files from last iteration
 			for f in os.listdir(cwd):
@@ -134,44 +137,40 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 			writeInputParaToFile('inputAbaqus.txt', iterationID, parameters, valueCurrent, keyCurrent, nominalDict)
 
 			#Build geometry, create and execute job, and run post-processing
-			print('-> Building and executing model (nonlinear simulation)...')
+			if 'double' in nominalDict['typeAnalysis']: 
+				print('-> Building and executing model (nonlinear + linear simulation)...')
+			elif 'nonlinear' in nominalDict['typeAnalysis']:
+				print('-> Building and executing model (nonlinear simulation)...')
+			else:
+				print('-> Building and executing model (linear simulation)...')
 			os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
 
 			#Copy job file to specific postproc folder if the program is being run in Linux
-			if platform.system() == 'Windows':
-				globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'.odb')
+			flagCopyJob = True
+			additionalLinearSimExecutedFlag = True
+			while flagCopyJob:
+				if platform.system() == 'Windows':
+					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'.odb')
 
-			#Clear files from last computation
-			for f in os.listdir(cwd):
-			    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
-			        os.remove(f)
+				#Clear files from last computation
+				for f in os.listdir(cwd):
+				    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
+				        os.remove(f)
 
-			######################################
-			##### Run linear simulation of present iteration
-			nominalDict['typeAnalysis'] = 'linear'
+				#Another job will be created if a linear simulation was also run
+				if 'double' in nominalDict['typeAnalysis'] and additionalLinearSimExecutedFlag:
+					jobNameComplete = nominalDict['jobName'] + '_linear'
+					additionalLinearSimExecutedFlag = False
 
-			#Update name
-			jobNameComplete = nominalDict['jobName'] + '_' + nominalDict['typeAnalysis']
+				else:
+					flagCopyJob = False
 
-			#Clear files from last iteration
-			for f in os.listdir(cwd):
-			    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
-			        os.remove(f)
+			#Check how far the nonlinear simulation went
+			globalChangeDir(cwd, '-postProc-'+str(iterationID))
+			frameIDs, frameFractions = readFrameInfoFile('frameInfo.txt')
+			print('-> Simulation was executed up to a load fraction of: '+str(round(frameFractions[-1], 2)))
+			globalChangeDir(cwd, '.') #Return to working folder
 
-			#Update Abaqus input file
-			print('-> Updating Abaqus input parameters for linear simulation')
-			writeInputParaToFile('inputAbaqus.txt', iterationID, parameters, valueCurrent, keyCurrent, nominalDict)
-			
-			#Build geometry, create and execute job, and run post-processing
-			print('-> Building and executing model (linear simulation)...')
-			os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
-
-			#Copy job file to specific postproc folder if the program is being run in Linux
-			if platform.system() == 'Windows':
-				globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'.odb')
-
-			#####Return to original configuration
-			nominalDict['typeAnalysis'] = 'nonlinear'
 
 			iterationID += 1
 
@@ -179,6 +178,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 				break
 
 	if iterationID == (iterationIDlimit+1): #Stop loop after at specific number of iterations, if required
+		print('---> Abaqus parametric study manually aborted in iteration: '+str(iterationIDlimit))
 		break
 
 #Move parametric study definition to file to PostProc folder
