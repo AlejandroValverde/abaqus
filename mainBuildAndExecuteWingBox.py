@@ -360,7 +360,7 @@ while jobExecutionFlag:
 			PostProc_nonlinear(paraRead.Iter, design, load, jobDef)
 
 		#Copy input file to postProc folder
-		globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName.replace('.txt', '_'+paraRead.typeAnalysis+'.txt'))
+		globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName.replace('.txt', '_'+'nonlinear'+'.txt'))
 
 		#Return to original working folder
 		globalChangeDir(cwd, '.')

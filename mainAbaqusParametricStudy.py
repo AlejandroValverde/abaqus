@@ -75,8 +75,8 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 def readCMDoptions(argv, CMDoptionsDict):
 
-	short_opts = "i:"
-	long_opts = ["ifile="]
+	short_opts = "i:o:"
+	long_opts = ["ifile=","convControl="]
 	try:
 		opts, args = getopt.getopt(argv,short_opts,long_opts)
 	except getopt.GetoptError:
@@ -92,7 +92,74 @@ def readCMDoptions(argv, CMDoptionsDict):
 			# postProcFolderName = arg
 			CMDoptionsDict['setUpParametricStudyFile'] = arg
 
+		elif opt in ("-o", "--convControl"):
+			CMDoptionsDict['convergenceControl'] = arg
+
 	return CMDoptionsDict
+
+def readFrameInfoFile(fileName):
+
+	file = open(fileName, 'r')
+
+	lines = file.readlines()
+
+	frameIDs, frameFractions = [], []
+
+	for i in range(int(len(lines)/2)): #int(len(lines)/2: Number of frames, each frame comprises two lines for name and for range
+
+		frameID = lines[(i*2)]
+		frameFraction = lines[(2*i)+1]
+
+		frameID = frameID.replace('\n','')
+		frameFraction = frameFraction.replace('\n','')
+
+		frameID = frameID.replace('\r\n','')
+		frameFraction = frameFraction.replace('\r\n','')
+
+		frameIDs += [float(frameID)]
+		frameFractions += [float(frameFraction)]
+
+	file.close()
+
+	return frameIDs, frameFractions
+
+def checkConvergencyAndReturnFlag(iterationID, current_nominalDict):
+
+	#Check convergence of current simulation
+	globalChangeDir(cwd, '-postProc-'+str(iterationID))
+	frameIDs, frameFractions = readFrameInfoFile('frameInfo.txt')
+	lastTau = frameFractions[-1]
+	print('-> Simulation was executed up to a load fraction of: '+str(round(lastTau, 2)))
+	globalChangeDir(cwd, '.') #Return to working folder
+
+	criteria = CMDoptionsDict['convergenceControl']
+	if 'mesh' in criteria:
+		meshTauBorder = float(criteria[:2])
+
+		if lastTau < meshTauBorder/100:
+
+			current_nominalDict['fineSize'] = current_nominalDict['fineSize'] + 1
+			current_nominalDict['courseSize'] = current_nominalDict['courseSize'] + 5
+
+			print('-> Course mesh size increased to '+str(current_nominalDict['courseSize']))
+			print('-> Fine mesh size increased to '+str(current_nominalDict['fineSize']))
+			flagAnotherJob = True
+
+		elif (0.6 < lastTau < 0.98) and 'damp' in criteria:
+
+			if current_nominalDict['damp'] == 0.0:
+				current_nominalDict['damp'] = 0.00000002 #2E-8
+			else:
+				current_nominalDict['damp'] = current_nominalDict['damp'] * 10
+
+			print('-> Damping factor increased to '+str(current_nominalDict['damp']))
+
+			flagAnotherJob = True
+
+		else:
+
+			flagAnotherJob = False
+	return flagAnotherJob, current_nominalDict
 
 ########################################
 
@@ -112,66 +179,74 @@ cwd = os.getcwd() #Get working directory
 
 #Study loop
 iterationID = 1
-currentExecutionFlag = True
+
 for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in parameters]):
 
 	if rangesDict[keyCurrent]: #Continue if range is not empty
 
 		for valueCurrent in rangeCurrent:
 
-			print('\n'+'\n'+'### Abaqus parametric study initialized, iteration: ' + str(iterationID))
+			#Initialize iteration parameters and flags for new iteration
+			current_nominalDict = nominalDict.copy() #Get the original nominal dict, IMPORTANT: copy() to not change nominal dict
+			internalIterations = 0
+			flagAnotherJob = True
 
-			#Update job name
-			if 'nonlinear' in nominalDict['typeAnalysis']:
-				jobNameComplete = nominalDict['jobName'] + '_nonlinear'
-			else:
-				jobNameComplete = nominalDict['jobName'] + '_linear'
+			while flagAnotherJob:
 
-			#Clear files from last iteration
-			for f in os.listdir(cwd):
-			    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
-			        os.remove(f)
+				print('\n'+'\n'+'### Abaqus parametric study initialized, iteration: ' + str(iterationID))
 
-			#Update Abaqus input file
-			print('-> Updating Abaqus input parameters')
-			writeInputParaToFile('inputAbaqus.txt', iterationID, parameters, valueCurrent, keyCurrent, nominalDict)
+				#Update job name
+				if 'nonlinear' in current_nominalDict['typeAnalysis']:
+					jobNameComplete = current_nominalDict['jobName'] + '_nonlinear'
+				else:
+					jobNameComplete = current_nominalDict['jobName'] + '_linear'
 
-			#Build geometry, create and execute job, and run post-processing
-			if 'double' in nominalDict['typeAnalysis']: 
-				print('-> Building and executing model (nonlinear + linear simulation)...')
-			elif 'nonlinear' in nominalDict['typeAnalysis']:
-				print('-> Building and executing model (nonlinear simulation)...')
-			else:
-				print('-> Building and executing model (linear simulation)...')
-			os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
-
-			#Copy job file to specific postproc folder if the program is being run in Linux
-			flagCopyJob = True
-			additionalLinearSimExecutedFlag = True
-			while flagCopyJob:
-				if platform.system() == 'Windows':
-					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'.odb')
-
-				#Clear files from last computation
+				#Clear files from last iteration
 				for f in os.listdir(cwd):
 				    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
 				        os.remove(f)
 
-				#Another job will be created if a linear simulation was also run
-				if 'double' in nominalDict['typeAnalysis'] and additionalLinearSimExecutedFlag:
-					jobNameComplete = nominalDict['jobName'] + '_linear'
-					additionalLinearSimExecutedFlag = False
+				#Update Abaqus input file
+				print('-> Updating Abaqus input parameters')
+				writeInputParaToFile('inputAbaqus.txt', iterationID, parameters, valueCurrent, keyCurrent, current_nominalDict)
 
+				#Build geometry, create and execute job, and run post-processing
+				if 'double' in current_nominalDict['typeAnalysis']: 
+					print('-> Building and executing model (nonlinear + linear simulation)...')
+				elif 'nonlinear' in current_nominalDict['typeAnalysis']:
+					print('-> Building and executing model (nonlinear simulation)...')
 				else:
-					flagCopyJob = False
+					print('-> Building and executing model (linear simulation)...')
+				os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
 
-			#Check how far the nonlinear simulation went
-			globalChangeDir(cwd, '-postProc-'+str(iterationID))
-			frameIDs, frameFractions = readFrameInfoFile('frameInfo.txt')
-			print('-> Simulation was executed up to a load fraction of: '+str(round(frameFractions[-1], 2)))
-			globalChangeDir(cwd, '.') #Return to working folder
+				#Copy job file to specific postproc folder if the program is being run in Linux
+				flagCopyJob = True
+				additionalLinearSimExecutedFlag = True
+				while flagCopyJob:
+					if platform.system() == 'Windows':
+						globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'_damp'+str(current_nominalDict['damp'])+'.odb')
 
+					#Clear files from last computation
+					for f in os.listdir(cwd):
+					    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
+					        os.remove(f)
 
+					#Another job has been be created if a linear simulation was also run
+					if 'double' in current_nominalDict['typeAnalysis'] and additionalLinearSimExecutedFlag:
+						jobNameComplete = current_nominalDict['jobName'] + '_linear'
+						additionalLinearSimExecutedFlag = False
+
+					else:
+						flagCopyJob = False
+
+				#Check how far the nonlinear simulation went
+				flagAnotherJob, current_nominalDict = checkConvergencyAndReturnFlag(iterationID, current_nominalDict)
+
+				internalIterations += 1
+				if internalIterations >= 3:
+					raise ValueError('Convergence not achieved with ' +CMDoptionsDict['convergenceControl'] + ' criteria')
+
+			#Iteration finished
 			iterationID += 1
 
 			if iterationID == (iterationIDlimit+1): #Stop loop after at specific number of iterations, if required

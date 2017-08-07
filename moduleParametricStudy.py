@@ -90,33 +90,6 @@ def importParametricStudyDeffile(fileName):
 
 	return dictOut
 
-def readFrameInfoFile(fileName):
-
-	file = open(fileName, 'r')
-
-	lines = file.readlines()
-
-	frameIDs, frameFractions = [], []
-
-	for i in range(int(len(lines)/2)): #int(len(lines)/2: Number of frames, each frame comprises two lines for name and for range
-
-		frameID = lines[(i*2)]
-		frameFraction = lines[(2*i)+1]
-
-		frameID = frameID.replace('\n','')
-		frameFraction = frameFraction.replace('\n','')
-
-		frameID = frameID.replace('\r\n','')
-		frameFraction = frameFraction.replace('\r\n','')
-
-		frameIDs += [float(frameID)]
-		frameFractions += [float(frameFraction)]
-
-	file.close()
-
-	return frameIDs, frameFractions
-
-
 class tableOutput(object):
 	"""docstring for ClassName"""
 	def __init__(self, titleStr, columns):
@@ -473,7 +446,7 @@ def plotU2_z_LastTau(classOfData, table, plotSettings, attr, ax):
 	ax.legend(**plotSettings['legend'])
 
 	#Output on CMD
-	table.printRow([attr, getattr(classOfData, attr), float(max(classOfData.framesFraction)), maxU2, posZ_maxU2, posX_maxU2, minU2, posZ_minU2, posX_minU2])
+	table.printRow([attr, getattr(classOfData, attr), float(max(classOfData.framesFraction)), classOfData.fineSize, classOfData.courseSize, classOfData.damp, maxU2, posZ_maxU2, posX_maxU2, minU2, posZ_minU2, posX_minU2])
 
 
 def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles): #NOT IN USE
@@ -556,13 +529,15 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scat
 		#To obtain twist from U2 difference
 		indexForMaxX = dataThisFrame.xPosForU2.index(max(dataThisFrame.xPosForU2))
 
+		#Mean operations
+		meanTwist = np.mean([dataThisFrame.ur1_xOverL_up[-1], dataThisFrame.ur1_xOverL_dn[-1], dataThisFrame.twistFromU2[indexForMaxX]])
+		storeMeans += [meanTwist]
+		
+		maxErrorFromMean = maxErrorFromMeanFunction([dataThisFrame.ur1_xOverL_up[-1]* (180/math.pi), dataThisFrame.ur1_xOverL_dn[-1]* (180/math.pi), dataThisFrame.twistFromU2[indexForMaxX]* (180/math.pi)])
+		errorStore += [maxErrorFromMean]
+		
 		if plotSettings['meanOption']:
 
-			meanTwist = np.mean([dataThisFrame.ur1_xOverL_up[-1], dataThisFrame.ur1_xOverL_dn[-1], dataThisFrame.twistFromU2[indexForMaxX]])
-			storeMeans += [meanTwist]
-			
-			maxErrorFromMean = maxErrorFromMeanFunction([dataThisFrame.ur1_xOverL_up[-1]* (180/math.pi), dataThisFrame.ur1_xOverL_dn[-1]* (180/math.pi), dataThisFrame.twistFromU2[indexForMaxX]* (180/math.pi)])
-			errorStore += [maxErrorFromMean]
 			ax.plot(fraction , meanTwist * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 
 		else:
@@ -609,7 +584,7 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scat
 	
 
 	#Output on CMD
-	table.printRow([attr, getattr(classOfData, attr), float(max(classOfData.framesFraction)), min(storeMeans)*(180/math.pi), max(errorStore), meanTwist_linear * (180/math.pi), errorLinear])
+	table.printRow([attr, getattr(classOfData, attr), float(max(classOfData.framesFraction)), classOfData.fineSize, classOfData.courseSize, classOfData.damp, min(storeMeans)*(180/math.pi), max(errorStore), meanTwist_linear * (180/math.pi), errorLinear])
 	
 	# pdb.set_trace()
 	return scatterHandles[attr]

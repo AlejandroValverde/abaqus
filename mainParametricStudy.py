@@ -210,13 +210,13 @@ print('-> Data loaded...')
 if CMDoptionsDict['plotOptString'] == 'UR1_tau':
     plotSettings['typeOfPlot'] = 'UR1_tau'
     plotSettings['yLabel'] = 'Angular rotation (deg)'
-    table = tableOutput('Angular rotation at tip UR1 (deg)', ['parameter', 'value', 'max Q_fr/Q_to', 'max UR1', 'error UR1 (%)', 'UR1, linear', 'error UR1, linear (%)'])
+    table = tableOutput('Angular rotation at tip UR1 (deg)', ['parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp', 'max UR1', 'error UR1 (%)', 'UR1, linear', 'error UR1, linear (%)'])
     caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table)
 
 if CMDoptionsDict['plotOptString'] == 'U2_z':
     plotSettings['typeOfPlot'] = 'plotU2_z_LastTau'
     plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-    table = tableOutput('Vertical displacement U2 (mm)', ['parameter', 'value', 'max Q_fr/Q_to', 'max U2', 'zOverC3_maxU2', 'xOverL_maxU2','min U2', 'zOverC3_minU2', 'xOverL_minU2'])
+    table = tableOutput('Vertical displacement U2 (mm)', ['parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp', 'max U2', 'zOverC3_maxU2', 'xOverL_maxU2','min U2', 'zOverC3_minU2', 'xOverL_minU2'])
     caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table)
 
 
