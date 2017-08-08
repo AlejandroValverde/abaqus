@@ -87,88 +87,75 @@ for file in os.listdir(postProcFolder):
         if not os.listdir(postProcFolderForCase): # equals to: if os.listdir(postProcFolderForCase) == []
             warnings.warn('-> No result files found for iteration '+str(temp.id))
 
-        #LINEAR
-        if temp.typeAnalysis == 'linear': #NOT IN USE
-
-            temp.importReactionForce()
-
-            temp.import_data_from_path(str(temp.id)+'-'+kindY+'_'+kindX+'.rpt', 'ur1', 'xOverL')
-
-            temp.import_data_from_path(str(temp.id)+'-'+kindY+'_'+kindX+'.rpt', 'u2', 'zOverC3')
-
-            temp.import_data_from_path(str(temp.id)+'-'+kindY+'_'+kindX+'.rpt', 'u2', 'xOverL')
-
-            temp.calculateK()
-
         #NONLINEAR
-        elif 'nonlinear' in temp.typeAnalysis:
 
-            #Obtain information of the fraction of load applied at each frame
-            temp.framesFraction = temp.obtainFrameLoadFractionInfo('frameInfo.txt')
+        #Obtain information of the fraction of load applied at each frame
+        temp.framesFraction = temp.obtainFrameLoadFractionInfo('frameInfo.txt')
 
-            #Obtain data of the external work vs static dissipation energy given by Abaqus in (N * mm)
+        #Obtain data of the external work vs static dissipation energy given by Abaqus in (N * mm)
+        if temp.damp != '0.0':
             temp.obtainEnergyData('extWork_stab.rpt')
 
-            #For each frame
-            dataFrames = []
-            framesCount = []
-            for file2 in os.listdir(postProcFolderForCase):
+        #For each frame
+        dataFrames = []
+        framesCount = []
+        for file2 in os.listdir(postProcFolderForCase):
 
-                if file2.startswith('ur1_up'):
+            if file2.startswith('ur1_up'):
 
-                    #Initialize class for frame
-                    tempPerFrame = dataPerFrame(int(file2.replace('.rpt','')[12:])) #int(file2.replace('.rpt','')[12:]) returns the frame ID
+                #Initialize class for frame
+                tempPerFrame = dataPerFrame(int(file2.replace('.rpt','')[12:])) #int(file2.replace('.rpt','')[12:]) returns the frame ID
 
-                    #Import data from upper flange
-                    tempPerFrame.import_data_from_path(file2, 'ur1', 'xOverL_'+file2[4:6])
+                #Import data from upper flange
+                tempPerFrame.import_data_from_path(file2, 'ur1', 'xOverL_'+file2[4:6])
 
-                    #For lower flange
-                    file2_down = file2.replace('up','dn')
-                    tempPerFrame.import_data_from_path(file2_down, 'ur1', 'xOverL_'+file2_down[4:6])
+                #For lower flange
+                file2_down = file2.replace('up','dn')
+                tempPerFrame.import_data_from_path(file2_down, 'ur1', 'xOverL_'+file2_down[4:6])
 
-                    #For u2 vs x
-                    dataU2OverX = []
-                    dataxPos = []
-                    dataTwistFromU2 = []
-                    for file3 in os.listdir(postProcFolderForCase):
-                        if file3.startswith('u2_frame'+str(tempPerFrame.frameID)+'_x'):
+                #For u2 vs x
+                dataU2OverX = []
+                dataxPos = []
+                dataTwistFromU2 = []
+                for file3 in os.listdir(postProcFolderForCase):
+                    if file3.startswith('u2_frame'+str(tempPerFrame.frameID)+'_x'):
 
-                            tempPerFramePerX = dataPerFramePerX(float(file3.replace('u2_frame'+str(tempPerFrame.frameID)+'_x','')[:-4]))
+                        tempPerFramePerX = dataPerFramePerX(float(file3.replace('u2_frame'+str(tempPerFrame.frameID)+'_x','')[:-4]))
 
-                            tempPerFramePerX.import_data_from_path(file3, 'u2', 'zOverC3')
+                        tempPerFramePerX.import_data_from_path(file3, 'u2', 'zOverC3')
 
-                            twistFromU2 = (tempPerFramePerX.u2_zOverC3[-1] - tempPerFramePerX.u2_zOverC3[0])/float(temp.C3)
+                        twistFromU2 = (tempPerFramePerX.u2_zOverC3[-1] - tempPerFramePerX.u2_zOverC3[0])/float(temp.C3)
 
-                            dataTwistFromU2 += [twistFromU2]
+                        dataTwistFromU2 += [twistFromU2]
 
-                            dataU2OverX += [tempPerFramePerX]
+                        dataU2OverX += [tempPerFramePerX]
 
-                            dataxPos += [tempPerFramePerX.xPos]
+                        dataxPos += [tempPerFramePerX.xPos]
 
-                    #Save results into class
-                    tempPerFrame.dataU2OverX = dataU2OverX
+                #Save results into class
+                tempPerFrame.dataU2OverX = dataU2OverX
 
-                    tempPerFrame.xPosForU2 = dataxPos
+                tempPerFrame.xPosForU2 = dataxPos
 
-                    tempPerFrame.twistFromU2 = dataTwistFromU2
+                tempPerFrame.twistFromU2 = dataTwistFromU2
 
-                    #Save class into global list for this case
-                    dataFrames += [tempPerFrame]
+                #Save class into global list for this case
+                dataFrames += [tempPerFrame]
 
-                    framesCount += [tempPerFrame.frameID]
-
-
-            temp.dataFrames = dataFrames
-            temp.framesCount = framesCount
+                framesCount += [tempPerFrame.frameID]
 
 
-            #For the corresponding linear simulation
-            temp.import_data_from_path('linear_ur1_xOverL.rpt', 'linear_ur1', 'xOverL')
-            temp.import_data_from_path('linear_u2_zOverC3.rpt', 'linear_u2', 'zOverC3')
-            temp.import_data_from_path('linear_u2_xOverL.rpt', 'linear_u2', 'xOverL') #Not essential for later calculations
+        temp.dataFrames = dataFrames
+        temp.framesCount = framesCount
 
-            #Store global class
-            data += [temp]
+
+        #For the corresponding linear simulation
+        temp.import_data_from_path('linear_ur1_xOverL.rpt', 'linear_ur1', 'xOverL')
+        temp.import_data_from_path('linear_u2_zOverC3.rpt', 'linear_u2', 'zOverC3')
+        temp.import_data_from_path('linear_u2_xOverL.rpt', 'linear_u2', 'xOverL') #Not essential for later calculations
+
+        #Store global class
+        data += [temp]
 
         #Return to original working folder
         globalChangeDir(cwd, '')
@@ -187,43 +174,22 @@ for case in data:
 
 #### PLOTTING ####
 
-##Plot reaction force (RF-2) as a function of parameter values
-# plotSettings['yLabel'] = 'Reaction force, $R_y$ (N)'
-# plotSettings['typeOfPlot'] = 'RF'
-# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
-
-# #Plot initial stiffness (K) as a function of parameter values
-# plotSettings['yLabel'] = 'Initial stiffness, $K$ (N/mm)'
-# plotSettings['typeOfPlot'] = 'K'
-# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
-
-# #Plot UR-1 along the wing box length
-# plotSettings['typeOfPlot'] = 'UR1'
-# plotSettings['yLabel'] = 'Angular rotation $UR_1$ (deg)'
-# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
-
-# #Plot vertical displacement U2 along the wing box chordwise direction 
-# plotSettings['typeOfPlot'] = 'U2_z'
-# plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
-
-# #Plot vertical displacement U2 along the wing box spanwise direction 
-# plotSettings['typeOfPlot'] = 'U2_x'
-# plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-# caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
-
 # NONLINEAR PLOTS
 # plotSettings['typeOfPlot'] = 'UR1_frame'
 # plotSettings['yLabel'] = 'Angular rotation (deg)'
 # caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict)
+if 'energy' in CMDoptionsDict['plotOptString']:
+    plotSettings['typeOfPlot'] = 'energy'
+    plotSettings['yLabel'] = 'Energy (kJ)'
+    caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, [])
 
-if CMDoptionsDict['plotOptString'] == 'UR1_tau':
+if 'UR1_tau' in CMDoptionsDict['plotOptString']:
     plotSettings['typeOfPlot'] = 'UR1_tau'
     plotSettings['yLabel'] = 'Angular rotation (deg)'
     table = tableOutput('Angular rotation at tip UR1 (deg)', ['parameter', 'value', 'max UR1', 'error UR1 (%)', 'UR1, linear', 'error UR1, linear (%)'])
     caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table)
 
-if CMDoptionsDict['plotOptString'] == 'U2_z':
+if 'U2_z' in CMDoptionsDict['plotOptString']:
     plotSettings['typeOfPlot'] = 'plotU2_z_LastTau'
     plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
     table = tableOutput('Vertical displacement U2 (mm)', ['parameter', 'value', 'max U2', 'zOverC3_maxU2', 'xOverL_maxU2','min U2', 'zOverC3_minU2', 'xOverL_minU2'])

@@ -225,6 +225,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 				#Copy nonlinear file
 				if platform.system() == 'Windows':
 					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'_damp'+str(current_nominalDict['damp'])+'.odb')
+					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), 'model.cae', 'model.cae')
 
 				#Clear files from last computation
 				for f in os.listdir(cwd):
@@ -245,11 +246,10 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 				flagAnotherJob, current_nominalDict, lastTau = checkConvergencyAndReturnFlag(iterationID, current_nominalDict)
 
 				internalIterations += 1
-				if internalIterations >= 3 and lastTau < 0.5:
-					raise ValueError('Convergence not achieved with ' +CMDoptionsDict['convergenceControl'] + ' criteria')
 
-				elif internalIterations >= 3:
+				if internalIterations >= 3:
 					print('-> Convergence was achieved up to '+str(lastTau)+', continue to next iteration')
+					flagAnotherJob = False
 
 			#Iteration finished
 			iterationID += 1

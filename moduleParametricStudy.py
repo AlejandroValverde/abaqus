@@ -224,7 +224,7 @@ class caseStudy(object):
 			if lineNumber > 5 and line in ['\r\n', '\n', '\r']:
 				break
 
-			else:
+			elif lineNumber >= 4:
 
 				frac += [ConvertNumber(line[:30])]
 				extWork += [ConvertNumber(line[30:49])]
@@ -300,7 +300,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 
 				#Plotting operations
 
-				if plotSettings['typeOfPlot'] == 'energy':
+				if plotSettings['typeOfPlot'] == 'energy' and case.damp != '0.0':
 					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 					if 'Force' in case.typeLoad:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])

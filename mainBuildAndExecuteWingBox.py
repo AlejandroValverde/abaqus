@@ -385,3 +385,6 @@ while jobExecutionFlag:
 	else:
 
 		jobExecutionFlag = False #Terminate execution
+
+#Save everything
+mdb.saveAs(pathName='model')
