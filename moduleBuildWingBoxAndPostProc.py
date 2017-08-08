@@ -1837,7 +1837,7 @@ def PostProc_nonlinear(iterStr, design, load, jobDef):
 		xy_staticDisipation = session.XYDataFromHistory(name='staticDisipation', odb=odb, outputVariableName='Static dissipation (stabilization): ALLSD for Whole Model', steps=('load', ), )
 		x_externalWork = session.xyDataObjects['externalWork']
 		x_staticDisipation = session.xyDataObjects['staticDisipation']
-		session.writeXYReport(fileName='extWork_stab.txt', xyData=(x_externalWork, x_staticDisipation, ), appendMode=OFF)
+		session.writeXYReport(fileName='extWork_stab.rpt', xyData=(x_externalWork, x_staticDisipation, ), appendMode=OFF)
 	#Write list containing fraction of load applied at each frame
 
 	file = open('frameInfo.txt', 'w')

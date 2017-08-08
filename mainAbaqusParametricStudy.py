@@ -226,6 +226,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 				if platform.system() == 'Windows':
 					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'_damp'+str(current_nominalDict['damp'])+'.odb')
 					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), 'model.cae', 'model.cae')
+					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), 'model.jnl', 'model.jnl')
 
 				#Clear files from last computation
 				for f in os.listdir(cwd):
@@ -247,7 +248,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 				internalIterations += 1
 
-				if internalIterations >= 3 and lastTau < 0.3:
+				if internalIterations >= 2 and lastTau < (float(CMDoptionsDict['convergenceControl'].split('_')[0][:2])/100):
 					current_nominalDict['damp'] = 0.00000002
 					print('-> Convergence was achieved up to '+str(lastTau)+', try using damping now')
 				elif internalIterations >= 3:

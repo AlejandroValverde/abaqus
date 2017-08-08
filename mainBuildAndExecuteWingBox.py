@@ -375,7 +375,7 @@ while jobExecutionFlag:
 		model = mdb.models[modelName]
 		
 		#Change step
-		model.steps['load'].setValues(nlgeom=OFF,initialInc=1.0, maxInc=1.0, minInc=1e-05)
+		model.steps['load'].setValues(description='Step for load, standard, linear', nlgeom=OFF,initialInc=1.0, maxInc=1.0, minInc=1e-05)
 		if load.dampFlag:
 			#Turn off damping for the linear analysis
 			model.steps['load'].setValues(adaptiveDampingRatio=None, continueDampingFactors=False, stabilizationMethod=NONE)
