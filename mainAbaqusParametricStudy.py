@@ -247,7 +247,10 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 				internalIterations += 1
 
-				if internalIterations >= 3:
+				if internalIterations >= 3 and lastTau < 0.3:
+					current_nominalDict['damp'] = 0.00000002
+					print('-> Convergence was achieved up to '+str(lastTau)+', try using damping now')
+				elif internalIterations >= 3:
 					print('-> Convergence was achieved up to '+str(lastTau)+', continue to next iteration')
 					flagAnotherJob = False
 
