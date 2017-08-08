@@ -1831,6 +1831,13 @@ def PostProc_nonlinear(iterStr, design, load, jobDef):
 		x0_ur1_dn = session.xyDataObjects['ur1_fr'+str(frameID)+'_dn']
 		session.writeXYReport(fileName='ur1_dn_frame'+str(frameID)+'.rpt', xyData=(x0_ur1_dn, ), appendMode=OFF)
 
+	if load.dampFlag:
+
+		xy_externalWork = session.XYDataFromHistory(name='externalWork', odb=odb, outputVariableName='External work: ALLWK for Whole Model', steps=('load', ), )
+		xy_staticDisipation = session.XYDataFromHistory(name='staticDisipation', odb=odb, outputVariableName='Static dissipation (stabilization): ALLSD for Whole Model', steps=('load', ), )
+		x_externalWork = session.xyDataObjects['externalWork']
+		x_staticDisipation = session.xyDataObjects['staticDisipation']
+		session.writeXYReport(fileName='extWork_stab.rpt', xyData=(x_externalWork, x_staticDisipation, ), appendMode=OFF)
 	#Write list containing fraction of load applied at each frame
 
 	file = open('frameInfo.txt', 'w')

@@ -15,7 +15,7 @@ def ConvertNumber(string):
 	index = string.find('E')
 
 	if index == -1: #if number does not contain "E"
-
+		# print(string)
 		return float(string)
 
 	else:

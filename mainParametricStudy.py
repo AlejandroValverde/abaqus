@@ -106,6 +106,9 @@ for file in os.listdir(postProcFolder):
             #Obtain information of the fraction of load applied at each frame
             temp.framesFraction = temp.obtainFrameLoadFractionInfo('frameInfo.txt')
 
+            #Obtain data of the external work vs static dissipation energy given by Abaqus in (N * mm)
+            temp.obtainEnergyData('extWork_stab.rpt')
+
             #For each frame
             dataFrames = []
             framesCount = []
@@ -175,6 +178,13 @@ globalChangeDir(cwd, '')
 
 print('-> Data loaded...')
 
+#Print summary table
+table_sum = tableOutput('Simulation summary', ['parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp'])
+for case in data:
+    for (keyCurrent, rangeCurrent) in studyDefDict.items():
+        if studyDefDict[keyCurrent][0] <= case.id <= studyDefDict[keyCurrent][1]:
+            table_sum.printRow([keyCurrent, getattr(case, keyCurrent), float(max(case.framesFraction)), case.fineSize, case.courseSize, case.damp])
+
 #### PLOTTING ####
 
 ##Plot reaction force (RF-2) as a function of parameter values
@@ -210,13 +220,13 @@ print('-> Data loaded...')
 if CMDoptionsDict['plotOptString'] == 'UR1_tau':
     plotSettings['typeOfPlot'] = 'UR1_tau'
     plotSettings['yLabel'] = 'Angular rotation (deg)'
-    table = tableOutput('Angular rotation at tip UR1 (deg)', ['parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp', 'max UR1', 'error UR1 (%)', 'UR1, linear', 'error UR1, linear (%)'])
+    table = tableOutput('Angular rotation at tip UR1 (deg)', ['parameter', 'value', 'max UR1', 'error UR1 (%)', 'UR1, linear', 'error UR1, linear (%)'])
     caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table)
 
 if CMDoptionsDict['plotOptString'] == 'U2_z':
     plotSettings['typeOfPlot'] = 'plotU2_z_LastTau'
     plotSettings['yLabel'] = 'Vertical displacement $U_2$ (mm)'
-    table = tableOutput('Vertical displacement U2 (mm)', ['parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp', 'max U2', 'zOverC3_maxU2', 'xOverL_maxU2','min U2', 'zOverC3_minU2', 'xOverL_minU2'])
+    table = tableOutput('Vertical displacement U2 (mm)', ['parameter', 'value', 'max U2', 'zOverC3_maxU2', 'xOverL_maxU2','min U2', 'zOverC3_minU2', 'xOverL_minU2'])
     caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table)
 
 

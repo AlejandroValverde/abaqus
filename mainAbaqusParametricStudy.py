@@ -133,8 +133,10 @@ def checkConvergencyAndReturnFlag(iterationID, current_nominalDict):
 	globalChangeDir(cwd, '.') #Return to working folder
 
 	criteria = CMDoptionsDict['convergenceControl']
+	#Example criteria: 30mesh_60damp95
+	criteria
 	if 'mesh' in criteria:
-		meshTauBorder = float(criteria[:2])
+		meshTauBorder = float(criteria.split('_')[0][:2])
 
 		if lastTau < meshTauBorder/100:
 
@@ -145,7 +147,7 @@ def checkConvergencyAndReturnFlag(iterationID, current_nominalDict):
 			print('-> Fine mesh size increased to '+str(current_nominalDict['fineSize']))
 			flagAnotherJob = True
 
-		elif (0.6 < lastTau < 0.98) and 'damp' in criteria:
+		elif ((float(criteria.split('_')[1][:2])/100) < lastTau < (float(criteria.split('_')[1][6:])/100)) and 'damp' in criteria:
 
 			if current_nominalDict['damp'] == 0.0:
 				current_nominalDict['damp'] = 0.00000002 #2E-8
@@ -159,7 +161,7 @@ def checkConvergencyAndReturnFlag(iterationID, current_nominalDict):
 		else:
 
 			flagAnotherJob = False
-	return flagAnotherJob, current_nominalDict
+	return flagAnotherJob, current_nominalDict, lastTau
 
 ########################################
 
@@ -220,31 +222,34 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 				os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
 
 				#Copy job file to specific postproc folder if the program is being run in Linux
-				flagCopyJob = True
-				additionalLinearSimExecutedFlag = True
-				while flagCopyJob:
+				#Copy nonlinear file
+				if platform.system() == 'Windows':
+					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'_damp'+str(current_nominalDict['damp'])+'.odb')
+
+				#Clear files from last computation
+				for f in os.listdir(cwd):
+				    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
+				        os.remove(f)
+
+				if 'double' in current_nominalDict['typeAnalysis']: #If linear sim was executed
 					if platform.system() == 'Windows':
-						globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'_damp'+str(current_nominalDict['damp'])+'.odb')
+						globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete.replace('nonlinear','linear')+'.odb', jobNameComplete.replace('nonlinear','linear')+'.odb')
 
 					#Clear files from last computation
 					for f in os.listdir(cwd):
-					    if f.startswith(jobNameComplete) or f.startswith('abaqus.rpy'):
+					    if f.startswith(jobNameComplete.replace('nonlinear','linear')) or f.startswith('abaqus.rpy'):
 					        os.remove(f)
 
-					#Another job has been be created if a linear simulation was also run
-					if 'double' in current_nominalDict['typeAnalysis'] and additionalLinearSimExecutedFlag:
-						jobNameComplete = current_nominalDict['jobName'] + '_linear'
-						additionalLinearSimExecutedFlag = False
-
-					else:
-						flagCopyJob = False
 
 				#Check how far the nonlinear simulation went
-				flagAnotherJob, current_nominalDict = checkConvergencyAndReturnFlag(iterationID, current_nominalDict)
+				flagAnotherJob, current_nominalDict, lastTau = checkConvergencyAndReturnFlag(iterationID, current_nominalDict)
 
 				internalIterations += 1
-				if internalIterations >= 3:
+				if internalIterations >= 3 and lastTau < 0.5:
 					raise ValueError('Convergence not achieved with ' +CMDoptionsDict['convergenceControl'] + ' criteria')
+
+				elif internalIterations >= 3:
+					print('-> Convergence was achieved up to '+str(lastTau)+', continue to next iteration')
 
 			#Iteration finished
 			iterationID += 1
@@ -266,4 +271,4 @@ globalChangeDir(cwd, '.') #Return to working folder
 #Copy and input file to corresponding Post-proc folder
 globalCopyFile(cwd, cwd+'-postProc', 'parametricStudyDef.txt', 'parametricStudyDef.txt')
 
-print('---> Abaqus parametric study finished')
+print('\n'+'\n'+'---> Abaqus parametric study finished')

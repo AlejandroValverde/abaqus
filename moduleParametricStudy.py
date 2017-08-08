@@ -207,6 +207,38 @@ class caseStudy(object):
 
 		return frameInfoList
 
+	def obtainEnergyData(self, fileName):
+
+		file = open(fileName, 'r')
+
+		lines = file.readlines()
+
+		frac = []
+		extWork = []
+		estab = []
+
+		lineNumber = 1
+
+		for line in lines:
+
+			if lineNumber > 5 and line in ['\r\n', '\n', '\r']:
+				break
+
+			else:
+
+				frac += [ConvertNumber(line[:30])]
+				extWork += [ConvertNumber(line[30:49])]
+				estab += [ConvertNumber(line[49:])]
+
+			lineNumber += 1
+
+		file.close()
+
+		setattr(self, 'energy_frac', frac)
+		setattr(self, 'energy_extWork', extWork)
+		setattr(self, 'energy_estab', estab)
+
+
 
 class dataPerFrame(caseStudy):
 
@@ -267,73 +299,54 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 				if not keyCurrent in keysUsed: keysUsed.append(keyCurrent)
 
 				#Plotting operations
-				if case.typeAnalysis == 'linear':
 
-					if plotSettings['typeOfPlot'] == 'RF':
-						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-						plotRF(case, plotSettings, keyCurrent, axDict[keyCurrent])
+				if plotSettings['typeOfPlot'] == 'energy':
+					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
+					if 'Force' in case.typeLoad:
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+					elif 'displacement' in case.typeLoad:
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
+					plotEnergy(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
-					elif plotSettings['typeOfPlot'] == 'K':
-						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-						plotK(case, plotSettings, keyCurrent, axDict[keyCurrent])
+				elif plotSettings['typeOfPlot'] == 'UR1_frame':
 
-					elif plotSettings['typeOfPlot'] == 'UR1':
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
-						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-						plotUR1(case, plotSettings, keyCurrent, axDict[keyCurrent])
+					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
+					if 'Force' in case.typeLoad:
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+					elif 'displacement' in case.typeLoad:
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
+					scatterHandles[keyCurrent] = plotUR1_frame(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
+					counterNperKey[keyCurrent] += 1
 
-					elif plotSettings['typeOfPlot'] == 'U2_z':
-						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
-						plotU2_z(case, plotSettings, keyCurrent, axDict[keyCurrent])
+					if not keyCurrent in keysWith_UR1_tau_plot: keysWith_UR1_tau_plot.append(keyCurrent)
 
-					elif plotSettings['typeOfPlot'] == 'U2_x':
-						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent], **plotSettings['title'])
-						plotU2_x(case, plotSettings, keyCurrent, axDict[keyCurrent])
+				elif plotSettings['typeOfPlot'] == 'UR1_tau':
 
-				elif 'nonlinear' in case.typeAnalysis:
+					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
+					if 'Force' in case.typeLoad:
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+					elif 'displacement' in case.typeLoad:
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 
-					if plotSettings['typeOfPlot'] == 'UR1_frame':
+					scatterHandles[keyCurrent] = plotUR1_tau(case, table, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
+					counterNperKey[keyCurrent] += 1
 
-						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-						if 'Force' in case.typeLoad:
-							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
-						elif 'displacement' in case.typeLoad:
-							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
-						scatterHandles[keyCurrent] = plotUR1_frame(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
-						counterNperKey[keyCurrent] += 1
+					if not keyCurrent in keysWith_UR1_tau_plot: keysWith_UR1_tau_plot.append(keyCurrent)
 
-						if not keyCurrent in keysWith_UR1_tau_plot: keysWith_UR1_tau_plot.append(keyCurrent)
+				elif plotSettings['typeOfPlot'] == 'plotU2_z_LastTau':
 
-					elif plotSettings['typeOfPlot'] == 'UR1_tau':
+					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
+					flagDict[keyCurrent] = True
+					if 'Force' in case.typeLoad:
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N'+'/last frame', **plotSettings['title'])
+					elif 'displacement' in case.typeLoad:
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $displ_y$=' + str(case.displ)+'mm'+'/last frame', **plotSettings['title'])
 
-						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-						if 'Force' in case.typeLoad:
-							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
-						elif 'displacement' in case.typeLoad:
-							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
-
-						scatterHandles[keyCurrent] = plotUR1_tau(case, table, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
-						counterNperKey[keyCurrent] += 1
-
-						if not keyCurrent in keysWith_UR1_tau_plot: keysWith_UR1_tau_plot.append(keyCurrent)
-
-					elif plotSettings['typeOfPlot'] == 'plotU2_z_LastTau':
-
-						flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-						flagDict[keyCurrent] = True
-						if 'Force' in case.typeLoad:
-							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N'+'/last frame', **plotSettings['title'])
-						elif 'displacement' in case.typeLoad:
-							axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $displ_y$=' + str(case.displ)+'mm'+'/last frame', **plotSettings['title'])
-
-						plotU2_z_LastTau(case, table, plotSettings, keyCurrent, axDict[keyCurrent])
+					plotU2_z_LastTau(case, table, plotSettings, keyCurrent, axDict[keyCurrent])
 
 				#Saving for plots that have more than one figure per parameter used
 				if CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['plotU2_z_LastTau']:
 					globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
-					# pdb.set_trace()
 					figDict[keyCurrent].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyCurrent+'_'+str(getattr(case, keyCurrent))+'.pdf'))
 
 
@@ -344,73 +357,11 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 			axDict[key].legend(handles = scatterHandles[key], **plotSettings['legend'])
 
 	#Save figures
-	if keysUsed and CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['UR1_tau']: #If at least one plot was crated: if keysUsed
+	if keysUsed and CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['UR1_tau', 'energy']: #If at least one plot was crated: if keysUsed
 		globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
 		for keyUsed in keysUsed:
 
 			figDict[keyUsed].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyUsed+'.pdf'))
-
-
-def plotRF(classOfData, plotSettings, attr, ax):
-
-	#Axes labels
-	ax.set_xlabel(plotSettings['xLabel'][attr], **plotSettings['axes_x'])
-	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
-
-	ax.plot([getattr(classOfData, attr)], [classOfData.rf], '-ok', **plotSettings['line'])
-
-	applyPlottingSettingsToAxesTicks(ax, plotSettings)
-	
-
-def plotK(classOfData, plotSettings, attr, ax):
-
-	#Axes labels
-	ax.set_xlabel(plotSettings['xLabel'][attr], **plotSettings['axes_x'])
-	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
-
-
-	ax.plot([getattr(classOfData, attr)], classOfData.K, '-ok', **plotSettings['line'])
-
-	applyPlottingSettingsToAxesTicks(ax, plotSettings)
-
-
-def plotUR1(classOfData, plotSettings, attr, ax):
-
-
-	#Axes labels
-	ax.set_xlabel('Distance along the wing box $x/L$', **plotSettings['axes_x'])
-	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
-
-	# pdb.set_trace()
-	ax.plot(classOfData.xOverL, classOfData.ur1_xOverL * (180/math.pi), '-o', label = attr+':'+str(getattr(classOfData, attr)), **plotSettings['line'])
-	
-	applyPlottingSettingsToAxesTicks(ax, plotSettings)
-
-	ax.legend(**plotSettings['legend'])
-
-def plotU2_z(classOfData, plotSettings, attr, ax):
-
-	#Axes labels
-	ax.set_xlabel('Distance along the wing box chordwise direction $z/C3$', **plotSettings['axes_x'])
-	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
-
-	ax.plot(classOfData.zOverC3, classOfData.u2_zOverC3, '-o', label = attr+':'+str(getattr(classOfData, attr)), **plotSettings['line'])
-	
-	applyPlottingSettingsToAxesTicks(ax, plotSettings)
-
-	ax.legend(**plotSettings['legend'])
-
-def plotU2_x(classOfData, plotSettings, attr, ax):
-
-	#Axes labels
-	ax.set_xlabel('Distance along the wing box $x/L$', **plotSettings['axes_x'])
-	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
-
-	ax.plot(classOfData.xOverL, classOfData.u2_xOverL, '-o', label = attr+':'+str(getattr(classOfData, attr)), **plotSettings['line'])
-	
-	applyPlottingSettingsToAxesTicks(ax, plotSettings)
-
-	ax.legend(**plotSettings['legend'])
 
 def plotU2_z_LastTau(classOfData, table, plotSettings, attr, ax):
 
@@ -446,7 +397,7 @@ def plotU2_z_LastTau(classOfData, table, plotSettings, attr, ax):
 	ax.legend(**plotSettings['legend'])
 
 	#Output on CMD
-	table.printRow([attr, getattr(classOfData, attr), float(max(classOfData.framesFraction)), classOfData.fineSize, classOfData.courseSize, classOfData.damp, maxU2, posZ_maxU2, posX_maxU2, minU2, posZ_minU2, posX_minU2])
+	table.printRow([attr, getattr(classOfData, attr), maxU2, posZ_maxU2, posX_maxU2, minU2, posZ_minU2, posX_minU2])
 
 
 def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHandles): #NOT IN USE
@@ -584,7 +535,7 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scat
 	
 
 	#Output on CMD
-	table.printRow([attr, getattr(classOfData, attr), float(max(classOfData.framesFraction)), classOfData.fineSize, classOfData.courseSize, classOfData.damp, min(storeMeans)*(180/math.pi), max(errorStore), meanTwist_linear * (180/math.pi), errorLinear])
+	table.printRow([attr, getattr(classOfData, attr), min(storeMeans)*(180/math.pi), max(errorStore), meanTwist_linear * (180/math.pi), errorLinear])
 	
 	# pdb.set_trace()
 	return scatterHandles[attr]
@@ -607,3 +558,12 @@ def maxErrorFromMeanFunction(values):
 
 	return max(errorList)
 
+def plotEnergy(classOfData, plotSettings, attr, ax):
+
+	ax.set_xlabel('$Q_{frame} / Q_{total}$', **plotSettings['axes_x'])
+	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
+
+	ax.plot(classOfData.energy_frac , classOfData.energy_extWork, linestyle = '-', c = 'k', label='External work', **plotSettings['line'])
+	ax.plot(classOfData.energy_frac , classOfData.energy_estab, linestyle = '-.', c = 'k', label='Static dissipation', **plotSettings['line'])
+
+	ax.legend(**plotSettings['legend'])
