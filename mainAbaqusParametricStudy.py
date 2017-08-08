@@ -248,7 +248,9 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 				internalIterations += 1
 
-				if internalIterations >= 2 and lastTau < (float(CMDoptionsDict['convergenceControl'].split('_')[0][:2])/100):
+				if internalIterations >= 2 and current_nominalDict['damp'] == 0.0 and lastTau < (float(CMDoptionsDict['convergenceControl'].split('_')[0][:2])/100):
+					#If damp was not already tried and the simulation is still inside the region where control is done through mesh size
+					#This will be added to another increment in mesh size
 					current_nominalDict['damp'] = 0.00000002
 					print('-> Convergence was achieved up to '+str(lastTau)+', try using damping now')
 				elif internalIterations >= 3:
