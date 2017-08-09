@@ -191,7 +191,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 			#Initialize iteration parameters and flags for new iteration
 			current_nominalDict = nominalDict.copy() #Get the original nominal dict, IMPORTANT: copy() to not change nominal dict
-			internalIterations = 0
+			internalIteration, lastTau = 1, 0
 			flagAnotherJob = True
 
 			while flagAnotherJob:
@@ -243,30 +243,32 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 					    if f.startswith(jobNameComplete.replace('nonlinear','linear')) or f.startswith('abaqus.rpy'):
 					        os.remove(f)
 
-
 				#Check how far the nonlinear simulation went
+				#Last iteration progress
+				last_lastTau = lastTau
 				#get info from last iteration 
-				table_status = tableOutput('Simulation summary', ['iteration', 'parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp'])
+				
 				frameIDs, frameFractions = readFrameInfoFile('frameInfo.txt')
 				lastTau = frameFractions[-1]
-				table_status.printRow(['actual', keyCurrent, valueCurrent, lastTau, current_nominalDict['fineSize'], current_nominalDict['courseSize'], current_nominalDict['damp']])
+				rowFromCurrentIter = ['actual', internalIteration, keyCurrent, valueCurrent, lastTau, current_nominalDict['fineSize'], current_nominalDict['courseSize'], current_nominalDict['damp']]
 				flagAnotherJob, current_nominalDict = checkConvergencyAndReturnFlag(iterationID, current_nominalDict)
 
-				internalIterations += 1
+				internalIteration += 1
 
-				if internalIterations >= 2 and current_nominalDict['damp'] == 0.0 and lastTau < (float(CMDoptionsDict['convergenceControl'].split('_')[0][:2])/100):
+				if internalIteration >= 3 and current_nominalDict['damp'] == 0.0 and lastTau < (float(CMDoptionsDict['convergenceControl'].split('_')[0][:2])/100):
 					#If damp was not already tried and the simulation is still inside the region where control is done through mesh size
 					#This will be added to another increment in mesh size
 					current_nominalDict['damp'] = 0.00000002
 					print('-> Convergence was achieved up to '+str(lastTau)+', try using damping now')
-				elif internalIterations >= 3:
-					print('-> Convergence was achieved up to '+str(lastTau)+', continue to next iteration')
+				elif internalIteration >= 4 and flagAnotherJob and (lastTau < last_lastTau):
+					print('-> Convergence was achieved up to '+str(lastTau)+', stopping iterations')
 					flagAnotherJob = False
 
 				#Table output
-				table_status = tableOutput('Simulation summary', ['iteration', 'parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp'])
+				table_status = tableOutput('Simulation summary', ['iteration', 'ID', 'parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp'])
+				table_status.printRow(rowFromCurrentIter)
 				if flagAnotherJob: #If there is going to be another job
-					table_status.printRow(['actual', keyCurrent, valueCurrent, lastTau, current_nominalDict['fineSize'], current_nominalDict['courseSize'], current_nominalDict['damp']])
+					table_status.printRow(['next', internalIteration, keyCurrent, valueCurrent, '-', current_nominalDict['fineSize'], current_nominalDict['courseSize'], current_nominalDict['damp']])
 
 			#Iteration finished
 			iterationID += 1
