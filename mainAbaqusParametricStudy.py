@@ -8,6 +8,7 @@ import getopt
 from moduleCommon import *
 
 #Functions
+######################################
 def writeInputParaToFile(fileName, iter, parameters, valueCurrent, keyCurrent, nominalDict):
 
 	file = open(fileName, 'w')
@@ -161,7 +162,7 @@ def checkConvergencyAndReturnFlag(iterationID, current_nominalDict):
 		else:
 
 			flagAnotherJob = False
-	return flagAnotherJob, current_nominalDict, lastTau
+	return flagAnotherJob, current_nominalDict
 
 ########################################
 
@@ -244,7 +245,12 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 
 				#Check how far the nonlinear simulation went
-				flagAnotherJob, current_nominalDict, lastTau = checkConvergencyAndReturnFlag(iterationID, current_nominalDict)
+				#get info from last iteration 
+				table_status = tableOutput('Simulation summary', ['iteration', 'parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp'])
+				frameIDs, frameFractions = readFrameInfoFile('frameInfo.txt')
+				lastTau = frameFractions[-1]
+				table_status.printRow(['actual', keyCurrent, valueCurrent, lastTau, current_nominalDict['fineSize'], current_nominalDict['courseSize'], current_nominalDict['damp']])
+				flagAnotherJob, current_nominalDict = checkConvergencyAndReturnFlag(iterationID, current_nominalDict)
 
 				internalIterations += 1
 
@@ -256,6 +262,11 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 				elif internalIterations >= 3:
 					print('-> Convergence was achieved up to '+str(lastTau)+', continue to next iteration')
 					flagAnotherJob = False
+
+				#Table output
+				table_status = tableOutput('Simulation summary', ['iteration', 'parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp'])
+				if flagAnotherJob: #If there is going to be another job
+					table_status.printRow(['actual', keyCurrent, valueCurrent, lastTau, current_nominalDict['fineSize'], current_nominalDict['courseSize'], current_nominalDict['damp']])
 
 			#Iteration finished
 			iterationID += 1

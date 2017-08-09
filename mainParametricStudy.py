@@ -166,11 +166,11 @@ globalChangeDir(cwd, '')
 print('-> Data loaded...')
 
 #Print summary table
-table_sum = tableOutput('Simulation summary', ['parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp'])
+table_sum = tableOutput('Simulation summary', ['parameter', 'value', 'max Q_fr/Q_to', 'frames', 'f_mesh', 'c_mesh', 'damp'])
 for case in data:
     for (keyCurrent, rangeCurrent) in studyDefDict.items():
         if studyDefDict[keyCurrent][0] <= case.id <= studyDefDict[keyCurrent][1]:
-            table_sum.printRow([keyCurrent, getattr(case, keyCurrent), float(max(case.framesFraction)), case.fineSize, case.courseSize, case.damp])
+            table_sum.printRow([keyCurrent, getattr(case, keyCurrent), float(max(case.framesFraction)), int(max(case.framesCount)), case.fineSize, case.courseSize, case.damp])
 
 #### PLOTTING ####
 

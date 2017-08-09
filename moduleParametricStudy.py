@@ -89,44 +89,7 @@ def importParametricStudyDeffile(fileName):
 	file.close()
 
 	return dictOut
-
-class tableOutput(object):
-	"""docstring for ClassName"""
-	def __init__(self, titleStr, columns):
-		# super(ClassName, self).__init__()
-		#Initialize table to be print in CMD
-
-		#Print title
-		print('\n\n'+titleStr+'\n')
-
-		columnWidths = []		
-		for columnName in columns:
-
-			columnWidth = len(columnName)+2
-			print(str(columnName).rjust(columnWidth), end='')
-
-			columnWidths += [columnWidth]
-
-		self.columnWidths = columnWidths
-
-		print('\n')
-
-	def printRow(self, rowValues):
-
-		i = 0
-		for item in rowValues:
-			if isinstance(item, str): #Is string
-				print(item.rjust(self.columnWidths[i]), end='')
-
-			else: #Is number
-				formatSpec = '%'+str(self.columnWidths[i])+'.3f'
-				print(str(formatSpec % item).rjust(self.columnWidths[i]), end='')
-
-			i += 1
-
-		print('\n')
 		
-
 class caseStudy(object):
 
 	def __init__(self, ID):
@@ -302,10 +265,11 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 
 				if plotSettings['typeOfPlot'] == 'energy' and case.damp != '0.0':
 					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
+					flagDict[keyCurrent] = True
 					if 'Force' in case.typeLoad:
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
 					elif 'displacement' in case.typeLoad:
-						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
+						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 					plotEnergy(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 				elif plotSettings['typeOfPlot'] == 'UR1_frame':
@@ -436,7 +400,7 @@ def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHa
 	a = (classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3)
 	b = classOfData.linear_ur1_xOverL[-1]
 
-	if ((abs(a - b) / b)*100) > 5: #If error > 5%
+	if (abs(abs(a - b) / b)*100) > 5: #If error > 5%
 		raise ValueError('ERROR: More than 10 faces could not be found when applying coupling conditions at the chiral nodes')	
 	meanTwist_linear = np.mean([a, b])
 	ax.plot([0.0, frame] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
@@ -513,6 +477,7 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scat
 	if errorLinear > 5: #If error > 5%
 		raise ValueError('ERROR: The error in the calculation of the twist from different parts is more than 5%')	
 	meanTwist_linear = np.mean([a, b])
+
 	ax.plot([0.0, 1.0] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 
 	if plotSettings['meanOption']:
@@ -546,15 +511,16 @@ def maxErrorFromMeanFunction(values):
 	errorList = []	
 	for v in values:
 
-		if meanValues < 0.0001: #Treat as zero
+		if abs(meanValues) < 0.0000001: #Treat as zero, 1E-7
 			error = 0.0
 		else:
-			error = (abs(v - meanValues) / meanValues)*100
+			error = abs(abs(v - meanValues) / meanValues)*100
 
-		if error > 5: #If error > 5%
+		if False:#error > 5: #If error > 5%
 			raise ValueError('ERROR: The error in the calculation of the twist from different parts is more than 5%. Error is '+str(error)+'%')
 
 		errorList += [error]
+
 
 	return max(errorList)
 
