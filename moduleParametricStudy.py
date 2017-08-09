@@ -8,6 +8,46 @@ import sys
 
 from moduleCommon import *
 
+class tableOutput(object):
+	"""docstring for ClassName"""
+	def __init__(self, titleStr, columns):
+		# super(ClassName, self).__init__()
+		#Initialize table to be print in CMD
+
+		#Print title
+		print('\n\n'+titleStr+'\n')
+
+		columnWidths = []		
+		for columnName in columns:
+
+			columnWidth = len(columnName)+2
+			print(str(columnName).rjust(columnWidth), end='')
+
+			columnWidths += [columnWidth]
+
+		self.columnWidths = columnWidths
+
+		print('\n')
+
+	def printRow(self, rowValues):
+
+		i = 0
+		for item in rowValues:
+			if isinstance(item, str): #Is string
+				print(item.rjust(self.columnWidths[i]), end='')
+
+			elif isinstance(item, int):
+				formatSpec = '%'+str(self.columnWidths[i])+'.0f'
+				print(str(formatSpec % item).rjust(self.columnWidths[i]), end='')
+
+			else: #Is number, float
+				formatSpec = '%'+str(self.columnWidths[i])+'.3f'
+				print(str(formatSpec % item).rjust(self.columnWidths[i]), end='')
+
+			i += 1
+
+		print('\n')
+		
 def readCMDoptions(argv, CMDoptionsDict):
 
     short_opts = "i:p:s:m:"

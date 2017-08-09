@@ -7,6 +7,9 @@ import getopt
 
 from moduleCommon import *
 
+if sys.version_info.major == 3:
+	from moduleParametricStudy import *
+
 #Functions
 ######################################
 def writeInputParaToFile(fileName, iter, parameters, valueCurrent, keyCurrent, nominalDict):
@@ -74,7 +77,7 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 	file.close()
 
-def readCMDoptions(argv, CMDoptionsDict):
+def readCMDoptionsMainAbaqusParametric(argv, CMDoptionsDict):
 
 	short_opts = "i:o:"
 	long_opts = ["ifile=","convControl="]
@@ -124,7 +127,7 @@ def readFrameInfoFile(fileName):
 
 	return frameIDs, frameFractions
 
-def checkConvergencyAndReturnFlag(iterationID, current_nominalDict):
+def checkConvergencyAndReturnFlag(iterationID, current_nominalDict, CMDoptionsDict):
 
 	#Check convergence of current simulation
 	globalChangeDir(cwd, '-postProc-'+str(iterationID))
@@ -135,7 +138,6 @@ def checkConvergencyAndReturnFlag(iterationID, current_nominalDict):
 
 	criteria = CMDoptionsDict['convergenceControl']
 	#Example criteria: 30mesh_60damp95
-	criteria
 	if 'mesh' in criteria:
 		meshTauBorder = float(criteria.split('_')[0][:2])
 
@@ -168,7 +170,7 @@ def checkConvergencyAndReturnFlag(iterationID, current_nominalDict):
 
 #Read postProc folder name from CMD
 CMDoptionsDict = {}
-CMDoptionsDict = readCMDoptions(sys.argv[1:], CMDoptionsDict)
+CMDoptionsDict = readCMDoptionsMainAbaqusParametric(sys.argv[1:], CMDoptionsDict)
 
 if sys.version_info.major == 2:
 	execfile(CMDoptionsDict['setUpParametricStudyFile']) #Load parametric study values
@@ -248,11 +250,12 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 				#Last iteration progress
 				last_lastTau = lastTau
 				#get info from last iteration 
-				
+				globalChangeDir(cwd, '-postProc-'+str(iterationID))
 				frameIDs, frameFractions = readFrameInfoFile('frameInfo.txt')
+				globalChangeDir(cwd, '.') #Return to working folder
 				lastTau = frameFractions[-1]
 				rowFromCurrentIter = ['actual', internalIteration, keyCurrent, valueCurrent, lastTau, current_nominalDict['fineSize'], current_nominalDict['courseSize'], current_nominalDict['damp']]
-				flagAnotherJob, current_nominalDict = checkConvergencyAndReturnFlag(iterationID, current_nominalDict)
+				flagAnotherJob, current_nominalDict = checkConvergencyAndReturnFlag(iterationID, current_nominalDict, CMDoptionsDict)
 
 				internalIteration += 1
 
@@ -267,10 +270,11 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 					flagAnotherJob = False
 
 				#Table output
-				table_status = tableOutput('Simulation summary', ['iteration', 'ID', 'parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp'])
-				table_status.printRow(rowFromCurrentIter)
-				if flagAnotherJob: #If there is going to be another job
-					table_status.printRow(['next', internalIteration, keyCurrent, valueCurrent, '-', current_nominalDict['fineSize'], current_nominalDict['courseSize'], current_nominalDict['damp']])
+				if sys.version_info.major == 3: #Only for Python 3
+					table_status = tableOutput('Simulation summary', ['iteration', 'ID', 'parameter', 'value', 'max Q_fr/Q_to', 'f_mesh', 'c_mesh', 'damp'])
+					table_status.printRow(rowFromCurrentIter)
+					if flagAnotherJob: #If there is going to be another job
+						table_status.printRow(['next', internalIteration, keyCurrent, valueCurrent, '-', current_nominalDict['fineSize'], current_nominalDict['courseSize'], current_nominalDict['damp']])
 
 			#Iteration finished
 			iterationID += 1

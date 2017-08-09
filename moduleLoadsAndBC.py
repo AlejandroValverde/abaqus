@@ -400,7 +400,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 				for q_j in Q_j:
 
-					if (q_j in [Q_j[0], Q_j[-1]] and q_i in [Q_i[0], Q_i[-1]]) and (design.cutGap_y == 0.0 or design.cutGap_x == 0.0):
+					if (q_j in [Q_j[0], Q_j[-1]] and q_i in [Q_i[0]]) and (design.cutGap_y == 0.0 or design.cutGap_x == 0.0):
 						
 						print('Avoiding constraints interference')
 
@@ -408,19 +408,35 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 						if q_j == Q_j[0]: #Lower node, half cut
 
-							if load.additionalBC != 'none':
+							if load.additionalBC != 'none' and not q_i in [Q_i[-1]]:
 								angles = []
-							elif design.cutGap_y == 0.0:
+							elif design.cutGap_y == 0.0 and not q_i in [Q_i[-1]]:
 								angles = [45, 90, 135]
+							elif q_i in [Q_i[-1]] and not (design.cutGap_y != 0.0 and design.cutGap_x != 0.0):
+								if design.cutGap_x == 0.0:
+									if design.cutGap_y == 0.0:
+										angles = [100, 135, 150]
+									else:
+										angles = [100, 135, 150, 180, 225, 240]
+								else: #Here = cutGap_x != 0.0 and cutGap_y == 0.0
+									angles = [30, 45, 75, 90, 120, 135, 150]
 							else:
 								angles = [0, 45, 90, 135, 180, 225, 270, 315]
 
 						elif q_j == Q_j[-1]: #Upper node, half cut
 
-							if load.additionalBC != 'none':
+							if load.additionalBC != 'none' and not q_i in [Q_i[-1]]:
 								angles = []
-							elif design.cutGap_y == 0.0:
+							elif design.cutGap_y == 0.0 and not q_i in [Q_i[-1]]:
 								angles = [225, 270, 315]
+							elif q_i in [Q_i[-1]] and not (design.cutGap_y != 0.0 and design.cutGap_x != 0.0):
+								if design.cutGap_x == 0.0:
+									if design.cutGap_y == 0.0:
+										angles = [190, 225, 250]
+									else:
+										angles = [100, 135, 150, 180, 225, 240]
+								else: #Here = cutGap_x != 0.0 and cutGap_y == 0.0
+									angles = [190, 225, 250, 270, 290, 315]
 							else:
 								angles = [0, 45, 90, 135, 180, 225, 270, 315]
 
@@ -431,9 +447,6 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 							angles = [135, 180, 225]
 
 						elif q_i == Q_i[0] and design.cutGap_x != 0.0 and load.additionalBC != 'none': #Avoids interface with nodes that are coupled to the reference point used to clamp the root
-							angles = []
-
-						elif q_i == Q_i[-1] and design.cutGap_x != 0.0 and load.additionalBC != 'none': #Avoids interface with nodes that are coupled to the reference point used to clamp the root
 							angles = []
 
 						else: #Nodes in the middle
