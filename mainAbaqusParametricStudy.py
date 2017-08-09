@@ -191,6 +191,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 			#Initialize iteration parameters and flags for new iteration
 			current_nominalDict = nominalDict.copy() #Get the original nominal dict, IMPORTANT: copy() to not change nominal dict
+
 			internalIteration, lastTau = 1, 0
 			flagAnotherJob = True
 
@@ -260,6 +261,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 					#This will be added to another increment in mesh size
 					current_nominalDict['damp'] = 0.00000002
 					print('-> Convergence was achieved up to '+str(lastTau)+', try using damping now')
+
 				elif internalIteration >= 4 and flagAnotherJob and (lastTau < last_lastTau):
 					print('-> Convergence was achieved up to '+str(lastTau)+', stopping iterations')
 					flagAnotherJob = False
