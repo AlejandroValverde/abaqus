@@ -79,8 +79,8 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 def readCMDoptionsMainAbaqusParametric(argv, CMDoptionsDict):
 
-	short_opts = "i:o:"
-	long_opts = ["ifile=","convControl="]
+	short_opts = "i:o:c:"
+	long_opts = ["ifile=","convControl=","copyJob="]
 	try:
 		opts, args = getopt.getopt(argv,short_opts,long_opts)
 	except getopt.GetoptError:
@@ -98,6 +98,12 @@ def readCMDoptionsMainAbaqusParametric(argv, CMDoptionsDict):
 
 		elif opt in ("-o", "--convControl"):
 			CMDoptionsDict['convergenceControl'] = arg
+
+		elif opt in ("-c", "--copyJob"):
+			if arg.lower() in ('true', 't'):
+				CMDoptionsDict['copyJob'] = True
+			elif arg.lower() in ('false', 'f'):
+				CMDoptionsDict['copyJob'] = False
 
 	return CMDoptionsDict
 
@@ -227,7 +233,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 				#Copy job file to specific postproc folder if the program is being run in Linux
 				#Copy nonlinear file
-				if platform.system() == 'Windows':
+				if CMDoptionsDict['copyJob']:
 					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), jobNameComplete+'.odb', jobNameComplete+'_damp'+str(current_nominalDict['damp'])+'.odb')
 					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), 'model.cae', 'model.cae')
 					globalCopyFile(cwd, cwd+'-postProc-'+str(iterationID), 'model.jnl', 'model.jnl')
