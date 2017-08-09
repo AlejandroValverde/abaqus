@@ -190,7 +190,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 			#Initialize iteration parameters and flags for new iteration
 			current_nominalDict = nominalDict.copy() #Get the original nominal dict, IMPORTANT: copy() to not change nominal dict
-			internalIterations = 0
+			internalIterations, lastTau = 0, 0
 			flagAnotherJob = True
 
 			while flagAnotherJob:
@@ -244,6 +244,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 
 
 				#Check how far the nonlinear simulation went
+				last_lastTau = lastTau
 				flagAnotherJob, current_nominalDict, lastTau = checkConvergencyAndReturnFlag(iterationID, current_nominalDict)
 
 				internalIterations += 1
@@ -253,7 +254,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 					#This will be added to another increment in mesh size
 					current_nominalDict['damp'] = 0.00000002
 					print('-> Convergence was achieved up to '+str(lastTau)+', try using damping now')
-				elif internalIterations >= 3:
+				elif internalIterations >= 3 and flagAnotherJob and (lastTau < last_lastTau): #If the intention was to continue with the iterations, and it seems to be no progress in the iterations
 					print('-> Convergence was achieved up to '+str(lastTau)+', continue to next iteration')
 					flagAnotherJob = False
 
