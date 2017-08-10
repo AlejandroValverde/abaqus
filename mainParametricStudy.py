@@ -8,8 +8,8 @@ import warnings
 #### PLOTTING OPTIONS ####
 
 #Plotting options
-axes_label_x  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'top'
-axes_label_y  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'bottom'
+axes_label_x  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'top', 'horizontalalignment' : 'center'} #'verticalalignment' : 'top'
+axes_label_y  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'bottom', 'horizontalalignment' : 'center'} #'verticalalignment' : 'bottom'
 text_title_properties = {'weight' : 'bold', 'size' : 18}
 axes_ticks = {'size' : 10}
 line = {'linewidth' : 1, 'markersize' : 5}
@@ -185,7 +185,7 @@ if 'energy' in CMDoptionsDict['plotOptString']:
 
 if 'UR1_tau' in CMDoptionsDict['plotOptString']:
     plotSettings['typeOfPlot'] = 'UR1_tau'
-    plotSettings['yLabel'] = 'Angular rotation (deg)'
+    plotSettings['yLabel'] = '$\phi (\mathrm{deg})$'
     table = tableOutput('Angular rotation at tip UR1 (deg)', ['parameter', 'value', 'max UR1', 'error UR1 (%)', 'UR1, linear', 'error UR1, linear (%)'])
     caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table)
 

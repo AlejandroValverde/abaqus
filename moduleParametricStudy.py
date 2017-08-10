@@ -284,7 +284,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 		if flagDict[keyCurrent]: #Figure initialization
 			
 			figure, ax = plt.subplots(1, 1)
-			ax.grid(**plotSettings['grid'])
+			ax.grid(which='both', **plotSettings['grid'])
 			figure.set_size_inches(10, 6, forward=True)
 			axDict[keyCurrent] = ax
 			figDict[keyCurrent] = figure
