@@ -1,4 +1,9 @@
-import matplotlib.pyplot as plt
+try:
+	import matplotlib.pyplot as plt
+except Exception as e:
+	print('->>>> Failed to import matplotlib')
+else:
+	print('Matplotlib imported successfully')
 import numpy as np
 import pdb #pdb.set_trace()
 import math
