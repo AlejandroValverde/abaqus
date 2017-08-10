@@ -181,15 +181,15 @@ def checkConvergencyAndReturnFlag(iterationID, current_nominalDict, CMDoptionsDi
 CMDoptionsDict = {}
 CMDoptionsDict = readCMDoptionsMainAbaqusParametric(sys.argv[1:], CMDoptionsDict)
 
-if sys.version_info.major == 2:
-	execfile(CMDoptionsDict['setUpParametricStudyFile']) #Load parametric study values
-elif sys.version_info.major == 3:
-	exec(open("./"+CMDoptionsDict['setUpParametricStudyFile']).read())
-
 #Go to selected working dir
 cwd = os.getcwd() #Get working directory
 globalChangeDir(cwd, '-'+CMDoptionsDict['workingDir'])
 cwd = os.getcwd()
+
+if sys.version_info.major == 2:
+	execfile(CMDoptionsDict['setUpParametricStudyFile']) #Load parametric study values
+elif sys.version_info.major == 3:
+	exec(open("./"+CMDoptionsDict['setUpParametricStudyFile']).read())
 
 #Write parameter study definition file
 writeParametricStudyDeffile('parametricStudyDef.txt', rangesDict, parameters)
