@@ -184,14 +184,6 @@ CMDoptionsDict = readCMDoptionsMainAbaqusParametric(sys.argv[1:], CMDoptionsDict
 #Go to selected working dir
 cwd = os.getcwd() #Get working directory
 
-# #Copy all code files to working folder
-# for file in os.listdir(cwd):
-# 	if file.endswith('.py'):
-# 		globalCopyFile(cwd, cwd+'-'+CMDoptionsDict['workingDir'], file, file)
-
-# globalChangeDir(cwd, '-'+CMDoptionsDict['workingDir'])
-# cwd = os.getcwd()
-
 if sys.version_info.major == 2:
 	execfile(CMDoptionsDict['setUpParametricStudyFile']) #Load parametric study values
 elif sys.version_info.major == 3:

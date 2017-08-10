@@ -441,7 +441,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 								angles = [0, 45, 90, 135, 180, 225, 270, 315]
 
 						elif q_i == Q_i[0] and design.cutGap_x == 0.0 and design.rootRibShape == 'closed': #Avoids interface with nodes that are coupled to the reference point used to clamp the root
-							angles = [0, 45, 315]
+							angles = []
 
 						elif q_i == Q_i[-1] and design.cutGap_x == 0.0 and design.tipRibShape == 'closed': #Avoids interface with nodes that are coupled to the reference point used to clamp the root
 							angles = [135, 180, 225]
