@@ -79,8 +79,8 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 def readCMDoptionsMainAbaqusParametric(argv, CMDoptionsDict):
 
-	short_opts = "i:o:c:"
-	long_opts = ["ifile=","convControl=","copyJob="]
+	short_opts = "i:o:c:w:"
+	long_opts = ["ifile=","convControl=","copyJob=","workingDir="]
 	try:
 		opts, args = getopt.getopt(argv,short_opts,long_opts)
 	except getopt.GetoptError:
@@ -104,6 +104,9 @@ def readCMDoptionsMainAbaqusParametric(argv, CMDoptionsDict):
 				CMDoptionsDict['copyJob'] = True
 			elif arg.lower() in ('false', 'f'):
 				CMDoptionsDict['copyJob'] = False
+
+		elif opt in ("-w", "--workingDir"):
+			CMDoptionsDict['workingDir'] = arg
 
 	return CMDoptionsDict
 
@@ -183,10 +186,13 @@ if sys.version_info.major == 2:
 elif sys.version_info.major == 3:
 	exec(open("./"+CMDoptionsDict['setUpParametricStudyFile']).read())
 
+#Go to selected working dir
+cwd = os.getcwd() #Get working directory
+globalChangeDir(cwd, '-'+CMDoptionsDict['workingDir'])
+cwd = os.getcwd()
+
 #Write parameter study definition file
 writeParametricStudyDeffile('parametricStudyDef.txt', rangesDict, parameters)
-
-cwd = os.getcwd() #Get working directory
 
 #Study loop
 iterationID = 1

@@ -55,8 +55,8 @@ class tableOutput(object):
 		
 def readCMDoptions(argv, CMDoptionsDict):
 
-    short_opts = "i:p:s:m:"
-    long_opts = ["ifile=", "plotOptions=", "saveFigure=", "plotMean="]
+    short_opts = "i:p:s:m:t:"
+    long_opts = ["ifile=", "plotOptions=", "saveFigure=", "plotMean=", "showTitle="]
     try:
     	opts, args = getopt.getopt(argv,short_opts,long_opts)
     except getopt.GetoptError:
@@ -107,6 +107,14 @@ def readCMDoptions(argv, CMDoptionsDict):
         		CMDoptionsDict['plotMean'] = False
         	else:
         		raise ValueError('ERROR: Incorrect option chosen to plot mean')
+        elif opt in ("-t", "--showTitle"):
+        	#Options: 'true' or 'false'
+        	if arg.lower() in ('true', 't'):
+        		CMDoptionsDict['showTitle'] = True
+        	elif arg.lower() in ('false', 'f'):
+        		CMDoptionsDict['showTitle'] = False
+        	else:
+        		raise ValueError('ERROR: Incorrect option chosen to show title or not')
 
     return CMDoptionsDict
 
@@ -311,18 +319,18 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 				if plotSettings['typeOfPlot'] == 'energy' and case.damp != '0.0':
 					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 					flagDict[keyCurrent] = True
-					if 'Force' in case.typeLoad:
+					if 'Force' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
-					elif 'displacement' in case.typeLoad:
+					elif 'displacement' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 					plotEnergy(case, plotSettings, keyCurrent, axDict[keyCurrent])
 
 				elif plotSettings['typeOfPlot'] == 'UR1_frame':
 
 					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-					if 'Force' in case.typeLoad:
+					if 'Force' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
-					elif 'displacement' in case.typeLoad:
+					elif 'displacement' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 					scatterHandles[keyCurrent] = plotUR1_frame(case, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
 					counterNperKey[keyCurrent] += 1
@@ -332,9 +340,9 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 				elif plotSettings['typeOfPlot'] == 'UR1_tau':
 
 					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
-					if 'Force' in case.typeLoad:
+					if 'Force' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
-					elif 'displacement' in case.typeLoad:
+					elif 'displacement' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 
 					scatterHandles[keyCurrent] = plotUR1_tau(case, table, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
@@ -346,9 +354,9 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 
 					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
 					flagDict[keyCurrent] = True
-					if 'Force' in case.typeLoad:
+					if 'Force' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $Q_y$=' + str(case.ForceMagnitude)+'N'+'/last frame', **plotSettings['title'])
-					elif 'displacement' in case.typeLoad:
+					elif 'displacement' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + '='+str(getattr(case, keyCurrent))+', $displ_y$=' + str(case.displ)+'mm'+'/last frame', **plotSettings['title'])
 
 					plotU2_z_LastTau(case, table, plotSettings, keyCurrent, axDict[keyCurrent])
@@ -527,8 +535,8 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scat
 
 	if plotSettings['meanOption']:
 
-		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label='UR1 mean, '+attr+'='+str(getattr(classOfData, attr)))
-		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='', linestyle='-.', label='UR1 mean linear, '+attr+'='+str(getattr(classOfData, attr)))
+		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label=str(getattr(classOfData, attr)))
+		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='', linestyle='-.', label=str(getattr(classOfData, attr)))
 				
 		scatterHandles[attr] = scatterHandles[attr] + [handle1]
 		scatterHandles[attr] = scatterHandles[attr] + [handle2]

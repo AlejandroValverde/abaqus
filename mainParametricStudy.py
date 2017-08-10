@@ -11,10 +11,10 @@ import warnings
 axes_label_x  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'top'
 axes_label_y  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'center', 'horizontalalignment' : 'center'} #'verticalalignment' : 'bottom'
 text_title_properties = {'weight' : 'bold', 'size' : 18}
-axes_ticks = {'size' : 12}
+axes_ticks = {'size' : 10}
 line = {'linewidth' : 1, 'markersize' : 5}
 scatter = {'linewidths' : 2}
-legend = {'fontsize' : 14, 'loc' : 'best'}
+legend = {'fontsize' : 12, 'loc' : 'best'}
 grid = {'alpha' : 0.7}
 colors = ['b', 'k', 'y', 'm', 'r', 'c']
 markers = ['o', 'v', '^', 's', '*', '+']

@@ -1620,7 +1620,7 @@ def mergeInstances(model, instancesToMerge, newName):
 	model.rootAssembly.InstanceFromBooleanMerge(domain=GEOMETRY, 
 	    instances=instancesToMerge, name=newName, originalInstances=SUPPRESS)
 
-def PostProc_linear(iterStr, design, load, jobDef):
+def PostProc_linear(iterStr, design, load, jobCurrentName):
 
 	#j index unused
 
@@ -1631,10 +1631,10 @@ def PostProc_linear(iterStr, design, load, jobDef):
 	#Get current folder
 	cwd = os.getcwd()
 
-	o3 = session.openOdb(name=jobDef.jobName+'.odb')
+	o3 = session.openOdb(name=jobCurrentName+'.odb')
 	session.viewports['Viewport: 1'].setValues(displayedObject=o3)
 	a = mdb.models['Model-1'].rootAssembly #in case we want to see the assembly
-	odb = session.odbs[cwd + '\\'+jobDef.jobName+'.odb']
+	odb = session.odbs[cwd + '\\'+jobCurrentName+'.odb']
 
 	#Camera control
 	session.viewports['Viewport: 1'].view.setValues(nearPlane=3648.64, 
@@ -1736,17 +1736,17 @@ def PostProc_linear(iterStr, design, load, jobDef):
 	#Return to original working folder
 	globalChangeDir(cwd, '.')
 
-def PostProc_nonlinear(iterStr, design, load, jobDef):
+def PostProc_nonlinear(iterStr, design, load, jobCurrentName):
 
 	#Postproccesing
 
 	#Get current folder
 	cwd = os.getcwd()
 
-	o3 = session.openOdb(name=jobDef.jobName+'.odb')
+	o3 = session.openOdb(name=jobCurrentName+'.odb')
 	session.viewports['Viewport: 1'].setValues(displayedObject=o3)
 	a = mdb.models['Model-1'].rootAssembly #in case we want to see the assembly
-	odb = session.odbs[cwd + '\\'+jobDef.jobName+'.odb']
+	odb = session.odbs[cwd + '\\'+jobCurrentName+'.odb']
 
 	#Camera control
 	session.viewports['Viewport: 1'].view.setValues(nearPlane=3648.64, 

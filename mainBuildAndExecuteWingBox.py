@@ -354,10 +354,10 @@ while jobExecutionFlag:
 		globalCreateDir(cwd, '-postProc-'+paraRead.Iter)
 
 		if load.typeAnalysis == 'linear':
-			PostProc_linear(paraRead.Iter, design, load, jobDef)
+			PostProc_linear(paraRead.Iter, design, load, jobCurrentName)
 
 		elif 'nonlinear' in load.typeAnalysis:
-			PostProc_nonlinear(paraRead.Iter, design, load, jobDef)
+			PostProc_nonlinear(paraRead.Iter, design, load, jobCurrentName)
 
 		#Copy input file to postProc folder
 		globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName.replace('.txt', '_'+'nonlinear'+'.txt'))
