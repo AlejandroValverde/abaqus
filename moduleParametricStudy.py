@@ -527,7 +527,7 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scat
 	b = classOfData.linear_ur1_xOverL[-1]
 	errorLinear = (abs(a - b) / b)*100
 
-	if errorLinear > 5: #If error > 5%
+	if False: #If error > 5%
 		raise ValueError('ERROR: The error in the calculation of the twist from different parts is more than 5%')	
 	meanTwist_linear = np.mean([a, b])
 
