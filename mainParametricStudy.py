@@ -16,7 +16,7 @@ line = {'linewidth' : 1, 'markersize' : 5}
 scatter = {'linewidths' : 2}
 legend = {'fontsize' : 12, 'loc' : 'best'}
 grid = {'alpha' : 0.7}
-colors = ['b', 'k', 'y', 'm', 'r', 'c']
+colors = ['b', 'k', 'y', 'm', 'r', 'c','b', 'k', 'y', 'm', 'r', 'c']
 markers = ['o', 'v', '^', 's', '*', '+']
 
 #x labels
@@ -185,7 +185,7 @@ if 'energy' in CMDoptionsDict['plotOptString']:
 
 if 'UR1_tau' in CMDoptionsDict['plotOptString']:
     plotSettings['typeOfPlot'] = 'UR1_tau'
-    plotSettings['yLabel'] = '$\phi (\mathrm{deg})$'
+    plotSettings['yLabel'] = '$\phi_{\mathrm{tip}} (\mathrm{deg})$'
     table = tableOutput('Angular rotation at tip UR1 (deg)', ['parameter', 'value', 'max UR1', 'error UR1 (%)', 'UR1, linear', 'error UR1, linear (%)'])
     caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table)
 

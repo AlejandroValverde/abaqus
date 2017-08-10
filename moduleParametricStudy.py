@@ -237,7 +237,7 @@ class caseStudy(object):
 
 		for line in lines:
 
-			if lineNumber > 5 and line in ['\r\n', '\n', '\r']:
+			if lineNumber >= 5 and line in ['\r\n', '\n', '\r']:
 				break
 
 			elif lineNumber >= 4:
