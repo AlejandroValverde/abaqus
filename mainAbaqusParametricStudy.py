@@ -79,8 +79,8 @@ def writeParametricStudyDeffile(fileName, rangesDict, parameters):
 
 def readCMDoptionsMainAbaqusParametric(argv, CMDoptionsDict):
 
-	short_opts = "i:o:c:w:"
-	long_opts = ["ifile=","convControl=","copyJob=","workingDir="]
+	short_opts = "i:o:c:"
+	long_opts = ["ifile=","convControl=","copyJob="]
 	try:
 		opts, args = getopt.getopt(argv,short_opts,long_opts)
 	except getopt.GetoptError:
@@ -105,8 +105,8 @@ def readCMDoptionsMainAbaqusParametric(argv, CMDoptionsDict):
 			elif arg.lower() in ('false', 'f'):
 				CMDoptionsDict['copyJob'] = False
 
-		elif opt in ("-w", "--workingDir"):
-			CMDoptionsDict['workingDir'] = arg
+		# elif opt in ("-w", "--workingDir"):
+		# 	CMDoptionsDict['workingDir'] = arg
 
 	return CMDoptionsDict
 
@@ -183,8 +183,14 @@ CMDoptionsDict = readCMDoptionsMainAbaqusParametric(sys.argv[1:], CMDoptionsDict
 
 #Go to selected working dir
 cwd = os.getcwd() #Get working directory
-globalChangeDir(cwd, '-'+CMDoptionsDict['workingDir'])
-cwd = os.getcwd()
+
+# #Copy all code files to working folder
+# for file in os.listdir(cwd):
+# 	if file.endswith('.py'):
+# 		globalCopyFile(cwd, cwd+'-'+CMDoptionsDict['workingDir'], file, file)
+
+# globalChangeDir(cwd, '-'+CMDoptionsDict['workingDir'])
+# cwd = os.getcwd()
 
 if sys.version_info.major == 2:
 	execfile(CMDoptionsDict['setUpParametricStudyFile']) #Load parametric study values
