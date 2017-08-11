@@ -239,29 +239,58 @@ def buildBasicChiral(model, design):
 
 	### Halbligament erzeugen
 
-	model.Part(name='Part-Halbligament', objectToCopy=model.parts['Part-1'])
-	plane_halb=model.parts['Part-Halbligament'].DatumPlaneByPrincipalPlane(offset=0.0, principalPlane=XYPLANE)
-	model.ConstrainedSketch(gridSpacing=7.18, name='__profile__', 
-	    sheetSize=287.44, transform=
-	    model.parts['Part-Halbligament'].MakeSketchTransform(
-	    sketchPlane=model.parts['Part-Halbligament'].datums[plane_halb.id], 
-	    sketchPlaneSide=SIDE1, 
-	    sketchUpEdge=model.parts['Part-Halbligament'].edges[12], 
-	    sketchOrientation=RIGHT, origin=(50.0, 10.0, 0.0)))
-	model.parts['Part-Halbligament'].projectReferencesOntoSketch(filter=
-	    COPLANAR_EDGES, sketch=model.sketches['__profile__'])
-	model.sketches['__profile__'].Line(point1=(-r, r), point2=(0.0, 0.0))
-	model.sketches['__profile__'].Line(point1=(0,0), point2=(r,-r))
-	model.sketches['__profile__'].Line(point1=(r,-r), point2=(2*L,-r))
-	model.sketches['__profile__'].Line(point1=(2*L,-r), point2=(2*L,3*r))
-	model.sketches['__profile__'].Line(point1=(2*L,3*r), point2=(-r,3*r))
-	model.sketches['__profile__'].Line(point1=(-r,3*r), point2=(-r,r))
+	if e!=0: #Added by Alejandro
 
-	model.parts['Part-Halbligament'].CutExtrude(flipExtrudeDirection=ON, 
-	    sketch=model.sketches['__profile__'], sketchOrientation=
-	    RIGHT, sketchPlane=model.parts['Part-Halbligament'].datums[plane_halb.id], 
-	    sketchPlaneSide=SIDE1, sketchUpEdge=model.parts['Part-Halbligament'].edges[12])
-	del model.sketches['__profile__']
+		model.Part(name='Part-Halbligament', objectToCopy=model.parts['Part-1'])
+		plane_halb=model.parts['Part-Halbligament'].DatumPlaneByPrincipalPlane(offset=0.0, principalPlane=XYPLANE)
+		model.ConstrainedSketch(gridSpacing=7.18, name='__profile__', 
+		    sheetSize=287.44, transform=
+		    model.parts['Part-Halbligament'].MakeSketchTransform(
+		    sketchPlane=model.parts['Part-Halbligament'].datums[plane_halb.id], 
+		    sketchPlaneSide=SIDE1, 
+		    sketchUpEdge=model.parts['Part-Halbligament'].edges[12], 
+		    sketchOrientation=RIGHT, origin=(50.0, 10.0, 0.0)))
+		model.parts['Part-Halbligament'].projectReferencesOntoSketch(filter=
+		    COPLANAR_EDGES, sketch=model.sketches['__profile__'])
+		model.sketches['__profile__'].Line(point1=(-r, r), point2=(0.0, 0.0))
+		model.sketches['__profile__'].Line(point1=(0,0), point2=(r,-r))
+		model.sketches['__profile__'].Line(point1=(r,-r), point2=(2*L,-r))
+		model.sketches['__profile__'].Line(point1=(2*L,-r), point2=(2*L,3*r))
+		model.sketches['__profile__'].Line(point1=(2*L,3*r), point2=(-r,3*r))
+		model.sketches['__profile__'].Line(point1=(-r,3*r), point2=(-r,r))
+
+		model.parts['Part-Halbligament'].CutExtrude(flipExtrudeDirection=ON, 
+		    sketch=model.sketches['__profile__'], sketchOrientation=
+		    RIGHT, sketchPlane=model.parts['Part-Halbligament'].datums[plane_halb.id], 
+		    sketchPlaneSide=SIDE1, sketchUpEdge=model.parts['Part-Halbligament'].edges[12])
+		del model.sketches['__profile__']
+
+	else:
+
+		model.Part(name='Part-Halbligament', objectToCopy=model.parts['Part-1'])
+		plane_halb=model.parts['Part-Halbligament'].DatumPlaneByPrincipalPlane(offset=0.0, principalPlane=XYPLANE)
+		model.ConstrainedSketch(gridSpacing=7.18, name='__profile__', 
+		    sheetSize=287.44, transform=
+		    model.parts['Part-Halbligament'].MakeSketchTransform(
+		    sketchPlane=model.parts['Part-Halbligament'].datums[plane_halb.id], 
+		    sketchPlaneSide=SIDE1, 
+		    sketchUpEdge=model.parts['Part-Halbligament'].edges.findAt(((L+L-r,r+r,r+r),),)[0], 
+		    sketchOrientation=RIGHT, origin=(50.0, 10.0, 0.0)))
+		model.parts['Part-Halbligament'].projectReferencesOntoSketch(filter=
+		    COPLANAR_EDGES, sketch=model.sketches['__profile__'])
+		model.sketches['__profile__'].Line(point1=(-r, r), point2=(0.0, 0.0))
+		model.sketches['__profile__'].Line(point1=(0,0), point2=(r,-r))
+		model.sketches['__profile__'].Line(point1=(r,-r), point2=(2*L,-r))
+		model.sketches['__profile__'].Line(point1=(2*L,-r), point2=(2*L,3*r))
+		model.sketches['__profile__'].Line(point1=(2*L,3*r), point2=(-r,3*r))
+		model.sketches['__profile__'].Line(point1=(-r,3*r), point2=(-r,r))
+
+		model.parts['Part-Halbligament'].CutExtrude(flipExtrudeDirection=ON, 
+		    sketch=model.sketches['__profile__'], sketchOrientation=
+		    RIGHT, sketchPlane=model.parts['Part-Halbligament'].datums[plane_halb.id], 
+		    sketchPlaneSide=SIDE1, sketchUpEdge=model.parts['Part-Halbligament'].edges.findAt(((L+L-r,r+r,r+r),),)[0])
+		del model.sketches['__profile__']
+
 
 def internalParameters(model, design):
 
