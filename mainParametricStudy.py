@@ -16,7 +16,7 @@ line = {'linewidth' : 1, 'markersize' : 5}
 scatter = {'linewidths' : 2}
 legend = {'fontsize' : 12, 'loc' : 'best'}
 grid = {'alpha' : 0.7}
-colors = ['b', 'k', 'y', 'm', 'r', 'c','b', 'k', 'y', 'm', 'r', 'c']
+colors = ['b', 'k', 'y', 'm', 'r', 'c','b', 'k', 'y', 'm', 'r', 'c','b', 'k', 'y', 'm', 'r', 'c','b', 'k', 'y', 'm', 'r', 'c']
 markers = ['o', 'v', '^', 's', '*', '+']
 
 #x labels
@@ -166,11 +166,11 @@ globalChangeDir(cwd, '')
 print('-> Data loaded...')
 
 #Print summary table
-table_sum = tableOutput('Simulation summary', ['parameter', 'value', 'max Q_fr/Q_to', 'frames', 'f_mesh', 'c_mesh', 'damp'])
+table_sum = tableOutput('Simulation summary', ['parameter', 'value', 'max Q_fr/Q_to', 'frames', 'f_mesh', 'c_mesh', 'damp', 'wingBoxLength', 'wingBoxHeight'])
 for case in data:
     for (keyCurrent, rangeCurrent) in studyDefDict.items():
         if studyDefDict[keyCurrent][0] <= case.id <= studyDefDict[keyCurrent][1]:
-            table_sum.printRow([keyCurrent, getattr(case, keyCurrent), float(max(case.framesFraction)), int(max(case.framesCount)), case.fineSize, case.courseSize, case.damp])
+            table_sum.printRow([keyCurrent, getattr(case, keyCurrent), float(max(case.framesFraction)), int(max(case.framesCount)), case.fineSize, case.courseSize, case.damp, case.wingBoxLength, 2*88.3176086632785*(float(case.M)-1)])
 
 #### PLOTTING ####
 
