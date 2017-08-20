@@ -77,14 +77,14 @@ def loadMaterials(model, design, load, mat):
 		model.materials['Mat-part2'].Elastic(table=((mat.E2, mat.v2), ))
 
 	#For the ribs
-	model.Material(name='Alu_rib')
-	model.materials['Alu_rib'].Elastic(table=((mat.E_rib, mat.v_rib), ))
+	model.Material(name='Steel_rib')
+	model.materials['Steel_rib'].Elastic(table=((mat.E_rib, mat.v_rib), ))
 
 	if load.typeAbaqus == 'Explicit': #Necessary to define material density when computing Abaqus Explicit
 
 		model.materials['Alu'].Density(table=((2.7E-6, ), )) #kg /mm^3
 		model.materials['ABS'].Density(table=((1.07E-6, ), )) #kg /mm^3
-		model.materials['Alu_rib'].Density(table=((2.7E-6, ), )) #kg /mm^3
+		model.materials['Steel_rib'].Density(table=((2.7E-6, ), )) #kg /mm^3
 
 	#For the tyre
 	model.Material(name='mat_tyre_Alu_x100')
@@ -1261,7 +1261,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 
 		#Section
 		model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
-		    integrationRule=SIMPSON, material='Alu_rib', name='Section-Rib', numIntPts=5, 
+		    integrationRule=SIMPSON, material='Steel_rib', name='Section-Rib', numIntPts=5, 
 		    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
 		    thickness=design.ribt, thicknessField='', thicknessModulus=None, thicknessType=
 		    UNIFORM, useDensity=OFF)
@@ -1321,7 +1321,7 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 
 		#Section
 		model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
-		    integrationRule=SIMPSON, material='Alu_rib', name='Section-Rib-inner', numIntPts=5, 
+		    integrationRule=SIMPSON, material='Steel_rib', name='Section-Rib-inner', numIntPts=5, 
 		    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
 		    thickness=design.ribt_inner, thicknessField='', thicknessModulus=None, thicknessType=
 		    UNIFORM, useDensity=OFF)

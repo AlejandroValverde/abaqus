@@ -69,10 +69,10 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 
 		nameSet = 'set_x'+str(int(xNode))+'_y'+str(int(yNode))
 
-		if load.conditionNodesInnerLattice == 'couplingThroughRF':
-			nameConstraint = 'Local_coupling_x'+str(int(xNode))+'_y'+str(int(yNode))
-		elif load.conditionNodesInnerLattice == 'couplingThroughCilSYS':
+		if load.conditionNodesInnerLattice == 'couplingThroughCilSYS':
 			nameConstraint = 'Local_sys_coupling_x'+str(int(xNode))+'_y'+str(int(yNode))
+		else: #if load.conditionNodesInnerLattice == 'couplingThroughRF' or 'tyre'
+			nameConstraint = 'Local_coupling_x'+str(int(xNode))+'_y'+str(int(yNode))
 
 		rf = model.rootAssembly.ReferencePoint(point=(xNode, yNode, z))
 		rfRegion = regionToolset.Region(referencePoints = (model.rootAssembly.referencePoints[rf.id], ))
@@ -99,12 +99,7 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 		model.rootAssembly.Set(faces = faces_tuple, name=nameSet)
 
 		#Enable coupling condition
-		if load.conditionNodesInnerLattice == 'couplingThroughRF':
-			model.Coupling(controlPoint= rfRegion, couplingType=
-			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
-			    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON) #It has to be everything coupled!
-
-		elif load.conditionNodesInnerLattice == 'couplingThroughCilSYS':
+		if load.conditionNodesInnerLattice == 'couplingThroughCilSYS':
 
 			#Local SYS creation
 			localsys = model.rootAssembly.DatumCsysByThreePoints(coordSysType=
@@ -116,6 +111,12 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 			model.Coupling(controlPoint=rfRegion, couplingType=KINEMATIC, influenceRadius=
 			    WHOLE_SURFACE, localCsys=model.rootAssembly.datums[localsys.id], 
 			    name=nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=OFF, u3=ON, ur1=OFF, ur2=OFF, ur3=OFF)
+
+		else: #if load.conditionNodesInnerLattice == 'couplingThroughRF' or 'tyre'
+
+			model.Coupling(controlPoint= rfRegion, couplingType=
+			    KINEMATIC, influenceRadius=WHOLE_SURFACE, localCsys=None, name=
+			    nameConstraint, surface= model.rootAssembly.sets[nameSet], u1=ON, u2=ON, u3=ON, ur1=ON, ur2=ON, ur3=ON) #It has to be everything coupled!
 
 
 
@@ -452,19 +453,22 @@ def defineBCs(model, design, instanceToApplyLoadAndBC, load, typeBC):
 						else: #Nodes in the middle
 							# if (q_i in [Q_i[0], Q_i[-1]]) and design.cutGap_x == 0.0: #Node at the extremes with no gap
 							# 	angles = []
-							# else:
-							angles = [0, 45, 90, 135, 180, 225, 270, 315]
+							# else: 
+							if load.conditionNodesInnerLattice in ['couplingThroughRF', 'couplingThroughCilSYS']:
+								angles = [0, 45, 90, 135, 180, 225, 270, 315]
+							else: 
+								angles = []
 
 						if angles: #If vector angles is not empty
 							facesNotFoundCounter = createCouplingLatticeNode(q_i, q_j, angles, design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
 
-			#Iterate through P
+			#Iterate through P, only if not tyre
+			if load.conditionNodesInnerLattice in ['couplingThroughRF', 'couplingThroughCilSYS']:
+				for p_i in P_i:
 
-			for p_i in P_i:
+					for p_j in P_j:
 
-				for p_j in P_j:
-
-					facesNotFoundCounter = createCouplingLatticeNode(p_i, p_j, [0, 45, 90, 135, 180, 225, 270, 315], design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
+						facesNotFoundCounter = createCouplingLatticeNode(p_i, p_j, [0, 45, 90, 135, 180, 225, 270, 315], design, instanceToApplyLoadAndBC, model, facesNotFoundCounter)
 
 			if facesNotFoundCounter > 10:
 

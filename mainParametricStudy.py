@@ -8,16 +8,17 @@ import warnings
 #### PLOTTING OPTIONS ####
 
 #Plotting options
-axes_label_x  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'top', 'horizontalalignment' : 'center'} #'verticalalignment' : 'top'
-axes_label_y  = {'size' : 14, 'weight' : 'bold', 'verticalalignment' : 'bottom', 'horizontalalignment' : 'center'} #'verticalalignment' : 'bottom'
+axes_label_x  = {'size' : 18, 'weight' : 'bold', 'verticalalignment' : 'top', 'horizontalalignment' : 'center'} #'verticalalignment' : 'top'
+axes_label_y  = {'size' : 18, 'weight' : 'bold', 'verticalalignment' : 'bottom', 'horizontalalignment' : 'center'} #'verticalalignment' : 'bottom'
 text_title_properties = {'weight' : 'bold', 'size' : 18}
-axes_ticks = {'size' : 10}
-line = {'linewidth' : 1, 'markersize' : 5}
+axes_ticks = {'labelsize' : 14}
+line = {'linewidth' : 2, 'markersize' : 5}
 scatter = {'linewidths' : 2}
-legend = {'fontsize' : 12, 'loc' : 'best'}
+legend = {'fontsize' : 16, 'loc' : 'best'}
 grid = {'alpha' : 0.7}
-colors = ['b', 'k', 'y', 'm', 'r', 'c','b', 'k', 'y', 'm', 'r', 'c','b', 'k', 'y', 'm', 'r', 'c','b', 'k', 'y', 'm', 'r', 'c']
+colors = ['k', 'b', 'y', 'm', 'r', 'c','k', 'b', 'y', 'm', 'r', 'c','k', 'b', 'y', 'm', 'r', 'c','k', 'b', 'y', 'm', 'r', 'c']
 markers = ['o', 'v', '^', 's', '*', '+']
+linestyles = ['-', '--', '-.', ':'] 
 
 #x labels
 xLabel={'N' : 'Number of unit cells in spanwise direction',
@@ -41,11 +42,12 @@ xLabel={'N' : 'Number of unit cells in spanwise direction',
         'fineSize' : 'Fine mesh size',
         'maxTimeIncrement' : 'Maximum time increment allowed',
         'initialTimeIncrement' : 'Initial time increment',
-        'maxNumInc' : 'Maximum number of increments in a step'}
+        'maxNumInc' : 'Maximum number of increments in a step',
+        'damp' : 'Artificial constant damping factor'}
 
 plotSettings = {'xLabel':xLabel,'axes_x':axes_label_x,'axes_y':axes_label_y, 'title':text_title_properties,
                 'axesTicks':axes_ticks, 'line':line, 'legend':legend, 'grid':grid, 'scatter':scatter,
-                'colors' : colors, 'markers' : markers}
+                'colors' : colors, 'markers' : markers, 'linestyles' : linestyles}
 
 #### INITIALIZE FOLDERS ####
 

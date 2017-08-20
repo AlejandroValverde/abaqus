@@ -162,7 +162,7 @@ def checkConvergencyAndReturnFlag(iterationID, current_nominalDict, CMDoptionsDi
 		elif ((float(criteria.split('_')[1][:2])/100) < lastTau < (float(criteria.split('_')[1][6:])/100)) and 'damp' in criteria:
 
 			if current_nominalDict['damp'] == 0.0:
-				current_nominalDict['damp'] = 0.00000002 #2E-8
+				current_nominalDict['damp'] = 0.000000002 #2E-8
 			else:
 				current_nominalDict['damp'] = current_nominalDict['damp'] * 10
 
@@ -233,7 +233,7 @@ for keyCurrent, rangeCurrent in zip(parameters, [rangesDict[para] for para in pa
 					print('-> Building and executing model (nonlinear simulation)...')
 				else:
 					print('-> Building and executing model (linear simulation)...')
-				os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
+				out = os.system('abaqus cae noGUI=mainBuildAndExecuteWingBox.py')
 
 				#Copy job file to specific postproc folder if the program is being run in Linux
 				#Copy nonlinear file

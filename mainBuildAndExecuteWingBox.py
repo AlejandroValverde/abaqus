@@ -26,8 +26,8 @@ mat.E1 = 69000.0 #N/mm^2 - For the box, aluminum
 mat.v1 = 0.3269 #For the box, aluminum 
 mat.E_chiral = 3100.0 #N/mm^2 - For the chiral structure, ABS
 mat.v_chiral = 0.3 #For the chiral structure, ABS
-mat.E_rib = mat.E1 * float(paraRead.E_ribOverE1) #N/mm^2, for the rib, expressed as a fraction of the main material
-mat.v_rib = mat.v1
+mat.E_rib = 200000 #mat.E1 * float(paraRead.E_ribOverE1) #N/mm^2, for the rib, expressed as a fraction of the main material
+mat.v_rib = 0.25
 mat.E2 = mat.E1 / float(paraRead.E1OverE2_simpleModel)
 mat.v2 = mat.v1
 
@@ -281,10 +281,10 @@ if not design.typeOfModel == 'onlyLattice':
 if design.typeOfModel == 'completeModel': #Standard design
 	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.typeBC)
 
-	if load.conditionNodesInnerLattice in ['couplingThroughRF', 'couplingThroughCilSYS']:
-		defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'couplingAtLatticeNodes')
 
-	if (design.cutGap_y != 0.0 and load.additionalBC != 'none') or load.conditionNodesInnerLattice == 'tyre':
+	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'couplingAtLatticeNodes')
+
+	if (design.cutGap_y != 0.0 and load.additionalBC != 'none'):# or load.conditionNodesInnerLattice == 'tyre':
 
 		defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.additionalBC)
 

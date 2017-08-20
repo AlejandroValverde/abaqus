@@ -289,6 +289,7 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 			axDict[keyCurrent] = ax
 			figDict[keyCurrent] = figure
 			flagDict[keyCurrent] = False
+			axDict[keyCurrent].tick_params(axis='both', **plotSettings['axesTicks'])
 
 		return flagDict, axDict, figDict
 
@@ -303,6 +304,9 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 		counterNperKey = studyDefDict.fromkeys(keysAll, 0)
 		scatterHandles = studyDefDict.fromkeys(keysAll, [])
 		keysWith_UR1_tau_plot = []
+		flagDict_stiff = studyDefDict.fromkeys(keysAll, True)
+		axDict_stiff = studyDefDict.fromkeys(keysAll, 0)
+		figDict_stiff = studyDefDict.fromkeys(keysAll, 0)
 
 	rangeID = 1
 	for case in data:
@@ -340,12 +344,15 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 				elif plotSettings['typeOfPlot'] == 'UR1_tau':
 
 					flagDict, axDict, figDict = figureInitialization(flagDict, axDict, figDict, keyCurrent, plotSettings)
+					flagDict_stiff, axDict_stiff, figDict_stiff = figureInitialization(flagDict_stiff, axDict_stiff, figDict_stiff, keyCurrent, plotSettings)
 					if 'Force' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
+						axDict_stiff[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $Q_y$=' + str(case.ForceMagnitude)+'N', **plotSettings['title'])
 					elif 'displacement' in case.typeLoad and CMDoptionsDict['showTitle']:
 						axDict[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
+						axDict_stiff[keyCurrent].set_title(plotSettings['xLabel'][keyCurrent] + ' | $displ_y$=' + str(case.displ)+'mm', **plotSettings['title'])
 
-					scatterHandles[keyCurrent] = plotUR1_tau(case, table, plotSettings, keyCurrent, axDict[keyCurrent], counterNperKey, scatterHandles)
+					scatterHandles[keyCurrent] = plotUR1_tau(case, table, plotSettings, keyCurrent, axDict[keyCurrent], axDict_stiff[keyCurrent], counterNperKey, scatterHandles, CMDoptionsDict)
 					counterNperKey[keyCurrent] += 1
 
 					if not keyCurrent in keysWith_UR1_tau_plot: keysWith_UR1_tau_plot.append(keyCurrent)
@@ -366,12 +373,12 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 					globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
 					figDict[keyCurrent].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyCurrent+'_'+str(getattr(case, keyCurrent))+'.pdf'))
 
-
 	if plotSettings['typeOfPlot'] == 'UR1_tau':
 
 		for key in tuple(keysWith_UR1_tau_plot):
 
 			axDict[key].legend(handles = scatterHandles[key], **plotSettings['legend'])
+			axDict_stiff[key].legend(**plotSettings['legend'])
 
 	#Save figures
 	if keysUsed and CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['UR1_tau', 'energy']: #If at least one plot was crated: if keysUsed
@@ -479,15 +486,19 @@ def plotUR1_frame(classOfData, plotSettings, attr, ax, counterNperKey, scatterHa
 	return scatterHandles[attr]
 
 
-def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scatterHandles):
+def plotUR1_tau(classOfData, table, plotSettings, attr, ax, ax_stiff, counterNperKey, scatterHandles, CMDoptionsDict):
 
 	ax.set_xlabel('$Q_{frame} / Q_{total}$', **plotSettings['axes_x'])
+	ax_stiff.set_xlabel('$Q_{frame} / Q_{total}$', **plotSettings['axes_x'])
 	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
 
 	storeMeans = []
+	storeFractions = []
 	errorStore = []
 	i = 0
 	for fraction in classOfData.framesFraction:
+
+		storeFractions += [fraction]
 
 		#Find index for current frame, classOfData.dataFrames contains unsorted data
 		indexFrame = classOfData.framesCount.index(i)
@@ -535,8 +546,8 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scat
 
 	if plotSettings['meanOption']:
 
-		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label=str(getattr(classOfData, attr)))
-		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='', linestyle='-.', label=str(getattr(classOfData, attr)))
+		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label=str(getattr(classOfData, attr)))#'nonlinear')
+		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='', linestyle='-.', label=str(getattr(classOfData, attr)))#'linear')
 				
 		scatterHandles[attr] = scatterHandles[attr] + [handle1]
 		scatterHandles[attr] = scatterHandles[attr] + [handle2]
@@ -551,7 +562,15 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, counterNperKey, scat
 		scatterHandles[attr] = scatterHandles[attr] + [handle2]
 		scatterHandles[attr] = scatterHandles[attr] + [handle3]
 	
+	###########################
+	# Stiffness
+	ax_stiff.set_ylabel('$k$ [kN/rad]', **plotSettings['axes_y'])
+	# Calculate set of Stiffness
+	stiffList = calculateStiffness(storeMeans, storeFractions, classOfData)
 
+	ax_stiff.plot(storeFractions , stiffList, linestyle = plotSettings['linestyles'][counterNperKey[attr]-(4*int(counterNperKey[attr]/4))], c = plotSettings['colors'][int((counterNperKey[attr]-1)/3)], label=str(getattr(classOfData, attr)), **plotSettings['line'])
+	
+	###############################
 	#Output on CMD
 	table.printRow([attr, getattr(classOfData, attr), min(storeMeans)*(180/math.pi), max(errorStore), meanTwist_linear * (180/math.pi), errorLinear])
 	
@@ -586,3 +605,31 @@ def plotEnergy(classOfData, plotSettings, attr, ax):
 	ax.plot(classOfData.energy_frac , classOfData.energy_estab, linestyle = '-.', c = 'k', label='Static dissipation', **plotSettings['line'])
 
 	ax.legend(**plotSettings['legend'])
+
+def calculateStiffness(defListRad, forceListStr, classOfData):
+
+	# Convert to force-displacement
+
+	defVectRad = np.asarray(defListRad)
+	forceList = [float(key) for key in forceListStr]
+	forceVect = np.asarray(forceList)
+	y_total = forceVect * float(classOfData.ForceMagnitude) / 1000 #Expressed in kN
+	x_total = defVectRad
+
+	nPointsRegre = 3
+	stiffArray = np.zeros(len(y_total))
+	for i in range(len(y_total)):
+
+		if i >= nPointsRegre:
+			x = x_total[i-nPointsRegre:i]
+			y = y_total[i-nPointsRegre:i]
+
+			# least-squares solution to a linear matrix equation, y = mx + c
+			A = np.vstack([x, np.ones(len(x))]).T
+			m, c = np.linalg.lstsq(A, y)[0]
+
+			stiffArray[i] = m
+
+	stiffArray[0:nPointsRegre] = stiffArray[nPointsRegre]
+
+	return np.ndarray.tolist(stiffArray)
