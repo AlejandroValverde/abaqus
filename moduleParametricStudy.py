@@ -564,11 +564,12 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, ax_stiff, counterNpe
 	
 	###########################
 	# Stiffness
-	ax_stiff.set_ylabel('$k$ [kN/rad]', **plotSettings['axes_y'])
-	# Calculate set of Stiffness
-	stiffList = calculateStiffness(storeMeans, storeFractions, classOfData)
+	if float(max(classOfData.framesFraction)) > 0.0:
+		ax_stiff.set_ylabel('$k$ [kN/rad]', **plotSettings['axes_y'])
+		# Calculate set of Stiffness
+		stiffList = calculateStiffness(storeMeans, storeFractions, classOfData)
 
-	ax_stiff.plot(storeFractions , stiffList, linestyle = plotSettings['linestyles'][counterNperKey[attr]-(4*int(counterNperKey[attr]/4))], c = plotSettings['colors'][int((counterNperKey[attr]-1)/3)], label=str(getattr(classOfData, attr)), **plotSettings['line'])
+		ax_stiff.plot(storeFractions , stiffList, linestyle = plotSettings['linestyles'][counterNperKey[attr]-(4*int(counterNperKey[attr]/4))], c = plotSettings['colors'][int((counterNperKey[attr]-1)/3)], label=str(getattr(classOfData, attr)), **plotSettings['line'])
 	
 	###############################
 	#Output on CMD
