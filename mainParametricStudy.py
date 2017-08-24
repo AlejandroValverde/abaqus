@@ -152,10 +152,16 @@ for file in os.listdir(postProcFolder):
 
 
         #For the corresponding linear simulation
-        temp.import_data_from_path('linear_ur1_xOverL.rpt', 'linear_ur1', 'xOverL')
-        temp.import_data_from_path('linear_u2_zOverC3.rpt', 'linear_u2', 'zOverC3')
-        temp.import_data_from_path('linear_u2_xOverL.rpt', 'linear_u2', 'xOverL') #Not essential for later calculations
-
+        try:
+            temp.import_data_from_path('linear_ur1_xOverL.rpt', 'linear_ur1', 'xOverL')
+            temp.import_data_from_path('linear_u2_zOverC3.rpt', 'linear_u2', 'zOverC3')
+            temp.import_data_from_path('linear_u2_xOverL.rpt', 'linear_u2', 'xOverL') #Not essential for later calculations
+        except FileNotFoundError as e:
+            print('-> Linear results not found for iteration: '+str(temp.id))
+            plotSettings['plotLinear'] = False
+        else:
+            plotSettings['plotLinear'] = True
+        
         #Store global class
         data += [temp]
 

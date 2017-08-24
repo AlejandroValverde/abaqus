@@ -532,25 +532,32 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, ax_stiff, counterNpe
 		i += 1
 
 	#Linear,  frame= last frame
+	if plotSettings['plotLinear']:
+		#Check error if twist calculated from different parts
+		a = (classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3)
+		b = classOfData.linear_ur1_xOverL[-1]
+		errorLinear = (abs(a - b) / b)*100
 
-	#Check error if twist calculated from different parts
-	a = (classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3)
-	b = classOfData.linear_ur1_xOverL[-1]
-	errorLinear = (abs(a - b) / b)*100
+		if False: #If error > 5%
+			raise ValueError('ERROR: The error in the calculation of the twist from different parts is more than 5%')	
+		meanTwist_linear = np.mean([a, b])
 
-	if False: #If error > 5%
-		raise ValueError('ERROR: The error in the calculation of the twist from different parts is more than 5%')	
-	meanTwist_linear = np.mean([a, b])
+		ax.plot([0.0, 1.0] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 
-	ax.plot([0.0, 1.0] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
+	else:
+
+		meanTwist_linear = 0.0
+		errorLinear = 0.0
 
 	if plotSettings['meanOption']:
 
 		handle1 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='o', linestyle='', label=str(getattr(classOfData, attr)))#'nonlinear')
-		handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='', linestyle='-.', label=str(getattr(classOfData, attr)))#'linear')
+		if plotSettings['plotLinear']:
+			handle2 = plt.Line2D([],[], color=plotSettings['colors'][counterNperKey[attr]], marker='', linestyle='-.', label=str(getattr(classOfData, attr)))#'linear')
 				
 		scatterHandles[attr] = scatterHandles[attr] + [handle1]
-		scatterHandles[attr] = scatterHandles[attr] + [handle2]
+		if plotSettings['plotLinear']:
+			scatterHandles[attr] = scatterHandles[attr] + [handle2]
 
 	else:
 
