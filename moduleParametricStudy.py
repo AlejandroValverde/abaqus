@@ -371,7 +371,16 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 				#Saving for plots that have more than one figure per parameter used
 				if CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['plotU2_z_LastTau']:
 					globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
+					axDict[keyCurrent].set_xlim([0.0, 1.0])
 					figDict[keyCurrent].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyCurrent+'_'+str(getattr(case, keyCurrent))+'.pdf'))
+					figDict[keyCurrent].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyCurrent+'_'+str(getattr(case, keyCurrent))+'.png'))
+
+				if CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['energy']:
+					globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
+					axDict[keyCurrent].set_xlim([0.0, 1.0])
+					axDict[keyCurrent].set_ylim([0.0, None])
+					figDict[keyCurrent].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyCurrent+'_'+str(getattr(case, keyCurrent))+'.pdf'))
+					figDict[keyCurrent].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyCurrent+'_'+str(getattr(case, keyCurrent))+'.png'))
 
 	if plotSettings['typeOfPlot'] == 'UR1_tau':
 
@@ -381,11 +390,14 @@ def caseDistintion(data, studyDefDict, plotSettings, CMDoptionsDict, table):
 			axDict_stiff[key].legend(**plotSettings['legend'])
 
 	#Save figures
-	if keysUsed and CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['UR1_tau', 'energy']: #If at least one plot was crated: if keysUsed
+	if keysUsed and CMDoptionsDict['flagSaveFigure'] and plotSettings['typeOfPlot'] in ['UR1_tau']: #If at least one plot was crated: if keysUsed
 		globalCreateDir(os.getcwd(), '-figures') #Create directory if it does not already exists
 		for keyUsed in keysUsed:
+			axDict[keyUsed].set_xlim([0.0, 1.0])
+			axDict[keyUsed].set_ylim([None, 0.0])
 
 			figDict[keyUsed].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyUsed+'.pdf'))
+			figDict[keyUsed].savefig(os.path.join('figures', plotSettings['typeOfPlot'] + '-' + keyUsed+'.png'))
 
 def plotU2_z_LastTau(classOfData, table, plotSettings, attr, ax):
 

@@ -133,7 +133,7 @@ load.conditionNodesInnerLattice = paraRead.conditionNodesInnerLattice #'coupling
 load.dofContraint = paraRead.dofContraint.split(',')
 
 if load.additionalBC != 'none' and design.cutGap_y == 0.0:
-	raise ValueError('Not correct option chosen for combination of gap between lattice and skin, and coupling condition for the lattice nodes')
+	design.cutGap_y = 5.0
 
 ## Job
 jobDef = structtype()

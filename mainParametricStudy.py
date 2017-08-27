@@ -43,7 +43,8 @@ xLabel={'N' : 'Number of unit cells in spanwise direction',
         'maxTimeIncrement' : 'Maximum time increment allowed',
         'initialTimeIncrement' : 'Initial time increment',
         'maxNumInc' : 'Maximum number of increments in a step',
-        'damp' : 'Artificial constant damping factor'}
+        'damp' : 'Artificial constant damping factor',
+        'additionalBC' : 'Boundary condition at the border'}
 
 plotSettings = {'xLabel':xLabel,'axes_x':axes_label_x,'axes_y':axes_label_y, 'title':text_title_properties,
                 'axesTicks':axes_ticks, 'line':line, 'legend':legend, 'grid':grid, 'scatter':scatter,

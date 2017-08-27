@@ -21,7 +21,7 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'Cbox_t' : 0.8, #C-box wall thickness, $t_{C}$ (mm)
 			'rib_t' : 2, #Rib thickness, $t_{rib}$ (mm)
 			'rib_t_inner' : 2,
-			'innerRibs_n' : 0,
+			'innerRibs_n' : 2,
 			'rootRibShape' : 'closed', #'Shape of the outer rib, 'closed' or 'open'
 			'tipRibShape' : 'closed',
 			'rib_a' : 40, #Rib dimension frame width, $a$ (mm)
@@ -50,7 +50,7 @@ nominalDict={'typeOfModel' : 'completeModel',
 			'executeJob' : True,
 			'executePostProc' : True,
 			'damp' : 0.0,
-			'typeAnalysis' : 'nonlinear',
+			'typeAnalysis' : 'double_linear_nonlinear',
 			'typeAbaqus' : 'Standard'}
 
 #Define 
@@ -88,7 +88,6 @@ rangesDict={'typeOfModel' : [],
 			'forceXEnd' : [],
 			'forceXn' : [],
 			'forceZPos' : [], #[0.50, 0.70, 0.80, 0.90, 0.95],
-			'innerRibs_n' : [],#3, 5, 7, 9, 11]}
 			'courseSize' : [], #[25, 50, 75],
 			'fineSize' : [], #[2.0, 4.0, 6.0, 8.0],
 			'maxTimeIncrement' : [],
