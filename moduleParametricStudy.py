@@ -55,8 +55,8 @@ class tableOutput(object):
 		
 def readCMDoptions(argv, CMDoptionsDict):
 
-    short_opts = "i:p:s:m:t:"
-    long_opts = ["ifile=", "plotOptions=", "saveFigure=", "plotMean=", "showTitle="]
+    short_opts = "i:p:s:m:t:w:"
+    long_opts = ["ifile=", "plotOptions=", "saveFigure=", "plotMean=", "showTitle=", "collectTwist="]
     try:
     	opts, args = getopt.getopt(argv,short_opts,long_opts)
     except getopt.GetoptError:
@@ -113,6 +113,14 @@ def readCMDoptions(argv, CMDoptionsDict):
         		CMDoptionsDict['showTitle'] = True
         	elif arg.lower() in ('false', 'f'):
         		CMDoptionsDict['showTitle'] = False
+        	else:
+        		raise ValueError('ERROR: Incorrect option chosen to show title or not')
+        elif opt in ("-w", "--collectTwist"):
+        	#Options: 'true' or 'false'
+        	if arg.lower() in ('true', 't'):
+        		CMDoptionsDict['collectTwist'] = True
+        	elif arg.lower() in ('false', 'f'):
+        		CMDoptionsDict['collectTwist'] = False
         	else:
         		raise ValueError('ERROR: Incorrect option chosen to show title or not')
 
@@ -222,6 +230,41 @@ class caseStudy(object):
 		file.close()
 
 		return frameInfoList
+
+	def obtainTwistData(self, fileName, simString):
+
+		file = open(fileName, 'r')
+
+		lines = file.readlines()
+
+		frac = []
+		twist = []
+
+		lineNumber = 1
+
+		for line in lines:
+
+			if lineNumber >= 7 and line in ['\r\n', '\n', '\r']:
+				break
+
+			elif lineNumber >= 6:
+
+				frac += [ConvertNumber(line[:30])]
+				twist += [[ConvertNumber(line[30:49]),
+							ConvertNumber(line[49:68]),
+							ConvertNumber(line[68:87]),
+							ConvertNumber(line[87:106]),
+							ConvertNumber(line[106:125]),
+							ConvertNumber(line[125:144]),
+							ConvertNumber(line[144:163]),
+							ConvertNumber(line[163:182])]]
+
+			lineNumber += 1
+
+		file.close()
+
+		setattr(self, simString+'twist_frac', frac)
+		setattr(self, simString+'twist_tipRib', twist)
 
 	def obtainEnergyData(self, fileName):
 
@@ -505,6 +548,7 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, ax_stiff, counterNpe
 	ax.set_ylabel(plotSettings['yLabel'], **plotSettings['axes_y'])
 
 	storeMeans = []
+	storeMeans_lin = []
 	storeFractions = []
 	errorStore = []
 	i = 0
@@ -521,12 +565,21 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, ax_stiff, counterNpe
 		indexForMaxX = dataThisFrame.xPosForU2.index(max(dataThisFrame.xPosForU2))
 
 		#Mean operations
-		meanTwist = np.mean([dataThisFrame.ur1_xOverL_up[-1], dataThisFrame.ur1_xOverL_dn[-1], dataThisFrame.twistFromU2[indexForMaxX]])
-		storeMeans += [meanTwist]
-		
-		maxErrorFromMean = maxErrorFromMeanFunction([dataThisFrame.ur1_xOverL_up[-1]* (180/math.pi), dataThisFrame.ur1_xOverL_dn[-1]* (180/math.pi), dataThisFrame.twistFromU2[indexForMaxX]* (180/math.pi)])
-		errorStore += [maxErrorFromMean]
-		
+		if plotSettings['twistData']:
+			meanTwist = np.mean(classOfData.twist_tipRib[i]+[dataThisFrame.twistFromU2[indexForMaxX]])
+			storeMeans += [meanTwist]
+			
+			twistDegrees = [l * (180/math.pi) for l in classOfData.twist_tipRib[i]+[dataThisFrame.twistFromU2[indexForMaxX]]]
+			maxErrorFromMean = maxErrorFromMeanFunction(twistDegrees)
+			errorStore += [maxErrorFromMean]
+
+		else:
+			meanTwist = np.mean([dataThisFrame.ur1_xOverL_up[-1], dataThisFrame.ur1_xOverL_dn[-1], dataThisFrame.twistFromU2[indexForMaxX]])
+			storeMeans += [meanTwist]
+			
+			maxErrorFromMean = maxErrorFromMeanFunction([dataThisFrame.ur1_xOverL_up[-1]* (180/math.pi), dataThisFrame.ur1_xOverL_dn[-1]* (180/math.pi), dataThisFrame.twistFromU2[indexForMaxX]* (180/math.pi)])
+			errorStore += [maxErrorFromMean]
+
 		if plotSettings['meanOption']:
 
 			ax.plot(fraction , meanTwist * (180/math.pi), marker = 'o', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
@@ -545,14 +598,24 @@ def plotUR1_tau(classOfData, table, plotSettings, attr, ax, ax_stiff, counterNpe
 
 	#Linear,  frame= last frame
 	if plotSettings['plotLinear']:
-		#Check error if twist calculated from different parts
-		a = (classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3)
-		b = classOfData.linear_ur1_xOverL[-1]
-		errorLinear = (abs(a - b) / b)*100
 
-		if False: #If error > 5%
-			raise ValueError('ERROR: The error in the calculation of the twist from different parts is more than 5%')	
-		meanTwist_linear = np.mean([a, b])
+		if plotSettings['twistData']:
+			
+			meanTwist_linear = np.mean(classOfData.linear_twist_tipRib[1])
+			storeMeans_lin += [meanTwist_linear]
+			
+			twistDegrees_lin = [l * (180/math.pi) for l in classOfData.linear_twist_tipRib[1]]
+			errorLinear = maxErrorFromMeanFunction(twistDegrees_lin)
+
+		else:
+			#Check error if twist calculated from different parts
+			a = (classOfData.linear_u2_zOverC3[-1] - classOfData.linear_u2_zOverC3[0]) / float(classOfData.C3)
+			b = classOfData.linear_ur1_xOverL[-1]
+			errorLinear = (abs(a - b) / b)*100
+
+			if False: #If error > 5%
+				raise ValueError('ERROR: The error in the calculation of the twist from different parts is more than 5%')	
+			meanTwist_linear = np.mean([a, b])
 
 		ax.plot([0.0, 1.0] , [0.0, meanTwist_linear * (180/math.pi)], linestyle = '-.', c = plotSettings['colors'][counterNperKey[attr]], **plotSettings['line'])
 

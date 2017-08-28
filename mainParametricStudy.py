@@ -44,7 +44,8 @@ xLabel={'N' : 'Number of unit cells in spanwise direction',
         'initialTimeIncrement' : 'Initial time increment',
         'maxNumInc' : 'Maximum number of increments in a step',
         'damp' : 'Artificial constant damping factor',
-        'additionalBC' : 'Boundary condition at the border'}
+        'additionalBC' : 'Boundary condition at the border',
+        'ForceMagnitude' : 'Magnitude of the force applied'}
 
 plotSettings = {'xLabel':xLabel,'axes_x':axes_label_x,'axes_y':axes_label_y, 'title':text_title_properties,
                 'axesTicks':axes_ticks, 'line':line, 'legend':legend, 'grid':grid, 'scatter':scatter,
@@ -98,6 +99,19 @@ for file in os.listdir(postProcFolder):
         #Obtain data of the external work vs static dissipation energy given by Abaqus in (N * mm)
         if temp.damp != '0.0':
             temp.obtainEnergyData('extWork_stab.rpt')
+
+        #Obtain final values of twist
+        if CMDoptionsDict['collectTwist']:
+            try:
+                temp.obtainTwistData('twist.rpt', '')
+                temp.obtainTwistData('linear_twist.rpt', 'linear_')
+            except FileNotFoundError as e:
+                print('-> Data from twist not found for iteration: '+str(temp.id))
+                plotSettings['twistData'] = False
+            else:
+                plotSettings['twistData'] = True
+        else:
+            plotSettings['twistData'] = False
 
         #For each frame
         dataFrames = []
@@ -175,11 +189,11 @@ globalChangeDir(cwd, '')
 print('-> Data loaded...')
 
 #Print summary table
-table_sum = tableOutput('Simulation summary', ['parameter', 'value', 'max Q_fr/Q_to', 'frames', 'f_mesh', 'c_mesh', 'damp', 'wingBoxLength', 'wingBoxHeight'])
+table_sum = tableOutput('Simulation summary', ['parameter', 'value', 'max Q_fr/Q_to', 'frames', 'f_mesh', 'c_mesh', 'damp', 'forceMagnitude', 'wingBoxLength', 'wingBoxHeight'])
 for case in data:
     for (keyCurrent, rangeCurrent) in studyDefDict.items():
         if studyDefDict[keyCurrent][0] <= case.id <= studyDefDict[keyCurrent][1]:
-            table_sum.printRow([keyCurrent, getattr(case, keyCurrent), float(max(case.framesFraction)), int(max(case.framesCount)), case.fineSize, case.courseSize, case.damp, case.wingBoxLength, 2*88.3176086632785*(float(case.M)-1)])
+            table_sum.printRow([keyCurrent, getattr(case, keyCurrent), float(max(case.framesFraction)), int(max(case.framesCount)), case.fineSize, case.courseSize, case.damp, case.ForceMagnitude, case.wingBoxLength, 2*88.3176086632785*(float(case.M)-1)])
 
 #### PLOTTING ####
 

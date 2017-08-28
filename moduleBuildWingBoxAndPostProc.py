@@ -1649,7 +1649,68 @@ def mergeInstances(model, instancesToMerge, newName):
 	model.rootAssembly.InstanceFromBooleanMerge(domain=GEOMETRY, 
 	    instances=instancesToMerge, name=newName, originalInstances=SUPPRESS)
 
-def PostProc_linear(iterStr, design, load, jobCurrentName):
+def createSetForPostProcTwist(model, instanceFinal, design, postProcStruct):
+
+	setName = 'setPostProcTwist'
+
+	postProcStruct.setName = setName
+	
+	def searchNodesPostProc(x, yRange, zRange, tupleOfNodes, instanceFinal):
+
+		listOfNodeLabels = []
+
+		#Search nodes on upper part
+		for z, y in zip(zRange, yRange):
+
+			radius = 1
+
+			FlagSearch = True
+
+			while FlagSearch:
+
+				node = instanceFinal.nodes.getByBoundingSphere((x, y, z), radius)
+				
+				if node: #Continue if node found
+
+					#Get a single node from the MeshNodeArray object found (node)
+					tupleOfNodes += (instanceFinal.nodes.sequenceFromLabels(labels=(node[0].label,),), )
+
+					listOfNodeLabels += [node[0].label]
+
+					FlagSearch = False
+
+				elif radius < 20:
+					print('Node to apply force not found, radius increased')
+					radius += 1
+
+				else:
+					raise ValueError('ERROR: Radius bigger than 20')
+
+			print('Final radius utilized for finding the node: '+str(radius))
+
+
+		return tupleOfNodes, listOfNodeLabels, radius
+
+	#Set of nodes
+	tupleOfNodes = ()
+
+	xPos = design.cutWingTip
+
+	#    = [1, 2, 3, 4, 5, 6, 7, 8]
+	yPos = [design.cutUp, design.cutUp - design.a, (design.cutUp + abs(design.cutDown))/2, (design.cutUp + abs(design.cutDown))/2, design.cutDown + design.a, design.cutDown, (design.cutUp + abs(design.cutDown))/2, (design.cutUp + abs(design.cutDown))/2]
+
+	zPos = [design.C3/2, design.C3/2, design.C3, design.C3 - design.a, design.C3/2, design.C3/2, design.a, 0.0]
+
+	tupleOfNodes, listOfNodeLabels, radius = searchNodesPostProc(xPos, yPos, zPos, tupleOfNodes, instanceFinal)
+
+	model.rootAssembly.Set(name=setName, nodes=tupleOfNodes)
+
+	postProcStruct.listOfNodeLabels = listOfNodeLabels
+
+	return postProcStruct
+
+
+def PostProc_linear(iterStr, design, load, jobCurrentName, postProcStruct):
 
 	#j index unused
 
@@ -1737,6 +1798,16 @@ def PostProc_linear(iterStr, design, load, jobCurrentName):
 	    projectOntoMesh=False, pathStyle=UNIFORM_SPACING, numIntervals=20, 
 	    projectionTolerance=0, shape=UNDEFORMED, labelType=NORM_DISTANCE)
 
+	#Twist data
+	session.xyDataListFromField(odb=odb, outputPosition=NODAL, variable=(('UR', 
+	    NODAL, ((COMPONENT, 'UR1'), )), ), nodeSets=('SETPOSTPROCTWIST', ))
+
+	datas = ()
+	instanceName = postProcStruct.finalInstanceName
+	for nodeID in postProcStruct.listOfNodeLabels:
+
+		datas += (session.xyDataObjects['UR:UR1 PI: '+instanceName.upper()+' N: '+str(nodeID)], )
+
 	#Reaction force at reference point
 	# session.xyDataListFromField(odb=odb, outputPosition=NODAL, variable=(('RF', NODAL, ((COMPONENT, 'RF2'), )), ), nodeSets=('REFERENCEPOINT', ))
 
@@ -1745,6 +1816,13 @@ def PostProc_linear(iterStr, design, load, jobCurrentName):
 
 	#Move to simulation results folder
 	globalChangeDir(cwd, '-postProc-'+iterStr)
+
+	#Twist
+	session.writeXYReport(fileName=nameToSave+'twist.rpt', appendMode=OFF, xyData=datas)
+
+	for nodeID in postProcStruct.listOfNodeLabels:
+
+		del session.xyDataObjects['UR:UR1 PI: '+instanceName.upper()+' N: '+str(nodeID)]
 
 	#Write ur1 data to XY file
 	x0_ur1 = session.xyDataObjects['ur1']
@@ -1765,7 +1843,7 @@ def PostProc_linear(iterStr, design, load, jobCurrentName):
 	#Return to original working folder
 	globalChangeDir(cwd, '.')
 
-def PostProc_nonlinear(iterStr, design, load, jobCurrentName):
+def PostProc_nonlinear(iterStr, design, load, jobCurrentName, postProcStruct):
 
 	#Postproccesing
 
@@ -1859,6 +1937,22 @@ def PostProc_nonlinear(iterStr, design, load, jobCurrentName):
 		#Down
 		x0_ur1_dn = session.xyDataObjects['ur1_fr'+str(frameID)+'_dn']
 		session.writeXYReport(fileName='ur1_dn_frame'+str(frameID)+'.rpt', xyData=(x0_ur1_dn, ), appendMode=OFF)
+
+	########################################
+	## Single points twist
+	session.xyDataListFromField(odb=odb, outputPosition=NODAL, variable=(('UR', 
+	    NODAL, ((COMPONENT, 'UR1'), )), ), nodeSets=('SETPOSTPROCTWIST', ))
+	datas = ()
+	instanceName = postProcStruct.finalInstanceName
+	for nodeID in postProcStruct.listOfNodeLabels:
+
+		datas += (session.xyDataObjects['UR:UR1 PI: '+instanceName.upper()+' N: '+str(nodeID)], )
+
+	session.writeXYReport(fileName='twist.rpt', appendMode=OFF, xyData=datas)
+
+	for nodeID in postProcStruct.listOfNodeLabels:
+
+		del session.xyDataObjects['UR:UR1 PI: '+instanceName.upper()+' N: '+str(nodeID)]
 
 	if load.dampFlag:
 

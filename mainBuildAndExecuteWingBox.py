@@ -144,6 +144,9 @@ else:
 jobDef.saveJob = False
 jobDef.numCpus = 4
 
+## Post-processing
+postProcStruct = structtype()
+
 ## Session works
 session = structtype()
 session.executeJob = (paraRead.executeJob == 'True')
@@ -202,6 +205,7 @@ if design.typeOfModel == 'completeModel': #Standard design
 
 	partToApplyMeshBCsLoads = model.parts['RibBoxLattice']
 	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLattice-1']
+	postProcStruct.finalInstanceName = 'RibBoxLattice-1'
 
 	#Build tyre for nodes
 	if 'tyre' in load.additionalBC or load.conditionNodesInnerLattice == 'tyre':
@@ -210,6 +214,7 @@ if design.typeOfModel == 'completeModel': #Standard design
 
 		partToApplyMeshBCsLoads = model.parts['RibBoxLatticeTyres']
 		instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLatticeTyres-1']
+		postProcStruct.finalInstanceName = 'RibBoxLatticeTyres-1'
 
 
 elif design.typeOfModel == 'simpleModel':
@@ -292,6 +297,8 @@ if design.typeOfModel == 'completeModel': #Standard design
 #Load definition
 loads(model, design, mesh, load, instanceToApplyMeshBCsLoads, load.typeLoad, load.typeAnalysis, load.typeAbaqus) #Type of load: 'displ', 'force' or 'distributedForce', type of analysis: 'linear' or 'nonlinear'
 
+#Set for postProcessing
+postProcStruct = createSetForPostProcTwist(model, instanceToApplyMeshBCsLoads, design, postProcStruct)
 ################################
 #Job operations
 
@@ -354,10 +361,10 @@ while jobExecutionFlag:
 		globalCreateDir(cwd, '-postProc-'+paraRead.Iter)
 
 		if load.typeAnalysis == 'linear':
-			PostProc_linear(paraRead.Iter, design, load, jobCurrentName)
+			PostProc_linear(paraRead.Iter, design, load, jobCurrentName, postProcStruct)
 
 		elif 'nonlinear' in load.typeAnalysis:
-			PostProc_nonlinear(paraRead.Iter, design, load, jobCurrentName)
+			PostProc_nonlinear(paraRead.Iter, design, load, jobCurrentName, postProcStruct)
 
 		#Copy input file to postProc folder
 		globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName.replace('.txt', '_'+'nonlinear'+'.txt'))
