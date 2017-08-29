@@ -153,7 +153,7 @@ def checkConvergencyAndReturnFlag(iterationID, current_nominalDict, CMDoptionsDi
 		if lastTau < meshTauBorder/100:
 
 			current_nominalDict['fineSize'] = current_nominalDict['fineSize'] + 1
-			current_nominalDict['courseSize'] = current_nominalDict['courseSize'] + 5
+			# current_nominalDict['courseSize'] = current_nominalDict['courseSize'] + 5
 
 			print('-> Course mesh size increased to '+str(current_nominalDict['courseSize']))
 			print('-> Fine mesh size increased to '+str(current_nominalDict['fineSize']))

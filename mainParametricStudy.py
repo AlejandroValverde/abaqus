@@ -45,7 +45,8 @@ xLabel={'N' : 'Number of unit cells in spanwise direction',
         'maxNumInc' : 'Maximum number of increments in a step',
         'damp' : 'Artificial constant damping factor',
         'additionalBC' : 'Boundary condition at the border',
-        'ForceMagnitude' : 'Magnitude of the force applied'}
+        'ForceMagnitude' : 'Magnitude of the force applied',
+        'dofContraint' : 'Degrees of freedom constrained'}
 
 plotSettings = {'xLabel':xLabel,'axes_x':axes_label_x,'axes_y':axes_label_y, 'title':text_title_properties,
                 'axesTicks':axes_ticks, 'line':line, 'legend':legend, 'grid':grid, 'scatter':scatter,

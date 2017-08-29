@@ -59,8 +59,8 @@ design.Ct = float(paraRead.Cbox_t) #20 #C-box wall thickness, in millimeters
 
 ## Rib structure
 design.a = float(paraRead.rib_a) #60
-design.ribt = float(paraRead.rib_t) #10 #Rib thickness, in millimeters
-design.ribt_inner = float(paraRead.rib_t_inner) #10 #Inner ribs thickness, in millimeters
+design.ribt = float(paraRead.rib_t) #Rib thickness, in millimeters
+design.ribt_inner = float(paraRead.rib_t) #float(paraRead.rib_t_inner) #10 #Inner ribs thickness, in millimeters
 design.innerRibs_n = int(paraRead.innerRibs_n) #Choose 0 for not inner ribs
 design.innerRibs_gap = 20 #Distance from the lattice, in millimeters
 design.rootRibShape = paraRead.rootRibShape #'open' or 'closed'
@@ -134,6 +134,10 @@ load.dofContraint = paraRead.dofContraint.split(',')
 
 if load.additionalBC != 'none' and design.cutGap_y == 0.0:
 	design.cutGap_y = 5.0
+
+if load.additionalBC == 'none' and design.cutGap_y != 0.0:
+	design.cutGap_y = 0.0
+
 
 ## Job
 jobDef = structtype()
