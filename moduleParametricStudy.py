@@ -39,7 +39,7 @@ class tableOutput(object):
 		i = 0
 		for item in rowValues:
 			if isinstance(item, str): #Is string
-				print(item.rjust(self.columnWidths[i]), end='')
+				print(item.rjust(max(self.columnWidths[i], len(item))), end='')
 
 			elif isinstance(item, int):
 				formatSpec = '%'+str(self.columnWidths[i])+'.0f'

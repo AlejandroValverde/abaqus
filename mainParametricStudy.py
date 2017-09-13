@@ -46,7 +46,8 @@ xLabel={'N' : 'Number of unit cells in spanwise direction',
         'damp' : 'Artificial constant damping factor',
         'additionalBC' : 'Boundary condition at the border',
         'ForceMagnitude' : 'Magnitude of the force applied',
-        'dofContraint' : 'Degrees of freedom constrained'}
+        'dofContraint' : 'Degrees of freedom constrained',
+        'typeLoad' : 'Type of load introduction method'}
 
 plotSettings = {'xLabel':xLabel,'axes_x':axes_label_x,'axes_y':axes_label_y, 'title':text_title_properties,
                 'axesTicks':axes_ticks, 'line':line, 'legend':legend, 'grid':grid, 'scatter':scatter,
@@ -107,9 +108,10 @@ for file in os.listdir(postProcFolder):
                 temp.obtainTwistData('twist.rpt', '')
                 temp.obtainTwistData('linear_twist.rpt', 'linear_')
             except FileNotFoundError as e:
-                print('-> Data from twist not found for iteration: '+str(temp.id))
+                print('-> Data for twist on selected points not found for iteration: '+str(temp.id))
                 plotSettings['twistData'] = False
             else:
+                print('-> Data for twist on selected points loaded for iteration: '+str(temp.id))
                 plotSettings['twistData'] = True
         else:
             plotSettings['twistData'] = False
@@ -194,7 +196,7 @@ table_sum = tableOutput('Simulation summary', ['parameter', 'value', 'max Q_fr/Q
 for case in data:
     for (keyCurrent, rangeCurrent) in studyDefDict.items():
         if studyDefDict[keyCurrent][0] <= case.id <= studyDefDict[keyCurrent][1]:
-            table_sum.printRow([keyCurrent, getattr(case, keyCurrent), float(max(case.framesFraction)), int(max(case.framesCount)), case.fineSize, case.courseSize, case.damp, case.ForceMagnitude, case.wingBoxLength, 2*88.3176086632785*(float(case.M)-1)])
+            table_sum.printRow([keyCurrent, getattr(case, keyCurrent), float(max(case.framesFraction)), int(max(case.framesCount)), case.fineSize, case.courseSize, case.damp, case.ForceMagnitude, float(case.wingBoxLength), 2*88.3176086632785*(float(case.M)-1)])
 
 #### PLOTTING ####
 
