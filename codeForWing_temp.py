@@ -1,5 +1,6 @@
 import math			# necessary for certain mathematical functions
 import os			# necessary for creation of folders
+import sys
 
 from part import *
 from material import *
@@ -19,13 +20,10 @@ import numpy as np
 # from parameters_Dom import N, c_0#, b
 
 from functions_Urban import *
+from moduleBuildWingBoxAndPostProc import *
 
-#### PARAMETERS - 1
-iSIM=1
-PositionFrontSpar=2.000000e-01
-PositionRearSpar=3.000000e-01
-FaserWinkel=0
-thickness_bucklingSpar=1.000000e-04
+class structtype():
+    pass
 
 #===============================================================================
 # 0-Variables, clean
@@ -67,20 +65,30 @@ thickness_bucklingSpar=1.000000e-04
 # 1-Parameters 
 #===============================================================================
 import numpy as np
+paraRead_wing = structtype()
+paraRead_wing = loadParameters(paraRead_wing, 'inputAbaqus_wing.txt')
+
+#### PARAMETERS - 1
+iSIM=1
+PositionFrontSpar = float(paraRead_wing.PositionFrontSpar)
+PositionRearSpar = float(paraRead_wing.PositionRearSpar)
+FaserWinkel=0
+thickness_bucklingSpar=1.000000e-04
+
 # Check with consistency in 01_Variablendefinition_Dom
 # Define parameters
-span=3.0 ##b = float(5)                    # Span [m]
-c_0 = 0.5                       # Chordlength [m]
-V = 60.0#1.5*30*np.sqrt(2)               # Freestream velocity [m/s]
-rho = 1.225                     # Density [kg/m^3] from U.S Standard Atmosphere Air Properties in SI Units
-mu = 1.789E-5                   # Dynamic viscosity [Ns/m^2]
+span= float(paraRead_wing.span) ##b = float(5)                    # Span [mm]
+c_0 = float(paraRead_wing.c_0)                       # Chordlength [mm]
+V = float(paraRead_wing.V)#1.5*30*np.sqrt(2)               # Freestream velocity [m/s]
+rho = float(paraRead_wing.rho)                     # Density [kg/m^3] from U.S Standard Atmosphere Air Properties in SI Units
+mu = float(paraRead_wing.mu)                   # Dynamic viscosity [Ns/m^2]
 Re = rho*V*c_0/mu
-alpha_init = 8.0#12.0#7.0                # Initial angle of attack in deg
+# alpha_init = 8.0#12.0#7.0                # Initial angle of attack in deg
 Re_scal = round(Re/c_0)         # Scaled Reynold's number for Xfoil
 ##alpha_min = 0.0                 # Start value of alpha for sweep                 
 ##alpha_max = 10.0                # End value of value for sweep
 ##step = 0.5                      # Increment by which alpha is swept
-N = 25                          # Number of half-spanwise elements; not higher than 40, 25 recommended
+N = float(paraRead_wing.N)       # Number of half-spanwise elements; not higher than 40, 25 recommended
 ##D = 0.05                        # Damping factor
 ##tol = 0.00001                   # Convergence tolerance
 
@@ -112,7 +120,7 @@ width_element = span/2/N
 y = (2*N+1)
 y = np.zeros(y)
 y[0] = -span/2
-for i in range(2*N):
+for i in range(int(2*N)):
     y[i+1] = y[0]+width_element*(i+1)        
 n = len(y)
 y.tolist()
@@ -175,9 +183,9 @@ for i in range(n_skinpts):
     skin_points[i][0] = x[i]*c_0
     skin_points[i][1] = y[i]*c_0
 
-skin_points_upX = [[0] for i in range(n_skinpts/2)]
-skin_points_upY = [[0] for i in range(n_skinpts/2)]
-for i in range(n_skinpts/2):
+skin_points_upX = [[0] for i in range(int(n_skinpts/2))]
+skin_points_upY = [[0] for i in range(int(n_skinpts/2))]
+for i in range(int(n_skinpts/2)):
 	skin_points_upX[i] = x[i]*c_0
 	skin_points_upY[i] = y[i]*c_0
 
@@ -188,15 +196,15 @@ for i in range(n_skinpts/2):
 skin_points_upX = np.flipud(skin_points_upX) 
 skin_points_upY = np.flipud(skin_points_upY) 
 	
-skin_points_dnX = [[0] for i in range(n_skinpts/2)]
-skin_points_dnY = [[0] for i in range(n_skinpts/2)]
-for i in range(n_skinpts/2):
-	j = i+n_skinpts/2
+skin_points_dnX = [[0] for i in range(int(n_skinpts/2))]
+skin_points_dnY = [[0] for i in range(int(n_skinpts/2))]
+for i in range(int(n_skinpts/2)):
+	j = i+int(n_skinpts/2)
 	skin_points_dnX[i] = x[j]*c_0
 	skin_points_dnY[i] = y[j]*c_0
 
-#skin_points_dn = skin_points[n_skinpts/2:-1]
-#skin_points_up = skin_points[0:n_skinpts/2]
+#skin_points_dn = skin_points[int(n_skinpts/2):-1]
+#skin_points_up = skin_points[0:int(n_skinpts/2)]
 
 
 ##define nodes to find edges in 06_modelling...
@@ -205,7 +213,7 @@ mod6_UP_m = [0,0];
 mod6_UP_f = [0,0];
 distSPARsectUP = x_spar2m - x_spar1
 distSPARsectDN = x_spar2 - x_spar1m
-for i in range(n_skinpts/2):	
+for i in range(int(n_skinpts/2)):	
 	if i > 2 and mod6_UP_r[0] == 0:
 		mod6_UP_r[0] = x[i]*c_0;
 		mod6_UP_r[1] = y[i]*c_0;
@@ -217,23 +225,23 @@ for i in range(n_skinpts/2):
 		mod6_UP_f[1] = y[i]*c_0;
 
 mod6_DN_m = [0,0];
-for i in range(n_skinpts/2+1,n_skinpts):	
+for i in range(int(n_skinpts/2)+1,n_skinpts):	
 	if x[i]*c_0 > x_spar1m + distSPARsectDN/2 and mod6_DN_m[0] == 0:
 		mod6_DN_m[0] = x[i]*c_0;
 		mod6_DN_m[1] = y[i]*c_0;
 
 
-mod7_UP = [x_spar1, numpy.interp(x_spar1, skin_points_upX, skin_points_upY)]
-mod7_DN = [x_spar1m, numpy.interp(x_spar1m, skin_points_dnX, skin_points_dnY)]
+mod7_UP = [x_spar1, np.interp(x_spar1, skin_points_upX, skin_points_upY)]
+mod7_DN = [x_spar1m, np.interp(x_spar1m, skin_points_dnX, skin_points_dnY)]
 
-mod8_UP = [x_spar2m, numpy.interp(x_spar2m, skin_points_upX, skin_points_upY)]
-mod8_DN = [x_spar2, numpy.interp(x_spar2, skin_points_dnX, skin_points_dnY)]
+mod8_UP = [x_spar2m, np.interp(x_spar2m, skin_points_upX, skin_points_upY)]
+mod8_DN = [x_spar2, np.interp(x_spar2, skin_points_dnX, skin_points_dnY)]
 
 		
 x_surf=[]
 y_surf=[]
 anzahl_surfacepoints = 0
-for i in range(n_skinpts/2):
+for i in range(int(n_skinpts/2)):
     if abs(skin_points[i+1][0]) <= x_str3 and abs(skin_points[i][0]) > x_str3:
         x_surf.append( skin_points[i][0] )
         y_surf.append( skin_points[i][1] )
@@ -742,7 +750,7 @@ meshSection1=WingModel.parts['Part-1'].DatumPlaneByPrincipalPlane(offset=points_
 #    edges_section_control2 = WingModel.parts['Part-1'].edges.getByBoundingBox(-0.01*c, -c, y_C[N+i]-0.1*element_width, 1.01*c, 0.001, y_C[N+i]+0.1*element_width)   
 #    edges_section_control3 = WingModel.parts['Part-1'].edges.findAt(((points_nose[1][0], points_nose[1][1], y_C[N+i]) ,),)
 #    WingModel.parts['Part-1'].Set(name='Section'+str(i+1) , edges=edges_section_control1+edges_section_control2+edges_section_control3)
-for i in range(N):
+for i in range(int(N)):
     b_plane=WingModel.parts['Part-1'].DatumPlaneByPrincipalPlane(offset=y_C[N+i], principalPlane=XYPLANE)
     WingModel.parts['Part-1'].PartitionFaceByDatumPlane(datumPlane=WingModel.parts['Part-1'].datums[b_plane.id], faces=WingModel.parts['Part-1'].faces.getByBoundingBox(-0.01*c, -c, -0.1*c, 1.01*c, c, width+0.1*c))
     edges_section_control1 = WingModel.parts['Part-1'].edges.findAt(((mod6_UP_r[0], mod6_UP_r[1], y_C[N+i]) ,),)
@@ -801,533 +809,18 @@ ribs9=tuple(ribs9)
 
 rib=ribs1+ribs8+ribs9
 
-    
-WingModel.rootAssembly.InstanceFromBooleanMerge(domain=GEOMETRY, 
-    instances=(         rib         ), name='Wing',
-    originalInstances=SUPPRESS)
+#Inclusion of wing-box
+del mdb.models['Model-1'] #Delete old model
 
-for i in range(N):
-    if i == N-1 or i == 0 or i == 12 or i == 15 or i == 19:
-        edges_section_SC = WingModel.parts['Wing'].edges.getByBoundingBox(-0.01*c, -c, y_C[N+i]-0.1*element_width, 1.01*c, c, y_C[N+i]+0.1*element_width)
-        WingModel.parts['Wing'].Set(name='Section'+str(i+1)+'_SC_edges', edges=edges_section_SC)
-    else:
-        pass
+if sys.version_info.major == 2:
+    execfile('mainBuildWing.py') #Load parametric study values
+elif sys.version_info.major == 3:
+    exec(open("./"+'mainBuildWing.py').read())
 
-## hier werden die Kanten vorne und hinten erzeugt, um spaeter den AOA auszulesen... uebernommen von Mesh.py - Obtain edges that would be used during the meshing operations
-front_nose_plane=WingModel.parts['Wing'].DatumPlaneByPrincipalPlane(offset=0.0, principalPlane=XZPLANE)
-front_nose_planeOFF=WingModel.parts['Wing'].DatumPlaneByPrincipalPlane(offset=(mod7_UP[1]+mod7_DN[1])/2, principalPlane=XZPLANE)
-faces_nodalpoints=WingModel.parts['Wing'].faces.findAt( ( ( points_nose[25][0], points_nose[25][1], 0.001), ),)
+model.rootAssembly.rotate(angle=-90.0, axisDirection=
+    (0.0, 1.0, 0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=(postProcStruct.finalInstanceName, ))
+model.rootAssembly.translate(instanceList=(postProcStruct.finalInstanceName, ), vector=(0.0, 0.0, -design.cutWingRoot))
+model.rootAssembly.translate(instanceList=(postProcStruct.finalInstanceName, ), vector=(c_0*PositionRearSpar, 0.0, 0.0))
+model.rootAssembly.translate(instanceList=(postProcStruct.finalInstanceName, ), vector=(0.0, -mod8_DN[1]-design.cutDown, 0.0))
 
-#for i in xrange(1,anzRibs+1): #anzRibs+1
-#    faces_nodalpoints=faces_nodalpoints+WingModel.parts['Wing'].faces.findAt( ( ( points_trail3_up[0][0], points_trail4_up[0][1]-0.00001, width-(i-1)*anzDivision*width/Anz_Unterteilung) ,),)
-#
-#for i in xrange(1,anzRibs+1): #anzRibs+1
-#    faces_nodalpoints=faces_nodalpoints+WingModel.parts['Wing'].faces.findAt(((
-#    points_box_up[0][0], points_box_up[0][1]-0.00001, width-(i-1)*anzDivision*width/Anz_Unterteilung), ),)+ \
-#    WingModel.parts['Wing'].faces.findAt(((points_box_up[1][0], points_box_up[1][1]-0.00001, width-(i-1)*anzDivision*width/Anz_Unterteilung), ),)
-#                                         
-for i in range(Anz_Unterteilung): #anzRibs+1
-    faces_nodalpoints=faces_nodalpoints+WingModel.parts['Wing'].faces.findAt(((
-    points_nose[25][0], points_nose[25][1], y_C[N+i]+0.001), ),)+ \
-    WingModel.parts['Wing'].faces.findAt(((points_nose[25][0], points_nose[25][1], y_C[N+i]-0.001), ),)
-#
-#faces_nodalpoints = faces_nodalpoints+WingModel.parts['Wing'].faces.getByBoundingBox(
-#    points_trail4_low[0][0], points_trail4_low[0][1], -0.01*width, 1.01*c, points_trail4_up[-1][1], 1.01*width)
-faces_nodalpoints = faces_nodalpoints+WingModel.parts['Wing'].faces.getByBoundingBox(
-    points_box_up[-1][0], -c, y_C[N]-1E-4, 1.01*c, c, 1.01*width)
-    
-#WingModel.parts['Wing'].PartitionFaceByDatumPlane(datumPlane=
-#    WingModel.parts['Wing'].datums[front_nose_plane.id], faces=faces_nodalpoints)
-#WingModel.parts['Wing'].PartitionFaceByDatumPlane(datumPlane=
-#    WingModel.parts['Wing'].datums[front_nose_plane.id], faces=WingModel.parts['Wing'].faces.getByBoundingBox(
-#    -0.01, -c, -0.01, x_spar1+0.01, c, 1.01*width) + WingModel.parts['Wing'].faces.getByBoundingBox(
-#    x_spar2+0.01, -c, -0.01, c+0.01, c, 1.01*width))
-WingModel.parts['Wing'].PartitionFaceByDatumPlane(datumPlane=
-    WingModel.parts['Wing'].datums[front_nose_planeOFF.id], faces=WingModel.parts['Wing'].faces.getByBoundingBox(
-    x_spar1-0.01, -c, -0.01, x_spar2+0.01, c, 1.01*width))
 
-#partition face by sketch
-dP = WingModel.parts['Wing'].DatumPlaneByPrincipalPlane(principalPlane=XYPLANE, offset=0.0)
-#dP = WingModel.parts['Wing'].datum.keys()[-1]
-dA = WingModel.parts['Wing'].DatumAxisByPrincipalAxis(principalAxis=YAXIS)
-#dA = WingModel.parts['Wing'].datum.keys()[-1]
-
-s = WingModel.ConstrainedSketch(gridSpacing=0.006, name='__profile__', sheetSize=c, transform=WingModel.parts['Wing'].MakeSketchTransform(
-    sketchPlane=WingModel.parts['Wing'].datums[dP.id], sketchPlaneSide=SIDE2, 
-    sketchUpEdge=WingModel.parts['Wing'].datums[dA.id], 
-    origin=(0.0, 0.0, 0.0)))
-s.Line(point1=(-0.01, 0.0), point2=(0.01, 0.0))	
-WingModel.parts['Wing'].PartitionFaceBySketchThruAll(sketchPlane=WingModel.parts['Wing'].datums[dP.id], 
-    sketchUpEdge=WingModel.parts['Wing'].datums[dA.id], 
-    faces=WingModel.parts['Wing'].faces.getByBoundingBox(-0.01, -c, -0.01, c+0.01, c, 1.01*width), 
-    sketchPlaneSide=SIDE2, sketch=s)
-del WingModel.sketches['__profile__']
-
-s = WingModel.ConstrainedSketch(gridSpacing=0.006, name='__profile__', sheetSize=c, transform=WingModel.parts['Wing'].MakeSketchTransform(
-    sketchPlane=WingModel.parts['Wing'].datums[dP.id], sketchPlaneSide=SIDE2, 
-    sketchUpEdge=WingModel.parts['Wing'].datums[dA.id], 
-    origin=(0.0, 0.0, 0.0)))
-s.Line(point1=(-c+0.01, 0.0), point2=(-c-0.01, 0.0))	
-#s.Line(point1=(c-0.1, 0.0), point2=(c+0.1, 0.0))	
-WingModel.parts['Wing'].PartitionFaceBySketchThruAll(sketchPlane=WingModel.parts['Wing'].datums[dP.id], 
-    sketchUpEdge=WingModel.parts['Wing'].datums[dA.id], 
-    faces=WingModel.parts['Wing'].faces.getByBoundingBox(c-0.01, -c, -0.01, c+0.01, c, 1.01*width), 
-    sketchPlaneSide=SIDE2, sketch=s)
-del WingModel.sketches['__profile__']
-
-	
-for i in xrange(1, anzRibs):
-    c_plane=WingModel.parts['Wing'].DatumPlaneByPrincipalPlane(offset=width-i*anzDivision*element_width, principalPlane=XYPLANE)
-    WingModel.parts['Wing'].PartitionFaceByDatumPlane(datumPlane=WingModel.parts['Wing'].datums[c_plane.id], 
-    faces=WingModel.parts['Wing'].faces.getByBoundingBox(-0.01*c, -c, -0.1*c, 1.01*c, c, width+0.1*c))
-
-## Sets for cross sections at wing tip for shear center determination
-#vertex1_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_nose[0][0], 0, width), 1E-05) # 0
-#vertex2_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_box_up[0][0], 0, width), 1E-05) # points_trail3_up[0][0]
-#vertex3_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_nose[0][0], points_nose[0][1], width), 1E-05)
-#vertex4_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_box_up[0][0], points_box_up[0][1], width), 1E-05)
-#WingModel.parts['Wing'].Set(name='MeasuringPoint'+str(anzRibs)+'_Front' , vertices=vertex1_section_SC)
-#WingModel.parts['Wing'].Set(name='MeasuringPoint'+str(anzRibs)+'_Rear' , vertices=vertex2_section_SC)
-#WingModel.parts['Wing'].Set(name='Rib'+str(anzRibs)+'_SC_vertices' , vertices=vertex1_section_SC+vertex2_section_SC)
-#WingModel.parts['Wing'].Set(name='LoadingPoint'+str(anzRibs)+'_Front' , vertices=vertex3_section_SC)
-#WingModel.parts['Wing'].Set(name='LoadingPoint'+str(anzRibs)+'_Rear' , vertices=vertex4_section_SC)
-#
-## Sets for cross sections at control points for reading out angles
-#for i in range(N):
-#    vertex1_section = WingModel.parts['Wing'].vertices.getByBoundingSphere((rib_box_up[-1][0], 0, y_C[N+i]), 1E-04)     # ((0, 0, y_C[N+i]), 1E-04)
-#    vertex2_section = WingModel.parts['Wing'].vertices.getByBoundingSphere((rib_box_up[0][0], 0, y_C[N+i]), 1E-04)    # ((points_trail4_up[0][0], 0, y_C[N+i]), 1E-04)
-#    WingModel.parts['Wing'].Set(name='MeasuringPointSection'+str(i+1)+'_Front' , vertices=vertex1_section)
-#    WingModel.parts['Wing'].Set(name='MeasuringPointSection'+str(i+1)+'_Rear' , vertices=vertex2_section)
-#    
-## Sets for cross sections at ribs for reading out angles
-#for i in range(anzRibs):
-#    vertex1_rib = WingModel.parts['Wing'].vertices.getByBoundingSphere((rib_box_up[-1][0], 0, width-i*element_width*anzDivision), 1E-04)    # ((0, 0, width-i*element_width*anzDivision), 1E-04)
-#    vertex2_rib = WingModel.parts['Wing'].vertices.getByBoundingSphere((rib_box_up[0][0], 0, width-i*element_width*anzDivision), 1E-04)   # ((points_trail4_up[0][0], 0, width-i*element_width*anzDivision), 1E-04)
-#    WingModel.parts['Wing'].Set(name='MeasuringPointRib'+str(anzRibs-i)+'_Front' , vertices=vertex1_rib)
-#    WingModel.parts['Wing'].Set(name='MeasuringPointRib'+str(anzRibs-i)+'_Rear' , vertices=vertex2_rib)
-    
-    
-    
-
-WingModel.parts['Wing'].sets['fullpart_set_Spar2']
-regions = WingModel.parts['Wing'].sets['fullpart_set_Spar2']
-WingModel.parts['Wing'].flipNormal(regions=regions)
-WingModel.parts['Wing'].sets['front_set']
-regions = WingModel.parts['Wing'].sets['front_set']
-WingModel.parts['Wing'].flipNormal(regions=regions)
-WingModel.parts['Wing'].sets['rear_end']
-regions = WingModel.parts['Wing'].sets['rear_end']
-WingModel.parts['Wing'].flipNormal(regions=regions)
-WingModel.parts['Wing'].sets['rear_set_oben']
-regions = WingModel.parts['Wing'].sets['rear_set_oben']
-WingModel.parts['Wing'].flipNormal(regions=regions)
-WingModel.parts['Wing'].sets['rear_set_unten1']
-regions = WingModel.parts['Wing'].sets['rear_set_unten1']
-WingModel.parts['Wing'].flipNormal(regions=regions)
-WingModel.parts['Wing'].sets['rear_set_unten2']
-regions = WingModel.parts['Wing'].sets['rear_set_unten2']
-WingModel.parts['Wing'].flipNormal(regions=regions)
-
-#===============================================================================
-# 8-Geometrical sets
-#===============================================================================
-
-# point on trail rib
-# point1=[rib_trail_up[-1][0]+airfoilDIST,rib_trail_up[-1][1]-airfoilTH/fairfoilTH], point2=[rib_trail_low[0][0]+airfoilDIST,rib_trail_low[0][1]+airfoilTH/fairfoilTH]
-#xPoTE = ((rib_trail_up[-1][0]+airfoilDIST)+(rib_trail_low[0][0]+airfoilDIST))/2+0.001
-#yPoTE = ((rib_trail_up[-1][1]-airfoilTH/fairfoilTH)+(rib_trail_low[0][1]+airfoilTH/fairfoilTH))/2
-
-
-faces_setrib=WingModel.parts['Wing'].faces.findAt( 
-    ((points_nose[1][0]-0.001, points_nose[1][1]-0.001, width) ,), 
-    ((points_trail1_up[0][0]-0.001, points_trail1_up[0][1], width) ,),
-    ((points_trail2_up[0][0]-0.001, points_trail2_up[0][1], width) ,),
-    ((points_trail2_low[0][0]+0.001, points_trail2_low[0][1]+0.001, width) ,), 
-    ((points_trail1_up[0][0]-0.001, points_trail1_up[0][1], width) ,),
-    ((points_trail3_up[0][0]-0.001, points_trail3_up[0][1], width) ,),
-    ((points_trail1_low[0][0]+0.001, points_trail1_low[0][1]+0.001, width) ,),
-    ((points_trail3_low[0][0]+0.001, points_trail3_low[0][1]+0.001, width) ,), 
-    ((points_trail1_low[0][0]+0.001, points_trail1_low[0][1]+0.001, width) ,),)
-#    ((points_box_up[0][0]-0.001, points_box_up[0][1], width) ,),     #sim1,sim3                                                                     
-#    ((points_box_up[0][0]-0.001, points_box_up[0][1]-0.001, width) ,),  #sim2
-#    ((points_box_low[0][0]+0.001, points_box_low[0][1]+0.001, width) ,),)
-                                                                                          
-                  
-                                                                                                  
-
-for i in xrange(2,anzRibs+1): #anzRibs+1
-    faces_setrib=faces_setrib+WingModel.parts['Wing'].faces.findAt(                   ( ( points_nose[1][0]-0.001, points_nose[1][1]-0.001,         width-(i-1)*anzDivision*width/Anz_Unterteilung) , ),
-                                                                                                  ( ( points_trail1_up[0][0]-0.001, points_trail1_up[0][1], width-(i-1)*anzDivision*width/Anz_Unterteilung         ) , ),
-                                                                                                  ( ( points_trail2_up[0][0]-0.001, points_trail2_up[0][1],       width-(i-1)*anzDivision*width/Anz_Unterteilung        ) , ),
-                                                                                                  ( ( points_trail2_low[0][0]+0.001, points_trail2_low[0][1]+0.001,  width-(i-1)*anzDivision*width/Anz_Unterteilung             ) , ),
-                                                                                                  ( (points_trail3_up[0][0]-0.001, points_trail3_up[0][1],     width-(i-1)*anzDivision*width/Anz_Unterteilung         ) , ),
-                                                                                                  ( (points_trail1_low[0][0]+0.001, points_trail1_low[0][1]+0.001,                 width-(i-1)*anzDivision*width/Anz_Unterteilung    ) , ),
-                                                                                                  ( (points_trail3_low[0][0]+0.001, points_trail3_low[0][1]+0.001, width-(i-1)*anzDivision*width/Anz_Unterteilung      ),  ),)
-#                                                                                                  ( (points_box_up[0][0]-0.001, points_box_up[0][1],   width-(i-1)*anzDivision*width/Anz_Unterteilung      ),  ),  #sim1,sim3
-#                                                                                                  ( (points_box_up[0][0]-0.001, points_box_up[0][1]-0.001,   width-(i-1)*anzDivision*width/Anz_Unterteilung      ),  ),  #sim2
-#                                                                                                  ( (points_box_low[0][0]+0.001, points_box_low[0][1]+0.001, width-(i-1)*anzDivision*width/Anz_Unterteilung  ),  ),)
-
-
-setrib=WingModel.parts['Wing'].Set(faces=faces_setrib, name='Set-Rib')
-
-## cut wing (from 07_Assembly...)
-#WingModel.parts['Wing'].PartitionFaceByDatumPlane(datumPlane=
-#    WingModel.parts['Wing'].datums[front_nose_plane.id], faces=WingModel.parts['Wing'].faces.getByBoundingBox(
-#    -0.01, -c, -0.01, x_spar1+0.01, c, 1.01*width) + WingModel.parts['Wing'].faces.getByBoundingBox(
-#    x_spar2+0.01, -c, -0.01, c+0.01, c, 1.01*width))
-
-WingModel.rootAssembly.regenerate()
-
-WingModel.parts['Wing'].Set( name='wingtip' , edges=WingModel.parts['Wing'].edges.getByBoundingBox(-0.01*c, -c, width-0.01*c, 1.01*c, c, width+0.01*c))
-WingModel.rootAssembly.regenerate()
-
-
-    
-anzRibs_rest = float(anzRibs-3)
-anzDiv_sec3 = round(anzRibs_rest/2)
-anzDiv_sec2 = anzRibs_rest-anzDiv_sec3
-elements_rest = N-anzRibs
-elements_per_division = (elements_rest-(elements_rest % anzRibs))/anzRibs
-elements_at_root = elements_per_division+elements_rest % anzRibs
-
-   
-#for i in range(anzRibs-1):
-#    faces_setspar1_ribs = WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], 0.0, width-(i+1)*element_width*anzDivision+0.001 ) ,), (( points_nose[0][0], 0.0, width-(i+1)*element_width*anzDivision-0.001 ), )) 
-#    WingModel.parts['Wing'].Set(faces=faces_setspar1_ribs , name='Set_Spar1_Ribs'+str(anzRibs-1-i))
-#
-#faces_setspar1_root = WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], 0.0, y_C[N]-1E-4 ) ,) ,)
-#WingModel.parts['Wing'].Set(faces=faces_setspar1_root , name='Set_Spar1_root')
-#faces_setspar1_tip = WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], 0.0, y_C[2*N-1] ) ,) ,)
-#WingModel.parts['Wing'].Set(faces=faces_setspar1_tip , name='Set_Spar1_tip')
-#for i in range(anzRibs-1):
-#    faces_setspar1_ribs = WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], points_nose[0][1], width-(i+1)*element_width*anzDivision+0.001 ) ,), (( points_nose[0][0], points_nose[0][1], width-(i+1)*element_width*anzDivision-0.001 ), )) 
-#    WingModel.parts['Wing'].Set(faces=faces_setspar1_ribs , name='Set_Spar1_Ribs'+str(anzRibs-1-i))
-#
-#faces_setspar1_root = WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], points_nose[0][1], y_C[N]-1E-4 ) ,) ,)
-#WingModel.parts['Wing'].Set(faces=faces_setspar1_root , name='Set_Spar1_root')
-#faces_setspar1_tip = WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], points_nose[0][1], y_C[2*N-1] ) ,) ,)
-#WingModel.parts['Wing'].Set(faces=faces_setspar1_tip , name='Set_Spar1_tip')
-
-#Point on front spar
-xPOFS = (mod7_UP[0]+mod7_DN[0])/2
-yPOFS = (mod7_UP[1]+mod7_DN[1])/2
-xPOFS1 = (mod7_UP[0]+3*mod7_DN[0])/4
-yPOFS1 = (mod7_UP[1]+3*mod7_DN[1])/4
-xPOFS3 = (3*mod7_UP[0]+mod7_DN[0])/4
-yPOFS3 = (3*mod7_UP[1]+mod7_DN[1])/4
-
-#for i in range(anzRibs-1):
-#    faces_setspar1_ribs = WingModel.parts['Wing'].faces.findAt( ( ( xPOFS, yPOFS, width-(i+1)*element_width*anzDivision+0.001 ) ,), (( xPOFS, yPOFS, width-(i+1)*element_width*anzDivision-0.001 ), )) 
-#    WingModel.parts['Wing'].Set(faces=faces_setspar1_ribs , name='Set_Spar1_Ribs'+str(anzRibs-1-i))
-#faces_setspar1_root = WingModel.parts['Wing'].faces.findAt( ( ( xPOFS, yPOFS, y_C[N]-1E-4 ) ,) ,)
-#WingModel.parts['Wing'].Set(faces=faces_setspar1_root , name='Set_Spar1_root')
-#faces_setspar1_tip = WingModel.parts['Wing'].faces.findAt( ( ( xPOFS, yPOFS, y_C[2*N-1] ) ,) ,)
-#WingModel.parts['Wing'].Set(faces=faces_setspar1_tip , name='Set_Spar1_tip')
-
-for i in range(anzRibs-1):
-    faces_setspar1_ribs = WingModel.parts['Wing'].faces.findAt( ( ( xPOFS1, yPOFS1, width-(i+1)*element_width*anzDivision+0.001 ) ,), (( xPOFS1, yPOFS1, width-(i+1)*element_width*anzDivision-0.001 ), ),
-		( ( xPOFS3, yPOFS3, width-(i+1)*element_width*anzDivision+0.001 ) ,), (( xPOFS3, yPOFS3, width-(i+1)*element_width*anzDivision-0.001 ), )) 
-    WingModel.parts['Wing'].Set(faces=faces_setspar1_ribs , name='Set_Spar1_Ribs'+str(anzRibs-1-i))	
-
-faces_setspar1_root = WingModel.parts['Wing'].faces.findAt( ( ( xPOFS1, yPOFS1, y_C[N]-1E-4 ) ,) , (( xPOFS3, yPOFS3, y_C[N]-1E-4 ) ,),)
-WingModel.parts['Wing'].Set(faces=faces_setspar1_root , name='Set_Spar1_root')
-faces_setspar1_tip = WingModel.parts['Wing'].faces.findAt( ( ( xPOFS1, yPOFS1, y_C[2*N-1]+1E-4 ) ,) , ( ( xPOFS3, yPOFS3, y_C[2*N-1]+1E-4 ) ,),)
-WingModel.parts['Wing'].Set(faces=faces_setspar1_tip , name='Set_Spar1_tip')
-
-
-
-faces_setspar1_sec4 = faces_setspar1_tip+WingModel.parts['Wing'].sets['Set_Spar1_Ribs'+str(anzRibs-1)].faces
-
-faces_setspar1_sec3 = WingModel.parts['Wing'].sets['Set_Spar1_Ribs'+str(anzRibs-2)].faces
-for i in range(int(anzDiv_sec3)-1):
-    faces_setspar1_sec3 = faces_setspar1_sec3+WingModel.parts['Wing'].sets['Set_Spar1_Ribs'+str(anzRibs-(2+i+1))].faces
-
-faces_setspar1_sec2 = WingModel.parts['Wing'].sets['Set_Spar1_Ribs'+str(2)].faces
-for i in range(int(anzDiv_sec2)-1):
-    faces_setspar1_sec2 = faces_setspar1_sec2+WingModel.parts['Wing'].sets['Set_Spar1_Ribs'+str(2+i+1)].faces
-
-faces_setspar1_sec1 = faces_setspar1_root+WingModel.parts['Wing'].sets['Set_Spar1_Ribs'+str(1)].faces
-
-
- 
-#for i in range(anzRibs):
-#    if i < 1:
-#        for j in range(elements_per_division):
-#            faces_setspar1_sec4 = faces_setspar1_sec4+WingModel.parts['Wing'].faces.findAt(((points_nose[0][0], 0.0, width-element_width*(j+1)),),)
-#    elif i >= 1  and i <= anzDiv_sec3:
-#        for j in range(elements_per_division):
-#            faces_setspar1_sec3 = faces_setspar1_sec3+WingModel.parts['Wing'].faces.findAt(((points_nose[0][0], 0.0, width-element_width*(anzDivision*i+(j+1))),),)
-#    elif i > anzDiv_sec3 and i < anzRibs-1:
-#        for j in range(elements_per_division):
-#            faces_setspar1_sec2 = faces_setspar1_sec2+WingModel.parts['Wing'].faces.findAt(((points_nose[0][0], 0.0, width-element_width*(anzDivision*i+(j+1))),),)
-#    else:
-#        for j in range(elements_at_root):
-#            faces_setspar1_sec1 = faces_setspar1_sec1+WingModel.parts['Wing'].faces.findAt(((points_nose[0][0], 0.0, width-element_width*(anzDivision*i+(j+1))),),)
-#for i in range(anzRibs):
-#    if i < 1:
-#        for j in range(elements_per_division):
-#            faces_setspar1_sec4 = faces_setspar1_sec4+WingModel.parts['Wing'].faces.findAt(((points_nose[0][0], (mod7_UP[1]+mod7_DN[1])/2, width-element_width*(j+1)),),)
-#    elif i >= 1  and i <= anzDiv_sec3:
-#        for j in range(elements_per_division):
-#            faces_setspar1_sec3 = faces_setspar1_sec3+WingModel.parts['Wing'].faces.findAt(((points_nose[0][0], (mod7_UP[1]+mod7_DN[1])/2, width-element_width*(anzDivision*i+(j+1))),),)
-#    elif i > anzDiv_sec3 and i < anzRibs-1:
-#        for j in range(elements_per_division):
-#            faces_setspar1_sec2 = faces_setspar1_sec2+WingModel.parts['Wing'].faces.findAt(((points_nose[0][0], (mod7_UP[1]+mod7_DN[1])/2, width-element_width*(anzDivision*i+(j+1))),),)
-#    else:
-#        for j in range(elements_at_root):
-#            faces_setspar1_sec1 = faces_setspar1_sec1+WingModel.parts['Wing'].faces.findAt(((points_nose[0][0], (mod7_UP[1]+mod7_DN[1])/2, width-element_width*(anzDivision*i+(j+1))),),)        
-
-#i=anzDivision
-#faces_setspar1_sec1=WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], 0.0, y_C[N+i]+0.001 ) ,), (( points_nose[0][0], 0.0, y_C[N+i+1]-0.001 ), ))
-#
-#i=2*anzDivision
-#faces_setspar1_sec2_1=WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], 0.0, y_C[N+i]+0.001 ) ,), (( points_nose[0][0], 0.0, y_C[N+i+1]-0.001 ), ))
-#i=3*anzDivision
-#faces_setspar1_sec2_2=WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], 0.0, y_C[N+i]+0.001 ) ,), (( points_nose[0][0], 0.0, y_C[N+i+1]-0.001 ), ))
-#
-#i=4*anzDivision
-#faces_setspar1_sec3_1=WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], 0.0, y_C[N+i]+0.001 ) ,), (( points_nose[0][0], 0.0, y_C[N+i+1]-0.001 ), ))
-#i=5*anzDivision
-#faces_setspar1_sec3_2=WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], 0.0, y_C[N+i]+0.001 ) ,), (( points_nose[0][0], 0.0, y_C[N+i+1]-0.001 ), ))
-#i=N-1
-#faces_setspar1_sec4 = WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0], 0.0, y_C[N+i]+0.001 ), ))
-#for i in range(Anz_Unterteilung):
-##        if i >= 0 and i < 5:
-##                faces_setspar1_sec1=faces_setspar1_sec1+WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0]   ,0.0, y_C[N+i]-0.001 ) ,),)
-#                
-#        elif i > 5 and i < 9:
-#                faces_setspar1_sec2_1=faces_setspar1_sec2_1+WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0]   ,0.0, y_C[N+i]-0.001 ) ,),)
-#                
-#        elif i > 9 and i < 13:
-#                faces_setspar1_sec2_2=faces_setspar1_sec2_2+WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0]   ,0.0, y_C[N+i]-0.001 ) ,),)
-#        elif i > 13 and i < 17:
-#                faces_setspar1_sec3_1=faces_setspar1_sec3_1+WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0]   ,0.0, y_C[N+i]-0.001) ,),)
-#                
-#        elif i > 17 and i < 21:
-#                faces_setspar1_sec3_2=faces_setspar1_sec3_2+WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0]   ,0.0, y_C[N+i]-0.001) ,),)
-#        elif i > 21:
-#                faces_setspar1_sec4=faces_setspar1_sec4+WingModel.parts['Wing'].faces.findAt( ( ( points_nose[0][0]   ,0.0, y_C[N+i]-0.001) ,),)
-#
-#faces_setspar1_sec2 = faces_setspar1_sec2_1+faces_setspar1_sec2_2
-#faces_setspar1_sec3 = faces_setspar1_sec3_1+faces_setspar1_sec3_2 
-
-#set_Spar1_sec1=WingModel.parts['Wing'].Set(faces=faces_setspar1_sec1 , name='Set_sec1')
-#set_Spar1_sec2=WingModel.parts['Wing'].Set(faces=faces_setspar1_sec2 , name='Set_sec2')
-#set_Spar1_sec3=WingModel.parts['Wing'].Set(faces=faces_setspar1_sec3 , name='Set_sec3')
-#set_Spar1_sec4=WingModel.parts['Wing'].Set(faces=faces_setspar1_sec4 , name='Set_sec4')
-faces_setspar1_sec1 = WingModel.parts['Wing'].faces.getByBoundingBox(x_spar1-0.001, -c, -0.01, x_spar1m+0.001, c, 1.01*width)
-#faces_setspar1_sec1 = WingModel.parts['Wing'].faces.getByBoundingBox(x_spar1-0.001, -c, -0.01, x_spar1+0.001, c, 1.01*width)
-set_Spar1_sec1=WingModel.parts['Wing'].Set(faces=faces_setspar1_sec1 , name='Set_sec1')
-set_Spar1_sec2=WingModel.parts['Wing'].Set(faces=faces_setspar1_sec1 , name='Set_sec2')
-set_Spar1_sec3=WingModel.parts['Wing'].Set(faces=faces_setspar1_sec1 , name='Set_sec3')
-set_Spar1_sec4=WingModel.parts['Wing'].Set(faces=faces_setspar1_sec1 , name='Set_sec4')
-
-faces_nodalpoints = WingModel.parts['Wing'].faces.getByBoundingBox(
-    -0.01*c, -c, y_C[N]-1E-4, points_nose[0][0]+1E-04, c, 1.01*width)
-    
-#WingModel.parts['Wing'].PartitionFaceByDatumPlane(datumPlane=
-#    WingModel.parts['Wing'].datums[front_nose_plane.id], faces=faces_nodalpoints)
-
-
-#Point on rear spar
-#xPORS = (mod8_UP[0]+mod8_DN[0])/2
-#yPORS = (mod8_UP[1]+mod8_DN[1])/2
-yPORS = yPOFS
-xPORS = numpy.interp(yPOFS, [mod8_DN[1],mod8_UP[1]], [mod8_DN[0],mod8_UP[0]])
-
-
-# Sets for cross sections at wing tip for shear center determination
-#vertex1_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_nose[0][0], 0, width), 1E-05) # 0
-#vertex2_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_box_up[0][0], 0, width), 1E-05) # points_trail3_up[0][0]
-#vertex1_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_nose[0][0], (mod7_UP[1]+mod7_DN[1])/2, width), 1E-05) # 0
-#vertex2_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_box_up[0][0], (mod7_UP[1]+mod7_DN[1])/2, width), 1E-05) # points_trail3_up[0][0]
-vertex1_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((xPOFS, yPOFS, width), 1E-05) # 0
-vertex2_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((xPORS, yPORS, width), 1E-05) # points_trail3_up[0][0]
-vertex3_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_nose[0][0], points_nose[0][1], width), 1E-05)
-vertex4_section_SC = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_box_up[0][0], points_box_up[0][1], width), 1E-05)
-WingModel.parts['Wing'].Set(name='MeasuringPoint'+str(anzRibs)+'_Front' , vertices=vertex1_section_SC)
-WingModel.parts['Wing'].Set(name='MeasuringPoint'+str(anzRibs)+'_Rear' , vertices=vertex2_section_SC)
-WingModel.parts['Wing'].Set(name='Rib'+str(anzRibs)+'_SC_vertices' , vertices=vertex1_section_SC+vertex2_section_SC)
-WingModel.parts['Wing'].Set(name='LoadingPoint'+str(anzRibs)+'_Front' , vertices=vertex3_section_SC)
-WingModel.parts['Wing'].Set(name='LoadingPoint'+str(anzRibs)+'_Rear' , vertices=vertex4_section_SC)
-
-# Sets for cross sections at control points for reading out angles
-for i in range(N):
-    vertex1_section = WingModel.parts['Wing'].vertices.getByBoundingSphere((0, 0, y_C[N+i]), 1E-04)     #((rib_box_up[-1][0], 0, y_C[N+i]), 1E-04)
-    vertex2_section = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_trail4_up[0][0], 0, y_C[N+i]), 1E-04)    #((rib_box_up[0][0], 0, y_C[N+i]), 1E-04)
-    WingModel.parts['Wing'].Set(name='MeasuringPointSection'+str(i+1)+'_Front' , vertices=vertex1_section)
-    WingModel.parts['Wing'].Set(name='MeasuringPointSection'+str(i+1)+'_Rear' , vertices=vertex2_section)
-    
-# Sets for cross sections at ribs for reading out angles
-for i in range(anzRibs):
-    vertex1_rib = WingModel.parts['Wing'].vertices.getByBoundingSphere((0, 0, width-i*element_width*anzDivision), 1E-04)    # ((rib_box_up[-1][0], 0, width-i*element_width*anzDivision), 1E-04)
-    vertex2_rib = WingModel.parts['Wing'].vertices.getByBoundingSphere((points_trail4_up[0][0], 0, width-i*element_width*anzDivision), 1E-04)   # ((rib_box_up[0][0], 0, width-i*element_width*anzDivision), 1E-04)
-    WingModel.parts['Wing'].Set(name='MeasuringPointRib'+str(anzRibs-i)+'_Front' , vertices=vertex1_rib)
-    WingModel.parts['Wing'].Set(name='MeasuringPointRib'+str(anzRibs-i)+'_Rear' , vertices=vertex2_rib)
-
-#===============================================================================
-# 9-Section definition - A lot of commented code hasn't been included
-#===============================================================================
-
-WingModel.HomogeneousShellSection(idealization=NO_IDEALIZATION,     # Alu
-    integrationRule=SIMPSON, material='Aluminium', name='stringer_section', 
-    numIntPts=5, poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=
-    GRADIENT, thickness=t_stringer, thicknessField='', thicknessModulus=None, 
-    thicknessType=UNIFORM, useDensity=OFF)
-
-WingModel.CompositeShellSection(idealization=NO_IDEALIZATION,         # UD
-    integrationRule=SIMPSON, layup=(SectionLayer(thickness=0.001, orientAngle=0,
-    material='CFRP-UD-Box'),), name='stringer_section_UD', poissonDefinition=DEFAULT, 
-    preIntegrate=OFF, symmetric=False, temperature=GRADIENT, thicknessModulus=
-    None, thicknessType=UNIFORM, useDensity=OFF)
-
-## Spar-Rear-Layup thicker    
-WingModel.CompositeShellSection(idealization=NO_IDEALIZATION,    # is updated before job submission
-    integrationRule=SIMPSON, layup=(SectionLayer(thickness=1, orientAngle=0, material='Glass-Fabric', plyName='ply1111'),), 
-    name='Spar-Rear_GLASS_ONLY', poissonDefinition=DEFAULT, preIntegrate=OFF, symmetric=False, temperature=
-    GRADIENT, thicknessModulus=None, thicknessType=UNIFORM, useDensity=OFF)
-
-## Spar-Rear-Layup thicker    
-WingModel.CompositeShellSection(idealization=NO_IDEALIZATION, 
-    integrationRule=SIMPSON, layup=(SectionLayer(thickness=0.00002, orientAngle=FaserWinkel, material='Glass-Fabric', plyName='ply1111'), 
-    SectionLayer(thickness=thickness_bucklingSpar, orientAngle=FaserWinkel, material='CFRP-UD-Box', plyName='ply2222'),
-    SectionLayer(thickness=0.00002, orientAngle=FaserWinkel, material='Glass-Fabric', plyName='ply3333'),), 
-    name='Spar-Rear-Layup_thick', poissonDefinition=DEFAULT, preIntegrate=OFF, symmetric=False, temperature=
-    GRADIENT, thicknessModulus=None, thicknessType=UNIFORM, useDensity=OFF)
-
-fakt=1.0                                                                                                     # old layup for box
-WingModel.CompositeShellSection(idealization=NO_IDEALIZATION, 
-    integrationRule=SIMPSON, layup=(SectionLayer(thickness=fakt*0.000125, 
-    material='CFRP-UD-Box'), SectionLayer(thickness=fakt*0.000125, 
-    material='CFRP-UD-Box'), SectionLayer(thickness=fakt*0.000125, orientAngle=90.0, material='CFRP-UD-Box'), 
-    SectionLayer(thickness=fakt*0.000125, orientAngle=90.0, material='CFRP-UD-Box'), 
-    SectionLayer(thickness=fakt*0.000125, orientAngle=90.0, 
-    material='CFRP-UD-Box'), SectionLayer(thickness=fakt*0.000125, 
-    orientAngle=90.0, material='CFRP-UD-Box'), SectionLayer(
-    thickness=fakt*0.000125, material='CFRP-UD-Box'), SectionLayer(
-    thickness=fakt*0.000125, material='CFRP-UD-Box'),), name='Box-LayUp', 
-    poissonDefinition=DEFAULT, preIntegrate=OFF, symmetric=False, temperature=
-    GRADIENT, thicknessModulus=None, thicknessType=UNIFORM, useDensity=OFF)
-
-# cfk box
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['fullpart_set_Spar2'], sectionName=
-    'Spar-Rear-Layup_thick', thicknessAssignment=FROM_SECTION)
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['Set-Rib'], sectionName=
-    'stringer_section', thicknessAssignment=FROM_SECTION)
-
-#Buckling Spar
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['box_set_oben'], sectionName=
-    'Box-LayUp', thicknessAssignment=FROM_SECTION)
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['box_set_unten'], sectionName=
-    'Box-LayUp', thicknessAssignment=FROM_SECTION)
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['Set_sec1'], sectionName=
-    'Box-LayUp', thicknessAssignment=FROM_SECTION)
-
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['front_set'], sectionName=
-    'Box-LayUp', thicknessAssignment=FROM_SECTION)
-
-
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['rear_set_unten1'], sectionName=
-    'Box-LayUp', thicknessAssignment=FROM_SECTION)
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['rear_set_unten2'], sectionName=
-    'Box-LayUp', thicknessAssignment=FROM_SECTION)
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['rear_set_oben'], sectionName=
-    'Box-LayUp', thicknessAssignment=FROM_SECTION)
-WingModel.parts['Wing'].SectionAssignment(offset=0.0, 
-    offsetField='', offsetType=MIDDLE_SURFACE, region=
-    WingModel.parts['Wing'].sets['rear_end'], sectionName=
-    'Box-LayUp', thicknessAssignment=FROM_SECTION)
-
-#===============================================================================
-# 10-Meshing
-#===============================================================================
-
-sizeAll=0.01#0.004#0.002#0.01
-#sizeInner=0.005#0.01#0.02
-#sizeAll=0.01
-WingModel.parts['Wing'].seedPart(deviationFactor=0.1,minSizeFactor=0.1, size=sizeAll)
-
-# setMeshControls                jau dat klappt
-
-for i in range(Anz_Unterteilung):
-  # WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_box_up[0][0] ,0.0, y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
-  #  WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_nose[0][0] ,0.0, y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
-    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_box_up[0][0] ,points_box_up[0][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
-    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_nose[0][0] ,points_nose[0][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
-    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_nose[10][0]   ,points_nose[10][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # nose
-    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_nose[-10][0]   ,points_nose[-10][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # nose
-    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_trail1_up[1][0]   ,points_trail1_up[1][1], y_C[N+i]  ) , ) , )  ,technique=STRUCTURED)
-    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_trail1_low[1][0]   ,points_trail1_low[1][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED)
-########    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( c  ,0.0001,y*width/Anz_Unterteilung+0.001) , ) , )  ,technique=STRUCTURED)
-########    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( c  ,-0.0001,y*width/Anz_Unterteilung+0.001) , ) , )  ,technique=STRUCTURED)
-    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_box_up[1][0]   ,points_box_up[1][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # box
-    WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_box_low[-2][0]   ,points_box_low[-2][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED)
-
-##WingModel.parts['Wing'].setMeshControls(regions=faces_setrib,technique=STRUCTURED) # rippe
-
-# setElementType             jau dat klappt
-
-WingModel.parts['Wing'].setElementType(elemTypes=(ElemType(elemCode=S4R, elemLibrary=STANDARD), ElemType(elemCode=S3, elemLibrary=STANDARD),), regions=WingModel.parts['Wing'].sets['fullpart_set_Spar1'])
-WingModel.parts['Wing'].setElementType(elemTypes=(ElemType(elemCode=S4R, elemLibrary=STANDARD), ElemType(elemCode=S3, elemLibrary=STANDARD),), regions=WingModel.parts['Wing'].sets['fullpart_set_Spar2'])
-WingModel.parts['Wing'].setElementType(elemTypes=(ElemType(elemCode=S4R, elemLibrary=STANDARD), ElemType(elemCode=S3, elemLibrary=STANDARD),), regions=setrib)    # rippe
-
-## generate mesh
-
-WingModel.parts['Wing'].generateMesh()
-WingModel.rootAssembly.regenerate()
-
-#===============================================================================
-# 11-Material orientations - Not included because it is only necessary for laminated with different lay-ups
-#===============================================================================
-
-#===============================================================================
-# 12-Sets for output
-#===============================================================================
-
-for i in range(Anz_Unterteilung):   # REIHENFOLGE : OBEN HINTEN ; OBEN VORNE ; UNTEN VORNE ; UNTEN HINTEN
-    WingModel.rootAssembly.Set(name='Point-OL-'+str(i),  vertices=WingModel.rootAssembly.instances['Wing-1'].vertices.getByBoundingSphere((points_nose[0][0], points_nose[0][1], y_C[N+i]), 1E-03))
-    WingModel.rootAssembly.Set(name='Point-OR-'+str(i),  vertices=WingModel.rootAssembly.instances['Wing-1'].vertices.getByBoundingSphere((points_box_up[0][0], points_box_up[0][1], y_C[N+i]), 1E-03))
-    WingModel.rootAssembly.Set(name='Point-UR-'+str(i),  vertices=WingModel.rootAssembly.instances['Wing-1'].vertices.getByBoundingSphere((points_box_low[-1][0], points_box_low[-1][1], y_C[N+i]), 1E-03))
-    WingModel.rootAssembly.Set(name='Point-UL-'+str(i),  vertices=WingModel.rootAssembly.instances['Wing-1'].vertices.getByBoundingSphere((points_nose[-1][0], points_nose[-1][1], y_C[N+i]), 1E-03))
-##
-#    node_P_OR = WingModel.rootAssembly.sets['Point-OR-'+str(i)].nodes
-#    WingModel.rootAssembly.Set(name='NODES-P_OR-'+str(i), nodes=node_P_OR)
-#    node_P_UR = WingModel.rootAssembly.sets['Point-UR-'+str(i)].nodes
-#    WingModel.rootAssembly.Set(name='NODES-P_UR-'+str(i), nodes=node_P_UR)
-#    node_P_OL = WingModel.rootAssembly.sets['Point-OL-'+str(i)].nodes
-#    WingModel.rootAssembly.Set(name='NODES-P_OL-'+str(i), nodes=node_P_OL)
-#    node_P_UL = WingModel.rootAssembly.sets['Point-UL-'+str(i)].nodes
-#    WingModel.rootAssembly.Set(name='NODES-P_UL-'+str(i), nodes=node_P_UL)
-
-
-
-for y in xrange(1,anzRibs+1):   
-    WingModel.rootAssembly.Set(name='LEAD-'+str(int(anzRibs)-y),  vertices=WingModel.rootAssembly.instances['Wing-1'].vertices.getByBoundingSphere((0, 0, width-(y-1)*anzDivision*width/Anz_Unterteilung), 1E-03))     
-    WingModel.rootAssembly.Set(name='REAR-'+str(int(anzRibs)-y),  vertices=WingModel.rootAssembly.instances['Wing-1'].vertices.getByBoundingSphere((points_trail4_up[0][0], 0, width-(y-1)*anzDivision*width/Anz_Unterteilung), 1E-03))
-#    node_LEAD = WingModel.rootAssembly.sets['LEAD-'+str(int(anzRibs)-y)].nodes
-#    WingModel.rootAssembly.Set(name='NODES-LEAD-'+str(int(anzRibs)-y), nodes=node_LEAD)
-#    node_REAR = WingModel.rootAssembly.sets['REAR-'+str(int(anzRibs)-y)].nodes
-#    WingModel.rootAssembly.Set(name='NODES-REAR-'+str(int(anzRibs)-y), nodes=node_REAR)
-    
-## Point on which the testload acts; check with sections defined in 07_Assembly_Dom
-#WingModel.rootAssembly.Set(name='point_SC',  vertices=WingModel.rootAssembly.instances['Wing-1'].vertices.getByBoundingBox(x_SC-1E-4, 0.2*0.12*c, width-1E-4, x_SC+1E-4, 0.12*c, width+1E-4))
-
-WingModel.rootAssembly.regenerate()

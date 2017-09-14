@@ -127,51 +127,51 @@ def buildBasicChiral(model, design):
 	##model.sketches['__profile__'].CircleByCenterPerimeter(center=(
 	##    x3center, y3center), point1=(x3Rand, y3Rand))
 	##
-	model.Part(dimensionality=THREE_D, name='Part-1', type=
+	model.Part(dimensionality=THREE_D, name='Part-basicChiral', type=
 	    DEFORMABLE_BODY)
-	model.parts['Part-1'].BaseShellExtrude(depth=B, sketch=
+	model.parts['Part-basicChiral'].BaseShellExtrude(depth=B, sketch=
 	    model.sketches['__profile__'])
 	del model.sketches['__profile__']
 
-	vertplane=model.parts['Part-1'].DatumPlaneByPrincipalPlane(offset=L, principalPlane=YZPLANE)
-	cyl0=model.parts['Part-1'].DatumAxisByCylFace(face=model.parts['Part-1'].faces[0])
-	cyl1=model.parts['Part-1'].DatumAxisByCylFace(face=model.parts['Part-1'].faces[1])
-	##cyl2=model.parts['Part-1'].DatumAxisByCylFace(face=model.parts['Part-1'].faces[2])
+	vertplane=model.parts['Part-basicChiral'].DatumPlaneByPrincipalPlane(offset=L, principalPlane=YZPLANE)
+	cyl0=model.parts['Part-basicChiral'].DatumAxisByCylFace(face=model.parts['Part-basicChiral'].faces[0])
+	cyl1=model.parts['Part-basicChiral'].DatumAxisByCylFace(face=model.parts['Part-basicChiral'].faces[1])
+	##cyl2=model.parts['Part-basicChiral'].DatumAxisByCylFace(face=model.parts['Part-basicChiral'].faces[2])
 
 	#####tapespring left
 	##
 	model.ConstrainedSketch(gridSpacing=15.96, name='__profile__', 
 	    sheetSize=638.64, transform=
-	    model.parts['Part-1'].MakeSketchTransform(
-	    sketchPlane=model.parts['Part-1'].datums[2], 
+	    model.parts['Part-basicChiral'].MakeSketchTransform(
+	    sketchPlane=model.parts['Part-basicChiral'].datums[2], 
 	    sketchPlaneSide=SIDE1, 
-	    sketchUpEdge=model.parts['Part-1'].datums[4], 
+	    sketchUpEdge=model.parts['Part-basicChiral'].datums[4], 
 	    sketchOrientation=LEFT, origin=(100.0, 0.0, 0.0)))
-	model.parts['Part-1'].projectReferencesOntoSketch(filter=
+	model.parts['Part-basicChiral'].projectReferencesOntoSketch(filter=
 	    COPLANAR_EDGES, sketch=model.sketches['__profile__'])
 	if e==0:
 	    model.sketches['__profile__'].Line(point1=(r, 0.0), point2=(r, B))
 	else:
 	    model.sketches['__profile__'].Arc3Points(point1=(r, 0.0), point2=(r, B), point3=(r-e, B/2))
 
-	model.parts['Part-1'].ShellExtrude(flipExtrudeDirection=ON, 
+	model.parts['Part-basicChiral'].ShellExtrude(flipExtrudeDirection=ON, 
 	    sketch=model.sketches['__profile__'], sketchOrientation=
-	    LEFT, sketchPlane=model.parts['Part-1'].datums[2], 
+	    LEFT, sketchPlane=model.parts['Part-basicChiral'].datums[2], 
 	    sketchPlaneSide=SIDE1, sketchUpEdge=
-	    model.parts['Part-1'].datums[4], upToFace=
-	    model.parts['Part-1'].faces[1])
+	    model.parts['Part-basicChiral'].datums[4], upToFace=
+	    model.parts['Part-basicChiral'].faces[1])
 	del model.sketches['__profile__']
 
 	###tapespring right
 	##
 	model.ConstrainedSketch(gridSpacing=15.96, name='__profile__', 
 	    sheetSize=638.64, transform=
-	    model.parts['Part-1'].MakeSketchTransform(
-	    sketchPlane=model.parts['Part-1'].datums[2], 
+	    model.parts['Part-basicChiral'].MakeSketchTransform(
+	    sketchPlane=model.parts['Part-basicChiral'].datums[2], 
 	    sketchPlaneSide=SIDE1, 
-	    sketchUpEdge=model.parts['Part-1'].datums[4], 
+	    sketchUpEdge=model.parts['Part-basicChiral'].datums[4], 
 	    sketchOrientation=LEFT, origin=(100.0, 0.0, 0.0)))
-	model.parts['Part-1'].projectReferencesOntoSketch(filter=
+	model.parts['Part-basicChiral'].projectReferencesOntoSketch(filter=
 	    COPLANAR_EDGES, sketch=model.sketches['__profile__'])
 
 	if e==0:
@@ -179,15 +179,15 @@ def buildBasicChiral(model, design):
 	else:
 	    model.sketches['__profile__'].Arc3Points(point1=(r, 0.0), point2=(r, B), point3=(r+e, B/2))
 
-	model.parts['Part-1'].ShellExtrude(flipExtrudeDirection=OFF, 
+	model.parts['Part-basicChiral'].ShellExtrude(flipExtrudeDirection=OFF, 
 	    sketch=model.sketches['__profile__'], sketchOrientation=
-	    LEFT, sketchPlane=model.parts['Part-1'].datums[2], 
+	    LEFT, sketchPlane=model.parts['Part-basicChiral'].datums[2], 
 	    sketchPlaneSide=SIDE1, sketchUpEdge=
-	    model.parts['Part-1'].datums[4], upToFace=
-	    model.parts['Part-1'].faces[0])
+	    model.parts['Part-basicChiral'].datums[4], upToFace=
+	    model.parts['Part-basicChiral'].faces[0])
 	del model.sketches['__profile__']
 	#
-	model.parts['Part-1'].DatumPlaneByPrincipalPlane(offset=r, 
+	model.parts['Part-basicChiral'].DatumPlaneByPrincipalPlane(offset=r, 
 	    principalPlane=XZPLANE)
 
 	#
@@ -196,42 +196,42 @@ def buildBasicChiral(model, design):
 	if e!= 0:
 	    model.ConstrainedSketch(gridSpacing=16.74, name='__profile__', 
 	        sheetSize=669.72, transform=
-	        model.parts['Part-1'].MakeSketchTransform(
-	        sketchPlane=model.parts['Part-1'].datums[7], 
+	        model.parts['Part-basicChiral'].MakeSketchTransform(
+	        sketchPlane=model.parts['Part-basicChiral'].datums[7], 
 	        sketchPlaneSide=SIDE1, 
-	        sketchUpEdge=model.parts['Part-1'].edges[2], 
+	        sketchUpEdge=model.parts['Part-basicChiral'].edges[2], 
 	        sketchOrientation=RIGHT, origin=(0.0, 10.0, 0.0)))
-	    model.parts['Part-1'].projectReferencesOntoSketch(filter=
+	    model.parts['Part-basicChiral'].projectReferencesOntoSketch(filter=
 	        COPLANAR_EDGES, sketch=model.sketches['__profile__'])
 	    model.sketches['__profile__'].Line(point1=(L, 0.0), point2=
 	        (L, -B))
-	    model.parts['Part-1'].ShellExtrude(flipExtrudeDirection=OFF, 
+	    model.parts['Part-basicChiral'].ShellExtrude(flipExtrudeDirection=OFF, 
 	        sketch=model.sketches['__profile__'], sketchOrientation=
-	        RIGHT, sketchPlane=model.parts['Part-1'].datums[7], 
+	        RIGHT, sketchPlane=model.parts['Part-basicChiral'].datums[7], 
 	        sketchPlaneSide=SIDE1, sketchUpEdge=
-	        model.parts['Part-1'].edges[2], upToFace=
-	        model.parts['Part-1'].faces[0])
+	        model.parts['Part-basicChiral'].edges[2], upToFace=
+	        model.parts['Part-basicChiral'].faces[0])
 	    del model.sketches['__profile__']
 	    ##
 	    #####close tapespring unten
 	    ##
 	    model.ConstrainedSketch(gridSpacing=16.74, name='__profile__', 
 	        sheetSize=669.72, transform=
-	        model.parts['Part-1'].MakeSketchTransform(
-	        sketchPlane=model.parts['Part-1'].datums[7], 
+	        model.parts['Part-basicChiral'].MakeSketchTransform(
+	        sketchPlane=model.parts['Part-basicChiral'].datums[7], 
 	        sketchPlaneSide=SIDE1, 
-	        sketchUpEdge=model.parts['Part-1'].edges[0], 
+	        sketchUpEdge=model.parts['Part-basicChiral'].edges[0], 
 	        sketchOrientation=RIGHT, origin=(0.0, 10.0, 0.0)))
-	    model.parts['Part-1'].projectReferencesOntoSketch(filter=
+	    model.parts['Part-basicChiral'].projectReferencesOntoSketch(filter=
 	        COPLANAR_EDGES, sketch=model.sketches['__profile__'])
 	    model.sketches['__profile__'].Line(point1=(L, 0.0), point2=
 	        (L, -B))
-	    model.parts['Part-1'].ShellExtrude(flipExtrudeDirection=ON, 
+	    model.parts['Part-basicChiral'].ShellExtrude(flipExtrudeDirection=ON, 
 	        sketch=model.sketches['__profile__'], sketchOrientation=
-	        RIGHT, sketchPlane=model.parts['Part-1'].datums[7], 
+	        RIGHT, sketchPlane=model.parts['Part-basicChiral'].datums[7], 
 	        sketchPlaneSide=SIDE1, sketchUpEdge=
-	        model.parts['Part-1'].edges[0], upToFace=
-	        model.parts['Part-1'].faces[2])
+	        model.parts['Part-basicChiral'].edges[0], upToFace=
+	        model.parts['Part-basicChiral'].faces[2])
 	    del model.sketches['__profile__']
 	    ##
 
@@ -241,7 +241,7 @@ def buildBasicChiral(model, design):
 
 	if e!=0: #Added by Alejandro
 
-		model.Part(name='Part-Halbligament', objectToCopy=model.parts['Part-1'])
+		model.Part(name='Part-Halbligament', objectToCopy=model.parts['Part-basicChiral'])
 		plane_halb=model.parts['Part-Halbligament'].DatumPlaneByPrincipalPlane(offset=0.0, principalPlane=XYPLANE)
 		model.ConstrainedSketch(gridSpacing=7.18, name='__profile__', 
 		    sheetSize=287.44, transform=
@@ -267,7 +267,7 @@ def buildBasicChiral(model, design):
 
 	else:
 
-		model.Part(name='Part-Halbligament', objectToCopy=model.parts['Part-1'])
+		model.Part(name='Part-Halbligament', objectToCopy=model.parts['Part-basicChiral'])
 		plane_halb=model.parts['Part-Halbligament'].DatumPlaneByPrincipalPlane(offset=0.0, principalPlane=XYPLANE)
 		model.ConstrainedSketch(gridSpacing=7.18, name='__profile__', 
 		    sheetSize=287.44, transform=
@@ -338,10 +338,10 @@ def buildLattice(model, design):
 
 	#Rotate basic structure and obtain an initial approach to the unit cell
 	for i in range(1,7):
-	    model.rootAssembly.Instance(dependent=ON, name='Ligament-'+str(i), part=model.parts['Part-1'])
+	    model.rootAssembly.Instance(dependent=ON, name='Ligament-'+str(i), part=model.parts['Part-basicChiral'])
 	    model.rootAssembly.rotate(angle=drehwinkel, axisDirection=(0.0, 0.0, -1.0), axisPoint=(0, 0, 0.0), instanceList=('Ligament-'+str(i), ))
 	    model.rootAssembly.rotate(angle=i*60.0, axisDirection=(0.0, 0.0, -1), axisPoint=(AbstandMittelpunkte ,0, 0.0), instanceList=('Ligament-'+str(i), ))
-	    model.rootAssembly.Instance(dependent=ON, name='Ligament-out-'+str(i), part=model.parts['Part-1'])
+	    model.rootAssembly.Instance(dependent=ON, name='Ligament-out-'+str(i), part=model.parts['Part-basicChiral'])
 	    model.rootAssembly.rotate(angle=drehwinkel, axisDirection=(0.0, 0.0, -1.0), axisPoint=(0, 0, 0.0), instanceList=('Ligament-out-'+str(i), ))
 
 	model.rootAssembly.translate(instanceList=('Ligament-out-1', ), vector=((AbstandMittelpunkte/2, -HoeheDreieck,0.0)))
@@ -657,15 +657,15 @@ def cutLattice(model, design):
 		design.cutUp = design.cutUp + design.r + design.cutGap_y
 		design.cutDown = design.cutDown - ( design.r + design.cutGap_y )
 
-		design.cutUp_effective = design.cutUp_effective + design.r + 1.0 #Small offset (1.0)
-		design.cutDown_effective = design.cutDown_effective - (design.r + 1.0) #Small offset (1.0)
+		design.cutUp_effective = design.cutUp_effective + design.r + 0.1 #Small offset (0.1)
+		design.cutDown_effective = design.cutDown_effective - (design.r + 0.1) #Small offset (0.1)
 		
 	if design.cutGap_x != 0.0:
 		design.cutWingRoot = design.cutWingRoot - ( design.r + design.cutGap_x )
 		design.cutWingTip = design.cutWingTip + ( design.r + design.cutGap_x )
 
-		design.cutWingRoot_effective = design.cutWingRoot_effective - ( design.r + 1.0 )
-		design.cutWingTip_effective = design.cutWingTip_effective + ( design.r + 1.0 )
+		design.cutWingRoot_effective = design.cutWingRoot_effective - ( design.r + 0.1 )
+		design.cutWingTip_effective = design.cutWingTip_effective + ( design.r + 0.1 )
 
 	#Create Datum plane
 	datumPlane = model.parts['All'].DatumPlaneByPrincipalPlane(offset=0.0, 
@@ -858,27 +858,27 @@ def buildBox(model, design, mesh):
 
 	#Create C shape
 	model.sketches['__profile__'].Line(point1=(design.C3, design.cutUp), 
-	    point2=(0.0, design.cutUp))
-	model.sketches['__profile__'].HorizontalConstraint(
-	    addUndoState=False, entity=
-	    model.sketches['__profile__'].geometry[2])
-	model.sketches['__profile__'].Line(point1=(0.0, design.cutUp), 
-	    point2=(0.0, design.cutDown))
+	    point2=(0.0, design.cutUp+design.C2diff))
+	# model.sketches['__profile__'].HorizontalConstraint(
+	#     addUndoState=False, entity=
+	#     model.sketches['__profile__'].geometry[2])
+	model.sketches['__profile__'].Line(point1=(0.0, design.cutUp+design.C2diff), 
+	    point2=(0.0, design.cutDown - design.C2diff))
 	model.sketches['__profile__'].VerticalConstraint(addUndoState=
 	    False, entity=model.sketches['__profile__'].geometry[3])
-	model.sketches['__profile__'].PerpendicularConstraint(
-	    addUndoState=False, entity1=
-	    model.sketches['__profile__'].geometry[2], entity2=
-	    model.sketches['__profile__'].geometry[3])
-	model.sketches['__profile__'].Line(point1=(0.0, design.cutDown), 
+	# model.sketches['__profile__'].PerpendicularConstraint(
+	#     addUndoState=False, entity1=
+	#     model.sketches['__profile__'].geometry[2], entity2=
+	#     model.sketches['__profile__'].geometry[3])
+	model.sketches['__profile__'].Line(point1=(0.0, design.cutDown - design.C2diff), 
 	    point2=(design.C3, design.cutDown))
-	model.sketches['__profile__'].HorizontalConstraint(
-	    addUndoState=False, entity=
-	    model.sketches['__profile__'].geometry[4])
-	model.sketches['__profile__'].PerpendicularConstraint(
-	    addUndoState=False, entity1=
-	    model.sketches['__profile__'].geometry[3], entity2=
-	    model.sketches['__profile__'].geometry[4])
+	# model.sketches['__profile__'].HorizontalConstraint(
+	#     addUndoState=False, entity=
+	#     model.sketches['__profile__'].geometry[4])
+	# model.sketches['__profile__'].PerpendicularConstraint(
+	#     addUndoState=False, entity1=
+	#     model.sketches['__profile__'].geometry[3], entity2=
+	#     model.sketches['__profile__'].geometry[4])
 	model.sketches['__profile__'].EqualLengthConstraint(entity1=
 	    model.sketches['__profile__'].geometry[2], entity2=
 	    model.sketches['__profile__'].geometry[4])
@@ -895,9 +895,9 @@ def buildBox(model, design, mesh):
 
 	#Create set from part
 	model.parts['C-box'].Set(faces=
-	    model.parts['C-box'].faces.findAt(((design.C3/2,design.cutUp,design.cutWingTip/2),), 
+	    model.parts['C-box'].faces.findAt(((design.C3/2,design.cutUp+(design.C2diff/2),design.cutWingTip/2),), 
 	    ((0.0,design.cutUp/2,design.cutWingTip/2),),
-	    ((design.C3/2,design.cutDown,design.cutWingTip/2),),), name='C-box')
+	    ((design.C3/2,design.cutDown-(design.C2diff/2),design.cutWingTip/2),),), name='C-box')
 
 	#Create special set for meshing
 	point1 = model.parts['C-box'].DatumPointByCoordinate(coords=(design.C3 - mesh.d, 
@@ -916,18 +916,18 @@ def buildBox(model, design, mesh):
 	#Partition
 	model.parts['C-box'].PartitionFaceByDatumPlane(datumPlane=
 	    model.parts['C-box'].datums[datumPlane.id], faces=
-	    model.parts['C-box'].faces.findAt(((design.C3/2,design.cutUp,design.cutWingTip/2),),
-	    ((design.C3/2,design.cutDown,design.cutWingTip/2),),) )
+	    model.parts['C-box'].faces.findAt(((design.C3/2,design.cutUp+(design.C2diff/2),design.cutWingTip/2),),
+	    ((design.C3/2,design.cutDown-(design.C2diff/2),design.cutWingTip/2),),) )
 
 	#Sets
 	model.parts['C-box'].Set(faces=
-	    model.parts['C-box'].faces.findAt(((design.C3 - 1,design.cutUp,design.cutWingTip/2),), 
-	    ((design.C3 - 1,design.cutDown,design.cutWingTip/2),),), name='setCloseToLattice')
+	    model.parts['C-box'].faces.findAt(((design.C3 - 1, yInSkinUP(design, design.C3 - 1),design.cutWingTip/2),), 
+	    ((design.C3 - 1,yInSkinDN(design, design.C3 - 1),design.cutWingTip/2),),), name='setCloseToLattice')
 
 	model.parts['C-box'].Set(faces=
-	    model.parts['C-box'].faces.findAt(((design.C3/2,design.cutUp,design.cutWingTip/2),), 
+	    model.parts['C-box'].faces.findAt(((design.C3/2,design.cutUp+(design.C2diff/2),design.cutWingTip/2),), 
 	    ((0.0,design.cutUp/2,design.cutWingTip/2),),
-	    ((design.C3/2,design.cutDown,design.cutWingTip/2),),), name='notCloseToLattice')
+	    ((design.C3/2,design.cutDown-(design.C2diff/2),design.cutWingTip/2),),), name='notCloseToLattice')
 
 	#Section
 	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
@@ -1012,9 +1012,9 @@ def buildBasicBox(model, design):
 
 	#Create set from part
 	model.parts['box'].Set(faces=
-	    model.parts['box'].faces.findAt(((design.C3/2,design.cutUp,design.cutWingTip/2),), 
+	    model.parts['box'].faces.findAt(((design.C3/2,design.cutUp+(design.C2diff/2),design.cutWingTip/2),), 
 	    ((0.0,design.cutUp/2,design.cutWingTip/2),),
-	    ((design.C3/2,design.cutDown,design.cutWingTip/2),),), name='part-1')
+	    ((design.C3/2,design.cutDown-(design.C2diff/2),design.cutWingTip/2),),), name='part-1')
 
 	#Create set from part
 	model.parts['box'].Set(faces=
@@ -1404,7 +1404,7 @@ def buildTyre(model, design, load, instanceCurrent):
 	#Assign section
 	model.parts['tyre'].SectionAssignment(offset=0.0, 
 	    offsetField='', offsetType=MIDDLE_SURFACE, region=
-	    mdb.models['Model-1'].parts['tyre'].sets['tyre_all'], sectionName=
+	    model.parts['tyre'].sets['tyre_all'], sectionName=
 	    'Section-tyre', thicknessAssignment=FROM_SECTION)
 
 	#Instance operations
@@ -1436,7 +1436,7 @@ def buildTyre(model, design, load, instanceCurrent):
 						    (0.0, q_j, 0.0)) #Translate in y
 
 					#Translate in z
-					mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+					model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
 					    (0.0, 0.0, design.B/2))
 
 					instances_tyres += (instanceTyre, )
@@ -1467,7 +1467,7 @@ def buildTyre(model, design, load, instanceCurrent):
 						    (0.0, q_j, 0.0)) #Translate in y
 
 					#Translate in z
-					mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+					model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
 					    (0.0, 0.0, design.B/2))
 
 					instances_tyres += (instanceTyre, )
@@ -1492,7 +1492,7 @@ def buildTyre(model, design, load, instanceCurrent):
 					    (0.0, p_j, 0.0)) #Translate in y
 
 				#Translate in z
-				mdb.models['Model-1'].rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
+				model.rootAssembly.translate(instanceList=('tyre-'+str(r+1), ), vector=
 				    (0.0, 0.0, design.B/2))
 
 				instances_tyres += (instanceTyre, )
@@ -1723,7 +1723,7 @@ def PostProc_linear(iterStr, design, load, jobCurrentName, postProcStruct):
 
 	o3 = session.openOdb(name=jobCurrentName+'.odb')
 	session.viewports['Viewport: 1'].setValues(displayedObject=o3)
-	a = mdb.models['Model-1'].rootAssembly #in case we want to see the assembly
+	a = model.rootAssembly #in case we want to see the assembly
 	odb = session.odbs[cwd + '\\'+jobCurrentName+'.odb']
 
 	#Camera control
@@ -1852,7 +1852,7 @@ def PostProc_nonlinear(iterStr, design, load, jobCurrentName, postProcStruct):
 
 	o3 = session.openOdb(name=jobCurrentName+'.odb')
 	session.viewports['Viewport: 1'].setValues(displayedObject=o3)
-	a = mdb.models['Model-1'].rootAssembly #in case we want to see the assembly
+	a = model.rootAssembly #in case we want to see the assembly
 	odb = session.odbs[cwd + '\\'+jobCurrentName+'.odb']
 
 	#Camera control
@@ -1978,3 +1978,36 @@ def PostProc_nonlinear(iterStr, design, load, jobCurrentName, postProcStruct):
 
 	#Return to original working folder
 	globalChangeDir(cwd, '.')
+
+def searchLandrForWing(design):
+
+	dataDict = {}
+
+	file = open('findrAndL_found.txt', 'r')
+
+	lines = file.readlines()
+
+	for i in range(int(len(lines)/2)):
+
+		nameParater = lines[(i*2)]
+		valueParater = lines[(2*i)+1]
+
+		valueParater = valueParater.replace('\r\n','')
+		nameParater = nameParater.replace('\r\n','')
+
+		valueParater = valueParater.replace('\n','')
+		nameParater = nameParater.replace('\n','')
+
+		dataDict[nameParater] = float(valueParater)
+
+	file.close()
+
+	return dataDict
+
+def yInSkinUP(design, x):
+
+	return (design.cutUp+design.C2diff) - ( (design.C2diff/design.C3) * x )
+
+def yInSkinDN(design, x):
+
+	return (design.cutDown-design.C2diff) - ( (design.C2diff/design.C3) * x )
