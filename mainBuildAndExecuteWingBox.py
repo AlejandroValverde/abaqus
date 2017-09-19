@@ -41,20 +41,37 @@ design.typeOfModel = paraRead.typeOfModel #'simpleModel' 'simpleModelWithRibs', 
 design.eOverB = float(paraRead.eOverB) #typical: 0.01
 design.tChiral = float(paraRead.tChiral) #typical: 0.5mm
 
-## Chiral lattice
-design.M = int(paraRead.M) #Number of unit cells in transversal direction
-design.N = int(paraRead.N) #20 - Number of unit cells in spanwise direction
-design.r = float(paraRead.r)  #Node radius 
-design.B = float(paraRead.B)  #Node depth
-design.L = float(paraRead.L) #half length
-
 #Cutting operations - To cut by half of the ligaments
 design.cutGap_y = float(paraRead.cutGap_y) #Gap between the lattice and the skin in the y direction
 design.cutGap_x = float(paraRead.cutGap_x) #Gap between the lattice and the skin in the x direction
 
+###################
+
+## Chiral lattice
+
+design.M = int(paraRead.M) #Number of unit cells in transversal direction
+design.N = int(paraRead.N) #20 - Number of unit cells in spanwise direction
+design.B = float(paraRead.B)  #Node depth
+
+#From wing
+design.C2r = mod8_UP[1] - mod8_DN[1]
+design.C2f = mod7_UP[1] - mod7_DN[1]
+design.C2diff = (design.C2f - design.C2r) / 2
+design.s = width
+design.C3 = (PositionRearSpar*c_0) - (PositionFrontSpar*c_0)
+
+#Initial values for L and r
+design.L0 = float(paraRead.L) #half length
+design.r0 = float(paraRead.r)  #Node radius 
+
+dataDict = searchLandrForWing(design)
+design.L = dataDict['L']
+design.r = dataDict['r']
+
+######################
+
 ## Box structure
 #The rest of the dimensions of the box structure are calculated using the lattice final dimensions as a reference
-design.C3 = float(paraRead.C3) #Length in the chordwise direction
 design.Ct = float(paraRead.Cbox_t) #20 #C-box wall thickness, in millimeters
 
 ## Rib structure
@@ -62,13 +79,13 @@ design.a = float(paraRead.rib_a) #60
 design.ribt = float(paraRead.rib_t) #Rib thickness, in millimeters
 design.ribt_inner = float(paraRead.rib_t) #float(paraRead.rib_t_inner) #10 #Inner ribs thickness, in millimeters
 design.innerRibs_n = int(paraRead.innerRibs_n) #Choose 0 for not inner ribs
-design.innerRibs_gap = 20 #Distance from the lattice, in millimeters
+design.innerRibs_gap = 5 #Distance from the lattice, in millimeters
 design.rootRibShape = paraRead.rootRibShape #'open' or 'closed'
 design.tipRibShape = paraRead.tipRibShape #'open' or 'closed'
 
 ## Meshing
 mesh = structtype()
-mesh.d = 50 #Offset between different meshing regions
+mesh.d = 10 #Offset between different meshing regions
 mesh.courseSize = float(paraRead.courseSize) #Global seed element size for course mesh
 mesh.fineSize = float(paraRead.fineSize) #Local seed element size for fine mesh
 mesh.ElemType = '' #'quad'
@@ -155,11 +172,8 @@ postProcStruct = structtype()
 session = structtype()
 session.executeJob = (paraRead.executeJob == 'True')
 session.executePostProc = (paraRead.executePostProc == 'True')
-#############################################
-# Part and instances operations
 
-#Model variable
-model = mdb.models['Model-1']
+model = mdb.models['Model-SparAngle-1']
 
 #Load parameters from the Chiral design
 design = internalParameters(model, design)
@@ -280,6 +294,8 @@ elif design.typeOfModel == 'simpleModelWithRibs':
 #Build mesh
 meshing(design, mesh, partToApplyMeshBCsLoads)
 
+#Generate mesh
+partToApplyMeshBCsLoads.generateMesh()
 ########################
 #Load and BC's
 

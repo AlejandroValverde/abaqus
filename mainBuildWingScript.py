@@ -284,8 +284,46 @@ else:
 
 	os.system('matlab -nodesktop -nosplash -r "searchParameters_Matlab;quit;"')
 
-	time.sleep(10)
+	#Wait for matlab to finish its execution
+	i = 1
+	flagMatlabExecution = False
+	while True:
+		time.sleep(20)
 
-	# exit()
+		print('-> Waiting for Matlab to finish, '+str(i*20)+'seconds elapsed')
+		i += 1
+		
+		if i > 7:
+			raise ValueError('Error: Aborting Matlab execution, it is taking so much time')
+
+		for f in os.listdir(os.getcwd()):
+		    if f.startswith('Matlab_execution.txt'):
+		        
+		        file = open('Matlab_execution.txt', 'r')
+
+		        lines = file.readlines()
+
+		        for i in range(int((len(lines))/2)):
+
+		        	execIndicator = lines[(2*i)+1]
+
+		        	execIndicator = execIndicator.replace('\n','')
+		        	execIndicator = execIndicator.replace('\r\n','')
+
+		        	file.close()
+		        	# os.remove(f)
+
+		        	if execIndicator == 'OK':
+		        		flagMatlabExecution = True
+
+		        	elif execIndicator == 'FAIL':
+		        		raise ValueError('Error: Matlab execution failed')
+
+		        	else:
+		        		raise ValueError('Not possible to read Matlab exe file')
+
+		if flagMatlabExecution:
+			print('-> Matlab successfully executed')
+			break #Exit while loop
 
 out = os.system('abaqus cae script=codeForWing_temp.py')

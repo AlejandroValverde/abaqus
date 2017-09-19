@@ -16,13 +16,13 @@ paraRead = structtype()
 inputFileName = 'inputAbaqus.txt'
 paraRead = loadParameters(paraRead, inputFileName)
 
-## Material
-mat = structtype()
-mat.E1 = 69000.0 #N/mm^2 - For the box, aluminum 
+## Material, UNITS CHANGES TO m
+mat = structtype() 
+mat.E1 = 69000000000.0 #N/m^2 - For the box, aluminum 
 mat.v1 = 0.3269 #For the box, aluminum 
-mat.E_chiral = 3100.0 #N/mm^2 - For the chiral structure, ABS
+mat.E_chiral = 3100000000.0 #N/m^2 - For the chiral structure, ABS
 mat.v_chiral = 0.3 #For the chiral structure, ABS
-mat.E_rib = 200000 #mat.E1 * float(paraRead.E_ribOverE1) #N/mm^2, for the rib, expressed as a fraction of the main material
+mat.E_rib = 200000000000.0 #mat.E1 * float(paraRead.E_ribOverE1) #N/m^2, for the rib, expressed as a fraction of the main material
 mat.v_rib = 0.25
 mat.E2 = mat.E1 / float(paraRead.E1OverE2_simpleModel)
 mat.v2 = mat.v1
@@ -75,13 +75,13 @@ design.a = float(paraRead.rib_a) #60
 design.ribt = float(paraRead.rib_t) #Rib thickness, in millimeters
 design.ribt_inner = float(paraRead.rib_t) #float(paraRead.rib_t_inner) #10 #Inner ribs thickness, in millimeters
 design.innerRibs_n = int(paraRead.innerRibs_n) #Choose 0 for not inner ribs
-design.innerRibs_gap = 5 #Distance from the lattice, in millimeters
+design.innerRibs_gap = 1.5 * float(paraRead.B) #Distance from the lattice, in millimeters
 design.rootRibShape = paraRead.rootRibShape #'open' or 'closed'
 design.tipRibShape = paraRead.tipRibShape #'open' or 'closed'
 
 ## Meshing
 mesh = structtype()
-mesh.d = 10 #Offset between different meshing regions
+mesh.d = 2*float(paraRead.B) #Offset between different meshing regions
 mesh.courseSize = float(paraRead.courseSize) #Global seed element size for course mesh
 mesh.fineSize = float(paraRead.fineSize) #Local seed element size for fine mesh
 mesh.ElemType = '' #'quad'
@@ -151,7 +151,6 @@ if load.additionalBC != 'none' and design.cutGap_y == 0.0:
 if load.additionalBC == 'none' and design.cutGap_y != 0.0:
 	design.cutGap_y = 0.0
 
-
 ## Job
 jobDef = structtype()
 if 'nonlinear' in paraRead.typeAnalysis:
@@ -169,7 +168,7 @@ session = structtype()
 session.executeJob = (paraRead.executeJob == 'True')
 session.executePostProc = (paraRead.executePostProc == 'True')
 
-model = mdb.models['Model-SparAngle-1']
+# model = mdb.models['Model-SparAngle-1'] Model defined in other script
 
 #Load parameters from the Chiral design
 design = internalParameters(model, design)
@@ -195,7 +194,7 @@ cutLattice(model, design)
 boxPartName, boxInstanceName = buildBox(model, design, mesh)
 
 #Marge box and lattice
-mergeInstances(model, (model.rootAssembly.instances[latticeInstanceName], model.rootAssembly.instances[boxInstanceName]), 'BoxPlusLattice')
+# mergeInstances(model, (model.rootAssembly.instances[latticeInstanceName], model.rootAssembly.instances[boxInstanceName]), 'BoxPlusLattice')
 
 #Build Ribs
 # The function 'buildRib' takes two parameters:
@@ -212,18 +211,18 @@ else:
 	instances_ribs_inner = ()
 
 #Merge box and lattice to pair of ribs
-mergeInstances(model, (model.rootAssembly.instances['BoxPlusLattice-1'], 
-	model.rootAssembly.instances[ribRootInstanceName], model.rootAssembly.instances[ribTipInstanceName], )+instances_ribs_inner, 'RibBoxLattice')
+mergeInstances(model, (model.rootAssembly.instances[boxInstanceName], 
+	model.rootAssembly.instances[ribRootInstanceName], model.rootAssembly.instances[ribTipInstanceName], )+instances_ribs_inner, 'RibBox')
 
-partToApplyMeshBCsLoads = model.parts['RibBoxLattice']
-instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLattice-1']
-postProcStruct.finalInstanceName = 'RibBoxLattice-1'
+partToApplyMeshBCsLoads = model.parts['RibBox']
+instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBox-1']
+postProcStruct.finalInstanceName = 'RibBox-1'
 
 #Build tyre for nodes
 if 'tyre' in load.additionalBC or load.conditionNodesInnerLattice == 'tyre':
 	instances_tyres = buildTyre(model, design, load, instanceToApplyMeshBCsLoads)
-	mergeInstances(model, (instanceToApplyMeshBCsLoads, )+instances_tyres, 'RibBoxLatticeTyres')
+	mergeInstances(model, (model.rootAssembly.instances[latticeInstanceName], )+instances_tyres, 'Lattice')
 
-	partToApplyMeshBCsLoads = model.parts['RibBoxLatticeTyres']
-	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLatticeTyres-1']
-	postProcStruct.finalInstanceName = 'RibBoxLatticeTyres-1'
+	partToApplyMeshBCsLoads = model.parts['Lattice']
+	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['Lattice-1']
+	postProcStruct.finalInstanceName = 'Lattice-1'

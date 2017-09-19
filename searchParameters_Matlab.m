@@ -149,7 +149,7 @@ x0 = [sqrt(L0), sqrt(r0)];
 % s - ((N - 1)*sqrt( (2.*r0)^2 + (2.*L0)^2  ))
 
 options = optimoptions('fsolve','Display','iter');
-dimSolv = fsolve(@(x)dim(x, N, M, s, C2r, cutY), x0, options);
+[dimSolv,~,exitflag,~] = fsolve(@(x)dim(x, N, M, s, C2r, cutY), x0, options);
 
 L_found = dimSolv(1)^2;
 r_found = dimSolv(2)^2;
@@ -157,14 +157,34 @@ fprintf(['L:' num2str(L_found) '\n'])
 
 fprintf(['r:' num2str(r_found) '\n'])
 
-if exist('findrAndL_found', 'file') ~= 0
-    delete 'findrAndL_found.txt'
+fileID_exec = fopen('Matlab_execution.txt', 'w');
+fprintf(fileID_exec, ['Execution indicator' '\n']);
+
+if exitflag > 0 %If successful
+
+    if exist('findrAndL_found', 'file') ~= 0
+        delete 'findrAndL_found.txt'
+    end
+    fileID = fopen('findrAndL_found.txt', 'w');
+
+    fprintf(fileID, ['r' '\n']);
+    fprintf(fileID, [num2str(r_found) '\n']);
+    fprintf(fileID, ['L' '\n']);
+    fprintf(fileID, [num2str(L_found) '\n']);
+
+    fclose(fileID);
+
+    %Matlab execution finished
+    if exist('Matlab_execution', 'file') ~= 0
+        delete 'Matlab_execution.txt'
+    end
+
+    fprintf(fileID_exec, ['OK' '\n']);
+
+else %If not successful
+    
+    fprintf(fileID_exec, ['FAIL' '\n']);
+
 end
-fileID = fopen('findrAndL_found.txt', 'w');
 
-fprintf(fileID, ['r' '\n']);
-fprintf(fileID, [num2str(r_found) '\n']);
-fprintf(fileID, ['L' '\n']);
-fprintf(fileID, [num2str(L_found) '\n']);
-
-fclose(fileID);
+fclose(fileID_exec);
