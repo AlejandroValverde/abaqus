@@ -88,7 +88,7 @@ def loadMaterials(model, design, load, mat):
 
 	#For the tyre
 	model.Material(name='mat_tyre_Alu_x100')
-	model.materials['mat_tyre_Alu_x100'].Elastic(table=((69000 * 100, mat.v_rib), ))
+	model.materials['mat_tyre_Alu_x100'].Elastic(table=((69000000000.0 * 100, mat.v_rib), ))
 
 
 def buildBasicChiral(model, design):
@@ -650,7 +650,7 @@ def cutLattice(model, design):
 	design.cutUp_effective = design.cutUp 
 	design.cutDown_effective = design.cutDown
 	design.cutWingRoot_effective = design.cutWingRoot
-	design.cutWingTip_effective = design.cutWingTip
+	design.cutWingTip_effective = design.cutWingTip + (design.width - (design.cutWingTip-design.cutWingRoot))
 
 	#Redefine cutting dimensions if there is gap
 	SmallOffset = design.cutUp * (0.0001/0.05393)
@@ -756,89 +756,6 @@ def cutLattice(model, design):
 	    SIDE1, sketchUpEdge=model.parts['All'].datums[datumAxis.id])
 	del model.sketches['__profile__']
 
-def buildAditionalSupportsLattice(model, design, mesh):
-
-	#Section creation
-	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
-	    integrationRule=SIMPSON, material='ABS', name='Section-ABS-support', numIntPts=5, 
-	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
-	    thickness=design.tChiral, thicknessField='', thicknessModulus=None, thicknessType=
-	    UNIFORM, useDensity=OFF)
-	
-
-	def createPartSupport(model, design, mesh, nameStr, length):
-
-		#Create sketch palette with dimensions 150% bigger and the maximum length in the lattice
-		model.ConstrainedSketch(name='__profile__', sheetSize=1.5 * max(design.L1, design.L2))
-
-		model.sketches['__profile__'].rectangle(point1=(0.0, 0.0), 
-		    point2=(design.B, length))
-
-		#Shell extrude
-		model.Part(dimensionality=THREE_D, name=nameStr, type=
-		    DEFORMABLE_BODY)
-		model.parts[nameStr].BaseShell(sketch=model.sketches['__profile__'])
-		del model.sketches['__profile__']
-
-		#Set for all
-		model.parts[nameStr].Set(faces=model.parts[nameStr].faces.findAt(((design.B/2,length/2,0),),), name='all')
-
-		#Section assignment
-		model.parts[nameStr].SectionAssignment(offset=0.0, offsetField=
-		    '', offsetType=MIDDLE_SURFACE, region=
-		    model.parts[nameStr].sets['all'], sectionName=
-		    'Section-ABS-support', thicknessAssignment=FROM_SECTION)
-		
-	parts = ('short', 'long')
-	lengthTuple = (design.cutUp + abs(design.cutDown), design.cutWingTip - design.cutWingRoot)
-	i = 0
-	for part in parts:
-		createPartSupport(model, design, mesh, 'support_'+part, lengthTuple[i])
-		i += 1
-
-	#### Instance operations ####
-	model.rootAssembly.DatumCsysByDefault(CARTESIAN)
-	model.rootAssembly.Instance(dependent=ON, name='support_short_inst_1', part=
-	    model.parts['support_short'])
-	model.rootAssembly.rotate(angle=-90.0, axisDirection=(0.0, 1.0, 
-	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_short_inst_1', ))
-	model.rootAssembly.translate(instanceList=('support_short_inst_1', ), 
-	    vector=(design.cutWingRoot, 0.0, 0.0))
-
-	model.rootAssembly.Instance(dependent=ON, name='support_short_inst_2', part=
-	    model.parts['support_short'])
-	model.rootAssembly.rotate(angle=-90.0, axisDirection=(0.0, 1.0, 
-	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_short_inst_2', ))
-	model.rootAssembly.translate(instanceList=('support_short_inst_2', ), 
-	    vector=(design.cutWingTip, 0.0, 0.0))
-
-	model.rootAssembly.Instance(dependent=ON, name='support_long_inst_1', part=
-	    model.parts['support_long'])
-	model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
-	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_long_inst_1', ))
-	model.rootAssembly.rotate(angle=-90.0, axisDirection=(0.0, 1.0, 
-	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_long_inst_1', ))
-	model.rootAssembly.translate(instanceList=('support_long_inst_1', ), 
-	    vector=(design.cutWingTip, 0.0, 0.0))
-
-	model.rootAssembly.Instance(dependent=ON, name='support_long_inst_2', part=
-	    model.parts['support_long'])
-	model.rootAssembly.rotate(angle=90.0, axisDirection=(1.0, 0.0, 
-	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_long_inst_2', ))
-	model.rootAssembly.rotate(angle=-90.0, axisDirection=(0.0, 1.0, 
-	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('support_long_inst_2', ))
-	model.rootAssembly.translate(instanceList=('support_long_inst_2', ), 
-	    vector=(0.0, design.cutUp + abs(design.cutDown), 0.0))
-	model.rootAssembly.translate(instanceList=('support_long_inst_2', ), 
-	    vector=(design.cutWingTip, 0.0, 0.0))
-
-	instanceList = (model.rootAssembly.instances['support_short_inst_1'], 
-					model.rootAssembly.instances['support_short_inst_2'],
-					model.rootAssembly.instances['support_long_inst_1'],
-					model.rootAssembly.instances['support_long_inst_2'])
-
-	return instanceList
-
 def buildBox(model, design, mesh):
 
 	#Build wing box around lattice
@@ -851,28 +768,28 @@ def buildBox(model, design, mesh):
 	# design.L ->half length
 
 	#Calculate dimensions for the box
-	design.C2 = (design.cutUp + abs(design.cutDown)) # + design.Ct #Interference on purpose = t 
+	design.C2 = design.C2r #(design.cutUp + abs(design.cutDown)) # + design.Ct #Interference on purpose = t 
 	design.C1 = design.cutWingTip - design.cutWingRoot
 
 	#Create sketch palette with dimensions 150% bigger and the maximum length in the lattice
 	model.ConstrainedSketch(name='__profile__', sheetSize=1.5 * max(design.L1, design.L2))
 
 	#Create C shape
-	model.sketches['__profile__'].Line(point1=(design.C3, design.cutUp), 
-	    point2=(0.0, design.cutUp+design.C2diff))
+	# model.sketches['__profile__'].Line(point1=(design.C3, design.cutUp), 
+	#     point2=(0.0, design.cutUp+design.C2diff))
 	# model.sketches['__profile__'].HorizontalConstraint(
 	#     addUndoState=False, entity=
 	#     model.sketches['__profile__'].geometry[2])
-	model.sketches['__profile__'].Line(point1=(0.0, design.cutUp+design.C2diff), 
-	    point2=(0.0, design.cutDown - design.C2diff))
+	model.sketches['__profile__'].Line(point1=(design.rib_box_up[-1][0], design.rib_box_up[-1][1]), 
+	    point2=(design.rib_box_up[0][0], design.rib_box_up[0][1]))
 	model.sketches['__profile__'].VerticalConstraint(addUndoState=
 	    False, entity=model.sketches['__profile__'].geometry[3])
 	# model.sketches['__profile__'].PerpendicularConstraint(
 	#     addUndoState=False, entity1=
 	#     model.sketches['__profile__'].geometry[2], entity2=
 	#     model.sketches['__profile__'].geometry[3])
-	model.sketches['__profile__'].Line(point1=(0.0, design.cutDown - design.C2diff), 
-	    point2=(design.C3, design.cutDown))
+	# model.sketches['__profile__'].Line(point1=(0.0, design.cutDown - design.C2diff), 
+	#     point2=(design.C3, design.cutDown))
 	# model.sketches['__profile__'].HorizontalConstraint(
 	#     addUndoState=False, entity=
 	#     model.sketches['__profile__'].geometry[4])
@@ -880,25 +797,21 @@ def buildBox(model, design, mesh):
 	#     addUndoState=False, entity1=
 	#     model.sketches['__profile__'].geometry[3], entity2=
 	#     model.sketches['__profile__'].geometry[4])
-	model.sketches['__profile__'].EqualLengthConstraint(entity1=
-	    model.sketches['__profile__'].geometry[2], entity2=
-	    model.sketches['__profile__'].geometry[4])
+	# model.sketches['__profile__'].EqualLengthConstraint(entity1=
+	#     model.sketches['__profile__'].geometry[2], entity2=
+	#     model.sketches['__profile__'].geometry[4])
 
 	#Shell extrude
 	model.Part(dimensionality=THREE_D, name='C-box', type=
 	    DEFORMABLE_BODY)
-	model.parts['C-box'].BaseShellExtrude(depth=design.C1, sketch=
+	model.parts['C-box'].BaseShellExtrude(depth=design.width, sketch=
 	    model.sketches['__profile__'])
 	del model.sketches['__profile__']
 
 	#Create variable from part
-
-
 	#Create set from part
 	model.parts['C-box'].Set(faces=
-	    model.parts['C-box'].faces.findAt(((design.C3/2,design.cutUp+(design.C2diff/2),design.cutWingTip/2),), 
-	    ((0.0,design.cutUp/2,design.cutWingTip/2),),
-	    ((design.C3/2,design.cutDown-(design.C2diff/2),design.cutWingTip/2),),), name='C-box')
+	    model.parts['C-box'].faces.findAt(((design.rib_box_up[-1][0],0.0,width/2),),), name='C-box')
 
 	#Create special set for meshing
 	#Gap dimensionless
@@ -963,114 +876,71 @@ def buildBox(model, design, mesh):
 
 	return 'C-box', 'C-box-inst'
 
-def buildBasicBox(model, design):
+def buildBox_forWing(model, design, mesh):
+
+	#Build wing box around lattice
+
+	#Input parameters
+	# design.M ->Number of unit cells in transversal direction
+	# design.N ->Number of unit cells in spanwise direction
+	# design.r ->Node radius 
+	# design.B ->Node depth
+	# design.L ->half length
 
 	#Calculate dimensions for the box
-	design.C2 = (design.cutUp + abs(design.cutDown)) # + design.Ct #Interference on purpose = t 
+	design.C2 = design.C2r #(design.cutUp + abs(design.cutDown)) # + design.Ct #Interference on purpose = t 
 	design.C1 = design.cutWingTip - design.cutWingRoot
 
 	#Create sketch palette with dimensions 150% bigger and the maximum length in the lattice
 	model.ConstrainedSketch(name='__profile__', sheetSize=1.5 * max(design.L1, design.L2))
 
-	#Create squared shape
-	model.sketches['__profile__'].Line(point1=(design.C3, design.cutUp), 
-	    point2=(0.0, design.cutUp))
-	model.sketches['__profile__'].HorizontalConstraint(
-	    addUndoState=False, entity=
-	    model.sketches['__profile__'].geometry[2])
-	model.sketches['__profile__'].Line(point1=(0.0, design.cutUp), 
-	    point2=(0.0, design.cutDown))
+	#Create C shape
+
+	model.sketches['__profile__'].Line(point1=(design.rib_box_up[-1][0], design.rib_box_up[-1][1]), 
+	    point2=(design.rib_box_low[0][0], design.rib_box_low[0][1]))
 	model.sketches['__profile__'].VerticalConstraint(addUndoState=
-	    False, entity=model.sketches['__profile__'].geometry[3])
-	model.sketches['__profile__'].PerpendicularConstraint(
-	    addUndoState=False, entity1=
-	    model.sketches['__profile__'].geometry[2], entity2=
-	    model.sketches['__profile__'].geometry[3])
-	model.sketches['__profile__'].Line(point1=(0.0, design.cutDown), 
-	    point2=(design.C3, design.cutDown))
-	model.sketches['__profile__'].HorizontalConstraint(
-	    addUndoState=False, entity=
-	    model.sketches['__profile__'].geometry[4])
-	model.sketches['__profile__'].PerpendicularConstraint(
-	    addUndoState=False, entity1=
-	    model.sketches['__profile__'].geometry[3], entity2=
-	    model.sketches['__profile__'].geometry[4])
-	model.sketches['__profile__'].EqualLengthConstraint(entity1=
-	    model.sketches['__profile__'].geometry[2], entity2=
-	    model.sketches['__profile__'].geometry[4])
-	model.sketches['__profile__'].Line(point1=(design.C3, design.cutDown), 
-	    point2=(design.C3, design.cutUp))
-	model.sketches['__profile__'].VerticalConstraint(addUndoState=
-	    False, entity=model.sketches['__profile__'].geometry[5])
-	model.sketches['__profile__'].PerpendicularConstraint(
-	    addUndoState=False, entity1=
-	    model.sketches['__profile__'].geometry[4], entity2=
-	    model.sketches['__profile__'].geometry[5])
+	    False, entity=model.sketches['__profile__'].geometry[2])
 
 	#Shell extrude
-	model.Part(dimensionality=THREE_D, name='box', type=
+	model.Part(dimensionality=THREE_D, name='C-box', type=
 	    DEFORMABLE_BODY)
-	model.parts['box'].BaseShellExtrude(depth=design.C1, sketch=
+	model.parts['C-box'].BaseShellExtrude(depth=design.width, sketch=
 	    model.sketches['__profile__'])
 	del model.sketches['__profile__']
 
+	#Create variable from part
 	#Create set from part
-	model.parts['box'].Set(faces=
-	    model.parts['box'].faces.findAt(((design.C3/2,design.cutUp+(design.C2diff/2),design.cutWingTip/2),), 
-	    ((0.0,design.cutUp/2,design.cutWingTip/2),),
-	    ((design.C3/2,design.cutDown-(design.C2diff/2),design.cutWingTip/2),),), name='part-1')
-
-	#Create set from part
-	model.parts['box'].Set(faces=
-	    model.parts['box'].faces.findAt(((design.C3,design.cutUp/2,design.cutWingTip/2),),), name='part-2')
+	model.parts['C-box'].Set(faces=
+	    model.parts['C-box'].faces.findAt(((design.rib_box_up[-1][0],0.0,design.width/2),),), name='C-box')
 
 	#Section
 	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
-	    integrationRule=SIMPSON, material='Mat-part1', name='Section-part1', numIntPts=5, 
+	    integrationRule=SIMPSON, material='Alu', name='Section-Cbox', numIntPts=5, 
 	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
 	    thickness=design.Ct, thicknessField='', thicknessModulus=None, thicknessType=
 	    UNIFORM, useDensity=OFF)
-
-	#Section
-	model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
-	    integrationRule=SIMPSON, material='Mat-part2', name='Section-part2', numIntPts=5, 
-	    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
-	    thickness=design.Ct, thicknessField='', thicknessModulus=None, thicknessType=
-	    UNIFORM, useDensity=OFF)
-
-	model.parts['box'].SectionAssignment(offset=0.0, offsetField=
+	model.parts['C-box'].SectionAssignment(offset=0.0, offsetField=
 	    '', offsetType=MIDDLE_SURFACE, region=
-	    model.parts['box'].sets['part-1'], sectionName=
-	    'Section-part1', thicknessAssignment=FROM_SECTION)
-
-	model.parts['box'].SectionAssignment(offset=0.0, offsetField=
-	    '', offsetType=MIDDLE_SURFACE, region=
-	    model.parts['box'].sets['part-2'], sectionName=
-	    'Section-part2', thicknessAssignment=FROM_SECTION)
+	    model.parts['C-box'].sets['C-box'], sectionName=
+	    'Section-Cbox', thicknessAssignment=FROM_SECTION)
 
 	#### Instance operations ####
 	model.rootAssembly.DatumCsysByDefault(CARTESIAN)
-	model.rootAssembly.Instance(dependent=ON, name='box-inst', part=
-	    model.parts['box'])
-	model.rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 1.0, 
-	    0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('box-inst', ))
-	model.rootAssembly.translate(instanceList=('box-inst', ), 
-	    vector=(0.0, 0.0, design.C3))
+	model.rootAssembly.Instance(dependent=ON, name='C-box-inst', part=
+	    model.parts['C-box'])
 
-	#Spanwise shifting
-	model.rootAssembly.translate(instanceList=('box-inst', ), 
-	    vector=(design.cutWingRoot, 0.0, 0.0))
+	#Transversal shifting - Not necessary transversal shifting in this direction
+	# model.rootAssembly.translate(instanceList=('C-box-inst', ), 
+	#     vector=(0.0, -HoeheDreieck, 0.0))
 
-	return 'box', 'box-inst'
+	return 'C-box', 'C-box-inst'
 
-
-def buildRib(model, design, typeOfRib, typeOfRib2):
+def buildRib(model, design, pointsSkin, typeOfRib, typeOfRib2):
 
 	#build open Rib
 
 	#Dimensions 
 	design.rib1 = design.C3
-	design.rib2 = design.C2 #Lattice dimension in the transversal direction
 	# design.ribt must be defined as well
 
 	#SKETCH DESIGN
@@ -1083,10 +953,12 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		if typeOfRib == 'inner_ribs':
 
 			design.rib1 = design.C3 - design.B - design.innerRibs_gap #Lattice dimension in the transversal direction
+			design.rib2 = ySkinForXUP(pointsSkin, design.rib1+design.rib_box_up[-1][0]) - ySkinForXDN(pointsSkin, design.rib1+design.rib_box_low[0][0])
 
 		elif (typeOfRib == 'root_rib' or typeOfRib == 'tip_rib'):
 
 			design.rib1 = design.C3
+			design.rib2 = design.C2r
 
 		design.b = design.rib1 - (design.a * 3/2) #Internal parameter, the angle at the extreme of the rib is 45deg.
 
@@ -1116,36 +988,59 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		#
 
 		#Create shape
-		model.sketches['__profile__'].Line(point1=(0.0, -design.C2diff), point2=(
-		    design.rib1, yRibInSkinDN(design, design.rib1)))
+		x_range = np.linspace(0.0, design.rib1, 50, endpoint = True)
+		points_spline_down = []
+		for x in x_range:
+			points_spline_down += [ [x, ySkinForXDN(pointsSkin, x+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff] ]
+		points_spline_up = []
+		for x in x_range:
+			points_spline_up += [ [x, design.rib2 + ySkinForXUP(pointsSkin, x+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff] ]
+
+		#Real rib
+		points_spline_down_real = []
+		for pointRib in design.rib_box_low:
+			if (pointRib[0] - design.rib_box_up[-1][0]) < design.rib1:
+				points_spline_down_real += [[pointRib[0] - design.rib_box_low[0][0], pointRib[1] - design.rib_box_low[0][1] - design.C2diff]]
+		points_spline_down_real += [ [design.rib1, ySkinForXDN(pointsSkin, design.rib1+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff] ]
+		points_spline_up_real = []
+		points_spline_up_real += [ [design.rib1, design.rib2 + ySkinForXUP(pointsSkin, design.rib1+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff] ]
+		for pointRib in design.rib_box_up:
+			if (pointRib[0] - design.rib_box_up[-1][0]) < design.rib1:
+				points_spline_up_real += [[pointRib[0] - design.rib_box_up[-1][0], design.rib2 + pointRib[1] - design.rib_box_up[-1][1] + design.C2diff]]
+
+		model.sketches['__profile__'].Spline(points= (points_spline_down_real[:]  ))
+		# model.sketches['__profile__'].Line(point1=(0.0, -design.C2diff), point2=(
+		#     design.rib1, ySkinForXDN(pointsSkin, design.rib1+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ))
 		# model.sketches['__profile__'].HorizontalConstraint(
 		#     addUndoState=False, entity=
 		#     model.sketches['__profile__'].geometry[2])
-		model.sketches['__profile__'].Line(point1=(design.rib1, yRibInSkinDN(design, design.rib1)), point2=(
-		    design.rib1, design.a/2 + yRibInSkinDN(design, design.rib1) ))
+		model.sketches['__profile__'].Line(point1=(design.rib1, points_spline_down[-1][1]), point2=(
+		    design.rib1, design.a/2 + points_spline_down[-1][1] ))
 		model.sketches['__profile__'].VerticalConstraint(addUndoState=
 		    False, entity=model.sketches['__profile__'].geometry[3])
 		# model.sketches['__profile__'].PerpendicularConstraint(
 		#     addUndoState=False, entity1=
 		#     model.sketches['__profile__'].geometry[2], entity2=
 		#     model.sketches['__profile__'].geometry[3])
-		model.sketches['__profile__'].Line(point1=(design.rib1, design.a/2 + yRibInSkinDN(design, design.rib1)), point2=
-		    (design.b + design.a, design.a + yRibInSkinDN(design, design.b + design.a) ))
-		model.sketches['__profile__'].Line(point1=(design.b + design.a, design.a + yRibInSkinDN(design, design.b + design.a)), point2=
-		    (design.a, design.a + yRibInSkinDN(design, design.a)))
+		model.sketches['__profile__'].Line(point1=(design.rib1, design.a/2 + points_spline_down[-1][1]), point2=
+		    (design.b + design.a, design.a + ySkinForXDN(pointsSkin, design.b + design.a+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ))
+		model.sketches['__profile__'].Line(point1=(design.b + design.a, design.a + ySkinForXDN(pointsSkin, design.b + design.a+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ), point2=
+		    (design.a, design.a + ySkinForXDN(pointsSkin, design.a+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ) )
 		# model.sketches['__profile__'].HorizontalConstraint(
 		#     addUndoState=False, entity=
 		#     model.sketches['__profile__'].geometry[5])
-		model.sketches['__profile__'].Line(point1=(design.a, design.a + yRibInSkinDN(design, design.a)), point2=(
-		    design.a, design.rib2 - design.a + yRibInSkinUP(design, design.a)))
+		# model.sketches['__profile__'].Line(point1=(design.a, design.a + ySkinForXDN(pointsSkin, design.a+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ), point2=(
+		#     design.a, design.rib2 - design.a + yRibInSkinUP(design, design.a)))
+		model.sketches['__profile__'].Line(point1=(design.a, design.a + ySkinForXDN(pointsSkin, design.a+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ), point2=(
+		    design.a,design.rib2 - design.a + ySkinForXUP(pointsSkin, design.a+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff))
 		model.sketches['__profile__'].VerticalConstraint(addUndoState=
 		    False, entity=model.sketches['__profile__'].geometry[6])
 		# model.sketches['__profile__'].PerpendicularConstraint(
 		#     addUndoState=False, entity1=
 		#     model.sketches['__profile__'].geometry[5], entity2=
 		#     model.sketches['__profile__'].geometry[6])
-		model.sketches['__profile__'].Line(point1=(design.a, design.rib2 - design.a + yRibInSkinUP(design, design.a)), 
-		    point2=(design.b + design.a, design.rib2 - design.a + yRibInSkinUP(design, design.b + design.a)))
+		model.sketches['__profile__'].Line(point1=(design.a,design.rib2- design.a + ySkinForXUP(pointsSkin, design.a+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff), 
+		    point2=(design.b + design.a,design.rib2- design.a + ySkinForXUP(pointsSkin, design.b + design.a+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff))
 		# model.sketches['__profile__'].HorizontalConstraint(
 		#     addUndoState=False, entity=
 		#     model.sketches['__profile__'].geometry[7])
@@ -1153,14 +1048,15 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		#     addUndoState=False, entity1=
 		#     model.sketches['__profile__'].geometry[6], entity2=
 		#     model.sketches['__profile__'].geometry[7])
-		model.sketches['__profile__'].Line(point1=(design.b + design.a, design.rib2 - design.a + yRibInSkinUP(design, design.b + design.a)), 
-		    point2=(design.rib1, design.rib2 - (design.a/2) + yRibInSkinUP(design, design.rib1)))
-		model.sketches['__profile__'].Line(point1=(design.rib1, design.rib2 - (design.a/2) + yRibInSkinUP(design, design.rib1)), point2=
-		    (design.rib1, design.rib2 + yRibInSkinUP(design, design.rib1)))
+		model.sketches['__profile__'].Line(point1=(design.b + design.a,design.rib2- design.a + ySkinForXUP(pointsSkin, design.b + design.a+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff), 
+		    point2=(design.rib1,design.rib2- (design.a/2) + ySkinForXUP(pointsSkin, design.rib1+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff))
+		model.sketches['__profile__'].Line(point1=(design.rib1,design.rib2- (design.a/2) + ySkinForXUP(pointsSkin, design.rib1+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff), point2=
+		    (design.rib1,design.rib2 + ySkinForXUP(pointsSkin, design.rib1+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff))
 		model.sketches['__profile__'].VerticalConstraint(addUndoState=
 		    False, entity=model.sketches['__profile__'].geometry[9])
-		model.sketches['__profile__'].Line(point1=(design.rib1, 
-		    design.rib2 + yRibInSkinUP(design, design.rib1)), point2=(0.0, design.rib2 + yRibInSkinUP(design, 0.0)))
+		model.sketches['__profile__'].Spline(points= (points_spline_up_real[:]  ))
+		# model.sketches['__profile__'].Line(point1=(design.rib1, 
+		#     design.rib2 + yRibInSkinUP(design, design.rib1)), point2=(0.0, design.rib2 + yRibInSkinUP(design, 0.0)))
 		# model.sketches['__profile__'].HorizontalConstraint(
 		#     addUndoState=False, entity=
 		#     model.sketches['__profile__'].geometry[10])
@@ -1168,8 +1064,8 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		#     addUndoState=False, entity1=
 		#     model.sketches['__profile__'].geometry[9], entity2=
 		#     model.sketches['__profile__'].geometry[10])
-		model.sketches['__profile__'].Line(point1=(0.0, 
-		    design.rib2 + yRibInSkinUP(design, 0.0)), point2=(0.0, -design.C2diff))
+		model.sketches['__profile__'].Line(point1=(points_spline_up[0][0], 
+		    points_spline_up[0][1]), point2=(points_spline_down[0][0], points_spline_down[0][1]))
 		model.sketches['__profile__'].VerticalConstraint(addUndoState=
 		    False, entity=model.sketches['__profile__'].geometry[11])
 		# model.sketches['__profile__'].PerpendicularConstraint(
@@ -1179,16 +1075,36 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 
 	elif (typeOfRib == 'root_rib' or typeOfRib == 'tip_rib') and typeOfRib2 == 'closed':
 
+		design.rib1 = design.C3
+		design.rib2 = design.C2r #Lattice dimension in the transversal direction
+		#Create shape
+		x_range = np.linspace(0.0, design.rib1, 50, endpoint = True)
+		points_spline_down = []
+		for x in x_range:
+			points_spline_down += [ [x, ySkinForXDN(pointsSkin, x+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff] ]
+		points_spline_up = []
+		for x in x_range:
+			points_spline_up += [ [x, design.rib2 + ySkinForXUP(pointsSkin, x+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff] ]
+		
+		#Real rib
+		points_spline_down_real = []
+		for pointRib in design.rib_box_low:
+			points_spline_down_real += [[pointRib[0] - design.rib_box_low[0][0], pointRib[1] - design.rib_box_low[0][1] - design.C2diff]]
+		points_spline_up_real = []
+		for pointRib in design.rib_box_up:
+			points_spline_up_real += [[pointRib[0] - design.rib_box_up[-1][0], design.rib2 + pointRib[1] - design.rib_box_up[-1][1] + design.C2diff]]
 		#Create shape
 		#1 -> 2
-		model.sketches['__profile__'].Line(point1=(0.0, yRibInSkinDN(design, 0.0)), point2=(
-				    design.rib1, yRibInSkinDN(design, design.rib1)))
+		model.sketches['__profile__'].Spline(points= (points_spline_down_real[:]  ))
+		# model.sketches['__profile__'].Line(point1=(0.0, yRibInSkinDN(design, 0.0)), point2=(
+		# 		    design.rib1, yRibInSkinDN(design, design.rib1)))
 		# model.sketches['__profile__'].HorizontalConstraint(
 		# 		    addUndoState=False, entity=
 		# 		    model.sketches['__profile__'].geometry[2])
+
 		#2 -> 3
-		model.sketches['__profile__'].Line(point1=(design.rib1, yRibInSkinDN(design, design.rib1)), point2=(
-				    design.rib1, design.rib2 + yRibInSkinUP(design, design.rib1)))
+		model.sketches['__profile__'].Line(point1=(design.rib1, ySkinForXDN(pointsSkin, design.rib1+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ), point2=(
+		    design.rib1,design.C2r + ySkinForXUP(pointsSkin, design.rib1+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff))
 		model.sketches['__profile__'].VerticalConstraint(addUndoState=
 				    False, entity=model.sketches['__profile__'].geometry[3])
 		# model.sketches['__profile__'].PerpendicularConstraint(
@@ -1197,15 +1113,16 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		# 		    model.sketches['__profile__'].geometry[3])
 
 		#3 -> 4
-		model.sketches['__profile__'].Line(point1=(design.rib1, design.rib2 + yRibInSkinUP(design, design.rib1)), point2=(
-				    0.0, design.rib2 + yRibInSkinUP(design, 0.0)))
+		model.sketches['__profile__'].Spline(points= (points_spline_up_real[:]  ))
+		# model.sketches['__profile__'].Line(point1=(design.rib1, design.rib2 + yRibInSkinUP(design, design.rib1)), point2=(
+		# 		    0.0, design.rib2 + yRibInSkinUP(design, 0.0)))
 		# model.sketches['__profile__'].HorizontalConstraint(
 		# 		    addUndoState=False, entity=
 		# 		    model.sketches['__profile__'].geometry[4])
 
 		#4 -> 1
-		model.sketches['__profile__'].Line(point1=(0.0, design.rib2 + yRibInSkinUP(design, 0.0)), point2=(
-				    0.0, yRibInSkinDN(design, 0.0)))
+		model.sketches['__profile__'].Line(point1=(0.0,design.C2r +ySkinForXUP(pointsSkin, 0.0+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff), point2=(
+				    0.0, ySkinForXDN(pointsSkin, 0.0+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff))
 		model.sketches['__profile__'].VerticalConstraint(addUndoState=
 				    False, entity=model.sketches['__profile__'].geometry[5])
 		# model.sketches['__profile__'].PerpendicularConstraint(
@@ -1214,15 +1131,15 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		# 		    model.sketches['__profile__'].geometry[5])
 
 		#5 -> 6
-		model.sketches['__profile__'].Line(point1=(design.a, design.a + yRibInSkinDN(design, design.a)), point2=(
-				    design.rib1 - design.a, design.a + yRibInSkinDN(design, design.rib1 - design.a)))
+		model.sketches['__profile__'].Line(point1=(design.a, design.a + ySkinForXDN(pointsSkin, design.a+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff), point2=(
+				    design.rib1 - design.a, design.a + ySkinForXDN(pointsSkin, design.rib1 - design.a +design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff))
 		# model.sketches['__profile__'].HorizontalConstraint(
 		# 		    addUndoState=False, entity=
 		# 		    model.sketches['__profile__'].geometry[6])
 
 		#6 -> 7
-		model.sketches['__profile__'].Line(point1=(design.rib1 - design.a, design.a + yRibInSkinDN(design, design.rib1 - design.a)), point2=(
-				    design.rib1 - design.a, design.rib2 - design.a + yRibInSkinUP(design, design.rib1 - design.a)))
+		model.sketches['__profile__'].Line(point1=(design.rib1 - design.a, design.a + ySkinForXDN(pointsSkin, design.rib1 - design.a+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ), point2=(
+		    design.rib1 - design.a, design.C2r -design.a + ySkinForXUP(pointsSkin, design.rib1 - design.a+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff))
 		model.sketches['__profile__'].VerticalConstraint(addUndoState=
 				    False, entity=model.sketches['__profile__'].geometry[7])
 		# model.sketches['__profile__'].PerpendicularConstraint(
@@ -1231,15 +1148,15 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 		# 		    model.sketches['__profile__'].geometry[7])
 
 		#7 -> 8
-		model.sketches['__profile__'].Line(point1=(design.rib1 - design.a, design.rib2 - design.a + yRibInSkinUP(design, design.rib1 - design.a)), point2=(
-				    design.a, design.rib2 - design.a + yRibInSkinUP(design, design.a)))
+		model.sketches['__profile__'].Line(point1=(design.rib1 - design.a, design.C2r - design.a + ySkinForXUP(pointsSkin, design.rib1 - design.a+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff), point2=(
+			design.a, design.C2r - design.a + ySkinForXUP(pointsSkin, design.a+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff))
 		# model.sketches['__profile__'].HorizontalConstraint(
 		# 		    addUndoState=False, entity=
 		# 		    model.sketches['__profile__'].geometry[8])
 
 		#8 -> 5
-		model.sketches['__profile__'].Line(point1=(design.a, design.rib2 - design.a + yRibInSkinUP(design, design.a)), point2=(
-				    design.a, design.a + yRibInSkinDN(design, design.a)))
+		model.sketches['__profile__'].Line(point1=(design.a, design.C2r - design.a + ySkinForXUP(pointsSkin, design.a+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff), point2=(
+			design.a, design.a + ySkinForXDN(pointsSkin, design.a+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff))
 		model.sketches['__profile__'].VerticalConstraint(addUndoState=
 				    False, entity=model.sketches['__profile__'].geometry[9])
 		# model.sketches['__profile__'].PerpendicularConstraint(
@@ -1356,6 +1273,330 @@ def buildRib(model, design, typeOfRib, typeOfRib2):
 			    vector=(0.0, design.cutDown, 0.0))
 			model.rootAssembly.translate(instanceList=('Rib-inner-inst-'+str(r+1), ), 
 			    vector=(design.innerRibsXpos[r], 0.0, 0.0))
+
+			instances_ribs += (instanceRib, )
+
+		return instances_ribs
+
+def buildRib_forWing(model, design, pointsSkin, typeOfRib, typeOfRib2):
+
+	#build open Rib
+
+	#Dimensions 
+	design.rib1 = design.C3
+	# design.ribt must be defined as well
+
+	#SKETCH DESIGN
+
+	#Create sketch palette with dimensions 150% bigger and the maximum length in the lattice
+	model.ConstrainedSketch(name='__profile__', sheetSize=1.5 * max(design.L1, design.L2))
+
+	if typeOfRib == 'inner_ribs' or ((typeOfRib == 'root_rib' or typeOfRib == 'tip_rib') and typeOfRib2 == 'open'):
+
+		if typeOfRib == 'inner_ribs':
+
+			design.rib1 = design.C3 - design.B - design.innerRibs_gap #Lattice dimension in the transversal direction
+			design.rib2 = ySkinForXUP(pointsSkin, design.rib1+design.rib_box_up[-1][0]) - ySkinForXDN(pointsSkin, design.rib1+design.rib_box_low[0][0])
+
+		elif (typeOfRib == 'root_rib' or typeOfRib == 'tip_rib'):
+
+			design.rib1 = design.C3
+			design.rib2 = design.C2r
+
+		design.b = design.rib1 - (design.a * 3/2) #Internal parameter, the angle at the extreme of the rib is 45deg.
+
+		#Drawing
+		#
+		#          ____ -----------------------
+		#          ^   |          ^            |
+		#          |   |          |a           |
+		#          |   |          v            /  -> 45deg 
+		#          |   |      -----------------
+		#          |   |     |
+		#          |   |     |
+		#          |   |  a  |
+		#    rib_2 |   |<--->|
+		#          |   |     |       b
+		#          |   |     |<-------------->|
+		#          |   |     |                |
+		#          |   |      -----------------
+		#          |   |                       \  -> 45deg
+		#          |   |                        |
+		#          v   |                        |
+		#          ____ ------------------------
+		#              |                        |
+		#              |         rib_1          |
+		#              |<---------------------->|
+		#
+		#
+
+		#Create shape
+
+		#Real rib
+		points_spline_down_real = []
+		for pointRib in design.rib_box_low:
+			if pointRib[0] < (design.rib1+design.rib_box_low[0][0]):
+				points_spline_down_real += [[pointRib[0], pointRib[1]]] #np.interp(x, pointsSkin.upX, pointsSkin.upY)
+		# points_spline_down_real += [ [design.rib1+design.rib_box_low[0][0], np.interp(design.rib1+design.rib_box_low[0][0], pointsSkin.dnX, pointsSkin.dnY)] ]
+		
+		points_spline_up_real = []
+		# points_spline_up_real += [ [design.rib1+design.rib_box_up[-1][0], np.interp(design.rib1+design.rib_box_up[-1][0], pointsSkin.upX, pointsSkin.upY)] ]
+		for pointRib in design.rib_box_up:
+			if pointRib[0] < (design.rib1+design.rib_box_up[-1][0]):
+				points_spline_up_real += [[pointRib[0], pointRib[1]]]
+
+		model.sketches['__profile__'].Spline(points= (points_spline_down_real[:]  ))
+		# model.sketches['__profile__'].Line(point1=(0.0, -design.C2diff), point2=(
+		#     design.rib1, ySkinForXDN(pointsSkin, design.rib1+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ))
+		# model.sketches['__profile__'].HorizontalConstraint(
+		#     addUndoState=False, entity=
+		#     model.sketches['__profile__'].geometry[2])
+		model.sketches['__profile__'].Line(point1=(points_spline_down_real[-1][0], points_spline_down_real[-1][1]), point2=(
+		    points_spline_down_real[-1][0], design.a/2 + points_spline_down_real[-1][1]))
+		model.sketches['__profile__'].VerticalConstraint(addUndoState=
+		    False, entity=model.sketches['__profile__'].geometry[3])
+		
+		# model.sketches['__profile__'].Line(point1=(points_spline_down_real[-1][0], design.a/2 + points_spline_down_real[-1][1]), point2=
+		#     (points_spline_down_real[0][0] + design.b + design.a, design.a + np.interp(points_spline_down_real[0][0] + design.b + design.a, pointsSkin.dnX, pointsSkin.dnY) ))
+		model.sketches['__profile__'].Line(point1=(points_spline_down_real[-1][0], design.a/2 + points_spline_down_real[-1][1]), point2=
+		    (points_spline_down_real[0][0] + design.b + design.a, design.a + points_spline_down_real[-1][1] ))
+
+		model.sketches['__profile__'].Line(point1=(points_spline_down_real[0][0] + design.b + design.a, design.a + points_spline_down_real[-1][1] ), point2=
+		    (points_spline_down_real[0][0] + design.a, design.a + points_spline_down_real[0][1] ) )
+		# model.sketches['__profile__'].HorizontalConstraint(
+		#     addUndoState=False, entity=
+		#     model.sketches['__profile__'].geometry[5])
+		# model.sketches['__profile__'].Line(point1=(design.a, design.a + ySkinForXDN(pointsSkin, design.a+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff ), point2=(
+		#     design.a, design.rib2 - design.a + yRibInSkinUP(design, design.a)))
+		model.sketches['__profile__'].Line(point1=(points_spline_down_real[0][0] + design.a, design.a + points_spline_down_real[0][1] ), point2=(
+		    points_spline_up_real[-1][0] + design.a, - design.a + points_spline_up_real[-1][1]))
+		model.sketches['__profile__'].VerticalConstraint(addUndoState=
+		    False, entity=model.sketches['__profile__'].geometry[6])
+		# model.sketches['__profile__'].PerpendicularConstraint(
+		#     addUndoState=False, entity1=
+		#     model.sketches['__profile__'].geometry[5], entity2=
+		#     model.sketches['__profile__'].geometry[6])
+		model.sketches['__profile__'].Line(point1=(points_spline_up_real[-1][0] + design.a, - design.a + points_spline_up_real[-1][1]), 
+		    point2=(points_spline_up_real[-1][0] + design.a + design.b, - design.a + points_spline_up_real[0][1]))
+		# model.sketches['__profile__'].HorizontalConstraint(
+		#     addUndoState=False, entity=
+		#     model.sketches['__profile__'].geometry[7])
+		# model.sketches['__profile__'].PerpendicularConstraint(
+		#     addUndoState=False, entity1=
+		#     model.sketches['__profile__'].geometry[6], entity2=
+		#     model.sketches['__profile__'].geometry[7])
+		model.sketches['__profile__'].Line(point1=(points_spline_up_real[-1][0] + design.a + design.b, - design.a + points_spline_up_real[0][1]), 
+		    point2=(points_spline_up_real[0][0], - (design.a/2) + points_spline_up_real[0][1]))
+		model.sketches['__profile__'].Line(point1=(points_spline_up_real[0][0], - (design.a/2) + points_spline_up_real[0][1]), point2=
+		    (points_spline_up_real[0][0], points_spline_up_real[0][1]))
+		model.sketches['__profile__'].VerticalConstraint(addUndoState=
+		    False, entity=model.sketches['__profile__'].geometry[9])
+		model.sketches['__profile__'].Spline(points= (points_spline_up_real[:]  ))
+		# model.sketches['__profile__'].Line(point1=(design.rib1, 
+		#     design.rib2 + yRibInSkinUP(design, design.rib1)), point2=(0.0, design.rib2 + yRibInSkinUP(design, 0.0)))
+		# model.sketches['__profile__'].HorizontalConstraint(
+		#     addUndoState=False, entity=
+		#     model.sketches['__profile__'].geometry[10])
+		# model.sketches['__profile__'].PerpendicularConstraint(
+		#     addUndoState=False, entity1=
+		#     model.sketches['__profile__'].geometry[9], entity2=
+		#     model.sketches['__profile__'].geometry[10])
+		model.sketches['__profile__'].Line(point1=(points_spline_up_real[-1][0], 
+		    points_spline_up_real[-1][1]), point2=(points_spline_down_real[0][0], points_spline_down_real[0][1]))
+		model.sketches['__profile__'].VerticalConstraint(addUndoState=
+		    False, entity=model.sketches['__profile__'].geometry[11])
+		# model.sketches['__profile__'].PerpendicularConstraint(
+		#     addUndoState=False, entity1=
+		#     model.sketches['__profile__'].geometry[10], entity2=
+		#     model.sketches['__profile__'].geometry[11])
+
+	elif (typeOfRib == 'root_rib' or typeOfRib == 'tip_rib') and typeOfRib2 == 'closed':
+
+		design.rib1 = design.C3
+		design.rib2 = design.C2r #Lattice dimension in the transversal direction
+		#Create shape
+		x_range = np.linspace(0.0, design.rib1, 50, endpoint = True)
+		points_spline_down = []
+		for x in x_range:
+			points_spline_down += [ [x, ySkinForXDN(pointsSkin, x+design.rib_box_low[0][0]) - design.rib_box_low[0][1] - design.C2diff] ]
+		points_spline_up = []
+		for x in x_range:
+			points_spline_up += [ [x, design.rib2 + ySkinForXUP(pointsSkin, x+design.rib_box_up[-1][0]) - design.rib_box_up[-1][1] + design.C2diff] ]
+		
+		#Real rib
+		points_spline_down_real = []
+		for pointRib in design.rib_box_low:
+			points_spline_down_real += [[pointRib[0] - design.rib_box_low[0][0], pointRib[1] - design.rib_box_low[0][1] - design.C2diff]]
+		points_spline_up_real = []
+		for pointRib in design.rib_box_up:
+			points_spline_up_real += [[pointRib[0] - design.rib_box_up[-1][0], design.rib2 + pointRib[1] - design.rib_box_up[-1][1] + design.C2diff]]
+		#Create shape
+		#1 -> 2
+		model.sketches['__profile__'].Spline(points= (design.rib_box_low[:]  ))
+
+		#2 -> 3
+		model.sketches['__profile__'].Line(point1=(design.rib_box_low[-1][0],  design.rib_box_low[-1][1]), point2=(
+		    design.rib_box_up[0][0],design.rib_box_up[0][1]))
+		model.sketches['__profile__'].VerticalConstraint(addUndoState=
+				    False, entity=model.sketches['__profile__'].geometry[3])
+
+		#3 -> 4
+		model.sketches['__profile__'].Spline(points= (design.rib_box_up[:]  ))
+
+		#4 -> 1
+		model.sketches['__profile__'].Line(point1=(design.rib_box_up[-1][0],design.rib_box_up[-1][1]), point2=(
+				    design.rib_box_low[0][0],  design.rib_box_low[0][1]))
+		model.sketches['__profile__'].VerticalConstraint(addUndoState=
+				    False, entity=model.sketches['__profile__'].geometry[5])
+		# model.sketches['__profile__'].PerpendicularConstraint(
+		# 		    addUndoState=False, entity1=
+		# 		    model.sketches['__profile__'].geometry[4], entity2=
+		# 		    model.sketches['__profile__'].geometry[5])
+
+		#5 -> 6
+		model.sketches['__profile__'].Line(point1=(design.rib_box_low[0][0]+design.a,design.rib_box_low[0][1]+design.a), point2=(
+				    design.rib_box_low[-1][0] - design.a, design.rib_box_low[-1][1]+design.a))
+		# model.sketches['__profile__'].HorizontalConstraint(
+		# 		    addUndoState=False, entity=
+		# 		    model.sketches['__profile__'].geometry[6])
+
+		#6 -> 7
+		model.sketches['__profile__'].Line(point1=(design.rib_box_low[-1][0] - design.a, design.rib_box_low[-1][1]+design.a), point2=(
+		    design.rib_box_up[0][0] - design.a, design.rib_box_up[0][1]-design.a))
+		model.sketches['__profile__'].VerticalConstraint(addUndoState=
+				    False, entity=model.sketches['__profile__'].geometry[7])
+		# model.sketches['__profile__'].PerpendicularConstraint(
+		# 		    addUndoState=False, entity1=
+		# 		    model.sketches['__profile__'].geometry[6], entity2=
+		# 		    model.sketches['__profile__'].geometry[7])
+
+		#7 -> 8
+		model.sketches['__profile__'].Line(point1=(design.rib_box_up[0][0] - design.a, design.rib_box_up[0][1]-design.a), point2=(
+			design.rib_box_up[-1][0] + design.a, design.rib_box_up[-1][1]-design.a))
+		# model.sketches['__profile__'].HorizontalConstraint(
+		# 		    addUndoState=False, entity=
+		# 		    model.sketches['__profile__'].geometry[8])
+
+		#8 -> 5
+		model.sketches['__profile__'].Line(point1=(design.rib_box_up[-1][0] + design.a, design.rib_box_up[-1][1]-design.a), point2=(
+			design.rib_box_low[0][0]+design.a,design.rib_box_low[0][1]+design.a))
+		model.sketches['__profile__'].VerticalConstraint(addUndoState=
+				    False, entity=model.sketches['__profile__'].geometry[9])
+		# model.sketches['__profile__'].PerpendicularConstraint(
+		# 		    addUndoState=False, entity1=
+		# 		    model.sketches['__profile__'].geometry[8], entity2=
+		# 		    model.sketches['__profile__'].geometry[9])
+
+	# PART AND INSTANCE OPERATIONS
+
+	if (typeOfRib == 'root_rib' or typeOfRib == 'tip_rib'):
+
+		#Shell creation
+		model.Part(dimensionality=THREE_D, name=typeOfRib, type=
+		    DEFORMABLE_BODY)
+		model.parts[typeOfRib].BaseShell(sketch=
+		    model.sketches['__profile__'])
+		del model.sketches['__profile__']
+
+		#General set "all" for the part
+		model.parts[typeOfRib].Set(faces=
+		    model.parts[typeOfRib].faces.findAt(((design.rib_box_low[0][0] + design.a/2,0.0,0.0),),)
+		    , name='rib-all'+typeOfRib) 
+
+		#Section
+		model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
+		    integrationRule=SIMPSON, material='Steel_rib', name='Section-Rib', numIntPts=5, 
+		    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
+		    thickness=design.ribt, thicknessField='', thicknessModulus=None, thicknessType=
+		    UNIFORM, useDensity=OFF)
+
+		#Section assignment, assign material to part. This part is not a shell, therefore, no thickness is defined when specifying the section.
+		model.parts[typeOfRib].SectionAssignment(offset=0.0, offsetField=''
+		    , offsetType=MIDDLE_SURFACE, region=
+		    model.parts[typeOfRib].sets['rib-all'+typeOfRib], sectionName=
+		    'Section-Rib', thicknessAssignment=FROM_SECTION)
+
+		#### Instance operations ####
+		model.rootAssembly.DatumCsysByDefault(CARTESIAN)
+
+		#Wing root rib
+		if typeOfRib == 'root_rib':
+			model.rootAssembly.Instance(dependent=ON, name='Rib-root-inst', part=
+			    model.parts[typeOfRib]) #Create instance
+			# model.rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 1.0, 
+			#     0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('Rib-root-inst', ))
+			# model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
+			#     vector=(0.0, 0.0, design.C3))
+			# model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
+			#     vector=(0.0, design.cutDown, 0.0))
+			# model.rootAssembly.translate(instanceList=('Rib-root-inst', ), 
+			#     vector=(design.cutWingRoot, 0.0, 0.0))
+
+			return 'Rib-root-inst'
+
+		elif typeOfRib == 'tip_rib':
+			#Wing tip rib
+			model.rootAssembly.Instance(dependent=ON, name='Rib-tip-inst', part=
+			    model.parts[typeOfRib]) #Create instance
+			# model.rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 1.0, 
+			#     0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('Rib-tip-inst', ))
+			model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
+			    vector=(0.0, 0.0, design.width))
+			# model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
+			#     vector=(0.0, design.cutDown, 0.0))
+			# model.rootAssembly.translate(instanceList=('Rib-tip-inst', ), 
+			#     vector=(design.cutWingTip, 0.0, 0.0))
+
+			return 'Rib-tip-inst'
+			
+	elif typeOfRib == 'inner_ribs':
+
+		#Shell creation
+		model.Part(dimensionality=THREE_D, name='Rib-inner', type=
+		    DEFORMABLE_BODY)
+		model.parts['Rib-inner'].BaseShell(sketch=
+		    model.sketches['__profile__'])
+		del model.sketches['__profile__']
+
+		#General set "all" for the part
+		model.parts['Rib-inner'].Set(faces=
+		    model.parts['Rib-inner'].faces.findAt(((design.rib_box_low[0][0] + design.a/2,0.0,0.0),),)
+		    , name='rib-inner-all') 
+
+		#Section
+		model.HomogeneousShellSection(idealization=NO_IDEALIZATION, 
+		    integrationRule=SIMPSON, material='Steel_rib', name='Section-Rib-inner', numIntPts=5, 
+		    poissonDefinition=DEFAULT, preIntegrate=OFF, temperature=GRADIENT, 
+		    thickness=design.ribt_inner, thicknessField='', thicknessModulus=None, thicknessType=
+		    UNIFORM, useDensity=OFF)
+
+		#Section assignment, assign material to part. This part is not a shell, therefore, no thickness is defined when specifying the section.
+		model.parts['Rib-inner'].SectionAssignment(offset=0.0, offsetField=''
+		    , offsetType=MIDDLE_SURFACE, region=
+		    model.parts['Rib-inner'].sets['rib-inner-all'], sectionName=
+		    'Section-Rib-inner', thicknessAssignment=FROM_SECTION)
+
+		#Wing root rib
+		# totalLength = design.cutWingTip - design.cutWingRoot
+		totalLength = design.width
+		stepInX = totalLength / (design.innerRibs_n + 1)
+
+		design.innerRibsXpos = [design.cutWingRoot + (i*stepInX) for i in range(1, int(design.innerRibs_n) + 1)]
+
+		instances_ribs = ()
+
+		for r in range(int(design.innerRibs_n)):
+
+			instanceRib = model.rootAssembly.Instance(dependent=ON, name='Rib-inner-inst-'+str(r+1), part=
+			    model.parts['Rib-inner']) #Create instance
+			# model.rootAssembly.rotate(angle=90.0, axisDirection=(0.0, 1.0, 
+			#     0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('Rib-inner-inst-'+str(r+1), ))
+			# model.rootAssembly.translate(instanceList=('Rib-inner-inst-'+str(r+1), ), 
+			#     vector=(0.0, 0.0, design.C3))
+			# model.rootAssembly.translate(instanceList=('Rib-inner-inst-'+str(r+1), ), 
+			#     vector=(0.0, design.cutDown, 0.0))
+			model.rootAssembly.translate(instanceList=('Rib-inner-inst-'+str(r+1), ), 
+			    vector=(0.0, 0.0, design.innerRibsXpos[r]))
 
 			instances_ribs += (instanceRib, )
 

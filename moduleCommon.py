@@ -28,7 +28,7 @@ def ConvertNumber(string):
 
 def getQandPvectors(design):
 
-	totalLength = design.cutWingTip - design.cutWingRoot
+	totalLength = design.width
 
 	totalHeight = design.cutUp + abs(design.cutDown)
 

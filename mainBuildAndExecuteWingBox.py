@@ -1,16 +1,20 @@
-#Code to build wing box with chiral structure in one of the webs
+#Code to build wing with embedded chiral structure wing-box
 
-class structtype():
-    pass
-
-#############################################
-import pdb #pdb.set_trace()
-import time
+#Variables to be already defined when executing this script:
+# - rib_box_low
+# - rib_box_low
+# - mod8_DN
+# - mod8_UP
+# - mod7_UP
+# - mod7_DN
 
 #Import user-defined modules
 from moduleBuildWingBoxAndPostProc import *
 from moduleLoadsAndBC import *
 from moduleCommon import *
+
+class structtype():
+    pass
 
 ######################################################
 ## Load design parameters for parametric study
@@ -20,13 +24,13 @@ paraRead = structtype()
 inputFileName = 'inputAbaqus.txt'
 paraRead = loadParameters(paraRead, inputFileName)
 
-## Material
-mat = structtype()
-mat.E1 = 69000.0 #N/mm^2 - For the box, aluminum 
+## Material, UNITS CHANGES TO m
+mat = structtype() 
+mat.E1 = 69000000000.0 #N/m^2 - For the box, aluminum 
 mat.v1 = 0.3269 #For the box, aluminum 
-mat.E_chiral = 3100.0 #N/mm^2 - For the chiral structure, ABS
+mat.E_chiral = 3100000000.0 #N/m^2 - For the chiral structure, ABS
 mat.v_chiral = 0.3 #For the chiral structure, ABS
-mat.E_rib = 200000 #mat.E1 * float(paraRead.E_ribOverE1) #N/mm^2, for the rib, expressed as a fraction of the main material
+mat.E_rib = 200000000000.0 #mat.E1 * float(paraRead.E_ribOverE1) #N/m^2, for the rib, expressed as a fraction of the main material
 mat.v_rib = 0.25
 mat.E2 = mat.E1 / float(paraRead.E1OverE2_simpleModel)
 mat.v2 = mat.v1
@@ -54,6 +58,9 @@ design.N = int(paraRead.N) #20 - Number of unit cells in spanwise direction
 design.B = float(paraRead.B)  #Node depth
 
 #From wing
+design.width = width
+design.rib_box_low = rib_box_low
+design.rib_box_up = rib_box_up
 design.C2r = mod8_UP[1] - mod8_DN[1]
 design.C2f = mod7_UP[1] - mod7_DN[1]
 design.C2diff = (design.C2f - design.C2r) / 2
@@ -79,13 +86,13 @@ design.a = float(paraRead.rib_a) #60
 design.ribt = float(paraRead.rib_t) #Rib thickness, in millimeters
 design.ribt_inner = float(paraRead.rib_t) #float(paraRead.rib_t_inner) #10 #Inner ribs thickness, in millimeters
 design.innerRibs_n = int(paraRead.innerRibs_n) #Choose 0 for not inner ribs
-design.innerRibs_gap = 5 #Distance from the lattice, in millimeters
+design.innerRibs_gap = 1.5 * float(paraRead.B) #Distance from the lattice, in millimeters
 design.rootRibShape = paraRead.rootRibShape #'open' or 'closed'
 design.tipRibShape = paraRead.tipRibShape #'open' or 'closed'
 
 ## Meshing
 mesh = structtype()
-mesh.d = 10 #Offset between different meshing regions
+mesh.d = 2*float(paraRead.B) #Offset between different meshing regions
 mesh.courseSize = float(paraRead.courseSize) #Global seed element size for course mesh
 mesh.fineSize = float(paraRead.fineSize) #Local seed element size for fine mesh
 mesh.ElemType = '' #'quad'
@@ -155,7 +162,6 @@ if load.additionalBC != 'none' and design.cutGap_y == 0.0:
 if load.additionalBC == 'none' and design.cutGap_y != 0.0:
 	design.cutGap_y = 0.0
 
-
 ## Job
 jobDef = structtype()
 if 'nonlinear' in paraRead.typeAnalysis:
@@ -173,7 +179,7 @@ session = structtype()
 session.executeJob = (paraRead.executeJob == 'True')
 session.executePostProc = (paraRead.executePostProc == 'True')
 
-model = mdb.models['Model-SparAngle-1']
+# model = mdb.models['Model-SparAngle-1'] Model defined in other script
 
 #Load parameters from the Chiral design
 design = internalParameters(model, design)
@@ -181,237 +187,64 @@ design = internalParameters(model, design)
 #Load materials
 loadMaterials(model, design, load, mat)
 
-if design.typeOfModel == 'completeModel': #Standard design
-
-	#Build lattice structure basic elements
-	buildBasicChiral(model, design)
-
-	#Build the whole lattice
-	latticePartName, latticeInstanceName = buildLattice(model, design)
-
-	#Cut lattice
-	design.cutUp = 2 * (design.M - 1) * design.heightTriangle
-	design.cutDown = 0 #-60 #Obtain from inspection
-	design.cutWingRoot = design.distanceCenterPoints
-	design.cutWingTip = design.distanceCenterPoints * design.N
-
-	cutLattice(model, design)
-
-	#Build box
-	boxPartName, boxInstanceName = buildBox(model, design, mesh)
-
-	#Marge box and lattice
-	mergeInstances(model, (model.rootAssembly.instances[latticeInstanceName], model.rootAssembly.instances[boxInstanceName]), 'BoxPlusLattice')
-
-	#Build Ribs
-	# The function 'buildRib' takes two parameters:
-	# - typeOfRib: 	Choose 'inner_ribs' to create ribs in between the wing tip and the root, and
-	#				Choose 'outer_ribs' to create ribs located at the wing tip and at the root. These can be:
-	#				- typeOfRib2: Choose 'open' to make ribs with a open section and closed to make them a close profile
-
-	ribRootInstanceName= buildRib(model, design, 'root_rib', design.rootRibShape)
-	ribTipInstanceName= buildRib(model, design, 'tip_rib', design.tipRibShape) 
-
-	if design.innerRibs_n != 0:
-		instances_ribs_inner = buildRib(model, design, 'inner_ribs', [])
-	else:
-		instances_ribs_inner = ()
-
-	#Merge box and lattice to pair of ribs
-	mergeInstances(model, (model.rootAssembly.instances['BoxPlusLattice-1'], 
-		model.rootAssembly.instances[ribRootInstanceName], model.rootAssembly.instances[ribTipInstanceName], )+instances_ribs_inner, 'RibBoxLattice')
-
-	partToApplyMeshBCsLoads = model.parts['RibBoxLattice']
-	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLattice-1']
-	postProcStruct.finalInstanceName = 'RibBoxLattice-1'
-
-	#Build tyre for nodes
-	if 'tyre' in load.additionalBC or load.conditionNodesInnerLattice == 'tyre':
-		instances_tyres = buildTyre(model, design, load, instanceToApplyMeshBCsLoads)
-		mergeInstances(model, (instanceToApplyMeshBCsLoads, )+instances_tyres, 'RibBoxLatticeTyres')
-
-		partToApplyMeshBCsLoads = model.parts['RibBoxLatticeTyres']
-		instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLatticeTyres-1']
-		postProcStruct.finalInstanceName = 'RibBoxLatticeTyres-1'
-
-
-elif design.typeOfModel == 'simpleModel':
-
-	boxPartName, boxInstanceName = buildBasicBox(model, design)
-
-	partToApplyMeshBCsLoads = model.parts[boxPartName]
-	instanceToApplyMeshBCsLoads = model.rootAssembly.instances[boxInstanceName]
-
-elif design.typeOfModel == 'onlyLattice':
-
-	#Build lattice structure basic elements
-	buildBasicChiral(model, design)
-
-	#Build the whole lattice
-	latticePartName, latticeInstanceName = buildLattice(model, design)
-
-	#Cut lattice
-	cutLattice(model, design)
-
-	#Add supports
-	supportsInstanceList = buildAditionalSupportsLattice(model, design, mesh)
-
-	#Merge
-	mergeInstances(model, (model.rootAssembly.instances[latticeInstanceName], )+supportsInstanceList, 'LatticeWithSupports')
-
-	partToApplyMeshBCsLoads = model.parts['LatticeWithSupports']
-	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['LatticeWithSupports-1']
-
-elif design.typeOfModel == 'simpleModelWithRibs':
-
-	boxPartName, boxInstanceName = buildBasicBox(model, design)
-
-	#Build Ribs
-	# The function 'buildRib' takes two parameters:
-	# - typeOfRib: 	Choose 'inner_ribs' to create ribs in between the wing tip and the root, and
-	#				Choose 'outer_ribs' to create ribs located at the wing tip and at the root. These can be:
-	#				- typeOfRib2: Choose 'open' to make ribs with a open section and closed to make them a close profile
-
-	ribRootInstanceName= buildRib(model, design, 'root_rib', design.rootRibShape)
-	ribTipInstanceName= buildRib(model, design, 'tip_rib', design.tipRibShape) 
-
-	if design.innerRibs_n != 0:
-		instances_ribs_inner = buildRib(model, design, 'inner_ribs', [])
-	else:
-		instances_ribs_inner = ()
-
-	#Merge box and lattice to pair of ribs
-	mergeInstances(model, (model.rootAssembly.instances[boxInstanceName], 
-		model.rootAssembly.instances[ribRootInstanceName], model.rootAssembly.instances[ribTipInstanceName], )+instances_ribs_inner, 'RibBox')
-
-	partToApplyMeshBCsLoads = model.parts['RibBox']
-	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBox-1']
-
-
-##########################
-#Meshing operations
-
-#Build mesh
-meshing(design, mesh, partToApplyMeshBCsLoads)
-
-#Generate mesh
-partToApplyMeshBCsLoads.generateMesh()
-########################
-#Load and BC's
-
-#Boundary conditions and coupling restriction definition
-if not design.typeOfModel == 'onlyLattice':
-	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'coupling') #Type of BC: 'clamped' or 'coupling'
-
-if design.typeOfModel == 'completeModel': #Standard design
-	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.typeBC)
-
-
-	defineBCs(model, design, instanceToApplyMeshBCsLoads, load, 'couplingAtLatticeNodes')
-
-	if (design.cutGap_y != 0.0 and load.additionalBC != 'none'):# or load.conditionNodesInnerLattice == 'tyre':
-
-		defineBCs(model, design, instanceToApplyMeshBCsLoads, load, load.additionalBC)
-
-
-#Load definition
-loads(model, design, mesh, load, instanceToApplyMeshBCsLoads, load.typeLoad, load.typeAnalysis, load.typeAbaqus) #Type of load: 'displ', 'force' or 'distributedForce', type of analysis: 'linear' or 'nonlinear'
-
-#Set for postProcessing
-postProcStruct = createSetForPostProcTwist(model, instanceToApplyMeshBCsLoads, design, postProcStruct)
-################################
-#Job operations
-
-#Variables
-jobCurrentName = jobDef.jobName
-jobExecutionFlag = True
-modelName = 'Model-1'
-
-while jobExecutionFlag:
-
-	#Create job
-	mdb.Job(atTime=None, contactPrint=OFF, description='', echoPrint=OFF, 
-	    explicitPrecision=SINGLE, getMemoryFromAnalysis=True, historyPrint=OFF, 
-	    memory=90, memoryUnits=PERCENTAGE, model=modelName, modelPrint=OFF, 
-	    multiprocessingMode=DEFAULT, name=jobCurrentName, nodalOutputPrecision=SINGLE, 
-	    numCpus=jobDef.numCpus, numDomains=jobDef.numCpus, numGPUs=0, queue=None, resultsFormat=ODB, scratch='', type=
-	    ANALYSIS, userSubroutine='', waitHours=0, waitMinutes=0)
-
-	#Create job variable
-	jobCurrent = mdb.jobs[jobCurrentName]
-
-	#Write job to file
-	if jobDef.saveJob:
-
-		print('Job saved...')
-		jobCurrent.writeInput(consistencyChecking=OFF)
-
-	#Submit job
-	if session.executeJob:
-
-		model.rootAssembly.regenerate()
-
-		try:
-			#The job will be submitted here. It the simulation aborts, then another
-			executionFlag = True
-			print('Job submitted and calculating...')
-
-			jobCurrent.submit(consistencyChecking=OFF)
-			jobCurrent.waitForCompletion()
-
-		except Exception as e:
-			executionFlag = False
-
-		if executionFlag:
-			print('Job successfully completed')
-		else:
-			print('Job aborted')
-
-	#Post-processing
-	if session.executePostProc:
-		print('Running post-processing...')
-
-		#Get current folder
-		cwd = os.getcwd()
-
-		#Check if postProc folder already exists
-		globalCreateDir(cwd, '-postProc')
-		
-		#Create folder for simulation results
-		globalCreateDir(cwd, '-postProc-'+paraRead.Iter)
-
-		if load.typeAnalysis == 'linear':
-			PostProc_linear(paraRead.Iter, design, load, jobCurrentName, postProcStruct)
-
-		elif 'nonlinear' in load.typeAnalysis:
-			PostProc_nonlinear(paraRead.Iter, design, load, jobCurrentName, postProcStruct)
-
-		#Copy input file to postProc folder
-		globalCopyFile(cwd, cwd+'-postProc', inputFileName, paraRead.Iter + '-' + inputFileName.replace('.txt', '_'+'nonlinear'+'.txt'))
-
-		#Return to original working folder
-		globalChangeDir(cwd, '.')
-
-	if 'double' in load.typeAnalysis:
-		#Now the job will be submitted for linear analysis
-		load.typeAnalysis = 'linear' #The program won't enter again in this if statement
-
-		#New model
-		modelName = 'Model-linear'
-		mdb.Model(name=modelName, objectToCopy=mdb.models['Model-1'])
-		model = mdb.models[modelName]
-		
-		#Change step
-		model.steps['load'].setValues(description='Step for load, standard, linear', nlgeom=OFF,initialInc=1.0, maxInc=1.0, minInc=1e-05)
-		if load.dampFlag:
-			#Turn off damping for the linear analysis
-			model.steps['load'].setValues(adaptiveDampingRatio=None, continueDampingFactors=False, stabilizationMethod=NONE)
-
-		jobCurrentName = jobCurrentName.replace('nonlinear', 'linear')
-
-	else:
-
-		jobExecutionFlag = False #Terminate execution
-
-#Save everything
-mdb.saveAs(pathName='model')
+#Build lattice structure basic elements
+buildBasicChiral(model, design)
+
+#Build the whole lattice
+latticePartName, latticeInstanceName = buildLattice(model, design)
+
+#Cut lattice
+design.cutUp = 2 * (design.M - 1) * design.heightTriangle
+design.cutDown = 0 #-60 #Obtain from inspection
+design.cutWingRoot = design.distanceCenterPoints
+design.cutWingTip = design.distanceCenterPoints * design.N
+
+cutLattice(model, design)
+
+#Build box
+# boxPartName, boxInstanceName = buildBox(model, design, mesh)
+boxPartName, boxInstanceName = buildBox_forWing(model, design, mesh)
+
+#Marge box and lattice
+# mergeInstances(model, (model.rootAssembly.instances[latticeInstanceName], model.rootAssembly.instances[boxInstanceName]), 'BoxPlusLattice')
+
+#Build Ribs
+# The function 'buildRib' takes two parameters:
+# - typeOfRib: 	Choose 'inner_ribs' to create ribs in between the wing tip and the root, and
+#				Choose 'outer_ribs' to create ribs located at the wing tip and at the root. These can be:
+#				- typeOfRib2: Choose 'open' to make ribs with a open section and closed to make them a close profile
+
+ribRootInstanceName= buildRib_forWing(model, design, pointsSkin, 'root_rib', design.rootRibShape)
+ribTipInstanceName= buildRib_forWing(model, design, pointsSkin, 'tip_rib', design.tipRibShape) 
+
+if design.innerRibs_n != 0:
+	instances_ribs_inner = buildRib_forWing(model, design, pointsSkin, 'inner_ribs', [])
+else:
+	instances_ribs_inner = ()
+
+#Merge box and lattice to pair of ribs
+mergeInstances(model, (model.rootAssembly.instances[boxInstanceName], 
+	model.rootAssembly.instances[ribRootInstanceName], model.rootAssembly.instances[ribTipInstanceName], )+instances_ribs_inner, 'RibBox')
+
+partToApplyMeshBCsLoads = model.parts['RibBox']
+instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBox-1']
+postProcStruct.finalInstanceName = 'RibBox-1'
+
+#Build tyre for nodes
+if 'tyre' in load.additionalBC or load.conditionNodesInnerLattice == 'tyre':
+	instances_tyres = buildTyre(model, design, load, instanceToApplyMeshBCsLoads)
+
+	#Remove first lattice nodes intersecting with tyres
+	model.rootAssembly.InstanceFromBooleanCut(
+	    cuttingInstances=instances_tyres, instanceToBeCut=model.rootAssembly.instances[latticeInstanceName], 
+	    name='LatticeWithoutTyres', originalInstances=SUPPRESS)
+
+	#Resume tyre instances
+	for instance in instances_tyres:
+		model.rootAssembly.resumeFeatures((instance.name))
+
+	mergeInstances(model, (model.rootAssembly.instances['LatticeWithoutTyres-1'], )+instances_tyres, 'Lattice')
+
+	partToApplyMeshBCsLoads = model.parts['Lattice']
+	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['Lattice-1']
+	postProcStruct.finalInstanceName = 'Lattice-1'

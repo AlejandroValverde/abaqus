@@ -339,14 +339,6 @@ points_nose[-1] = [x_spar1m, numpy.interp(x_spar1m, skin_points_dnX, skin_points
 points_box_up[0] = [x_spar2m, numpy.interp(x_spar2m, skin_points_upX, skin_points_upY)]
 points_box_low[-1] = [x_spar2, numpy.interp(x_spar2, skin_points_dnX, skin_points_dnY)]
 
-pointsSkin = structtype()
-
-pointsSkin.upX = skin_points_upX
-pointsSkin.upY = skin_points_upY
-pointsSkin.dnX = skin_points_dnX
-pointsSkin.dnY = skin_points_dnY
-
-
 #===============================================================================
 # 3-RibTrailOpen
 #===============================================================================
@@ -371,6 +363,16 @@ rib_trail_up = [row[:] for row in points_trail_rib_up]
 rib_trail_up.insert(len(rib_trail_up), points_box_up[0])
 rib_trail_low = [row[:] for row in points_trail_rib_low]                      
 rib_trail_low.insert(0, points_box_low[-1])
+
+pointsSkin = structtype()
+
+pointsSkin.upX = skin_points_upX
+pointsSkin.upY = skin_points_upY
+pointsSkin.dnX = skin_points_dnX
+pointsSkin.dnY = skin_points_dnY
+
+pointsSkin.rib_box_low = rib_box_low
+pointsSkin.rib_box_up = rib_box_up
 
 orthovector_trail_up = [[0 for x in xrange(2)] for x in xrange(len(rib_trail_up))]
 for x in xrange(len(rib_trail_up)-1):
@@ -1148,39 +1150,39 @@ for setToRemove in setsToRemove:
     del WingModel.parts['Wing'].sets[setToRemove]
 
 if sys.version_info.major == 2:
-    execfile('mainBuildWingBoxForWing.py') #Load parametric study values
+    execfile('mainBuildAndExecuteWingBox.py') #Load parametric study values
 elif sys.version_info.major == 3:
-    exec(open("./"+'mainBuildWingBoxForWing.py').read())
+    exec(open("./"+'mainBuildAndExecuteWingBox.py').read())
 
 #Remove upper and lower flanges of wing-box
-faces_list=[]
-faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( design.cutWingTip - (0.1*design.cutWingTip),yInSkinUP2(design, design.C3/2), design.C3/2 ) , )  , )[0]) #[0] access the Face object
-faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( design.cutWingTip - (0.1*design.cutWingTip),yInSkinDN2(design, design.C3/2), design.C3/2 ) , )  , )[0]) #[0] access the Face object
-faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( design.cutWingTip - (0.1*design.cutWingTip),yInSkinUP2(design, design.B/2), design.B/2 ) , )  , )[0]) #[0] access the Face object
-faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( design.cutWingTip - (0.1*design.cutWingTip),yInSkinDN2(design, design.B/2), design.B/2 ) , )  , )[0]) #[0] access the Face object
+# faces_list=[]
+# faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( design.cutWingTip - (0.1*design.cutWingTip),yInSkinUP2(design, design.C3/2), design.C3/2 ) , )  , )[0]) #[0] access the Face object
+# faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( design.cutWingTip - (0.1*design.cutWingTip),yInSkinDN2(design, design.C3/2), design.C3/2 ) , )  , )[0]) #[0] access the Face object
+# faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( design.cutWingTip - (0.1*design.cutWingTip),yInSkinUP2(design, design.B/2), design.B/2 ) , )  , )[0]) #[0] access the Face object
+# faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( design.cutWingTip - (0.1*design.cutWingTip),yInSkinDN2(design, design.B/2), design.B/2 ) , )  , )[0]) #[0] access the Face object
 
-if (design.innerRibs_gap + design.B) == mesh.d:
-    for xPosInner in design.innerRibsXpos:
-        if xPosInner == design.innerRibsXpos[0]: #For the rib close to the root
+# if (design.innerRibs_gap + design.B) == mesh.d:
+#     for xPosInner in design.innerRibsXpos:
+#         if xPosInner == design.innerRibsXpos[0]: #For the rib close to the root
 
-            positionInX = xPosInner - ((xPosInner - design.cutWingRoot)/2)
+#             positionInX = xPosInner - ((xPosInner - design.cutWingRoot)/2)
 
-        else:
+#         else:
 
-            positionInX = xPosInner - ((xPosInner - design.innerRibsXpos[index-1])/2)
-        faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( xPosInner - (0.1*design.cutWingTip),yInSkinUP2(design, design.C3/2), design.C3/2 ) , )  , )[0]) #[0] access the Face object
-        faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( xPosInner - (0.1*design.cutWingTip),yInSkinDN2(design, design.C3/2), design.C3/2 ) , )  , )[0]) #[0] access the Face object
-        # faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( xPosInner - (0.1*design.cutWingTip),yInSkinUP2(design, design.B/2), design.B/2 ) , )  , )[0]) #[0] access the Face object
-        # faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( xPosInner - (0.1*design.cutWingTip),yInSkinDN2(design, design.B/2), design.B/2 ) , )  , )[0])
+#             positionInX = xPosInner - ((xPosInner - design.innerRibsXpos[index-1])/2)
+#         faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( xPosInner - (0.1*design.cutWingTip),yInSkinUP2(design, design.C3/2), design.C3/2 ) , )  , )[0]) #[0] access the Face object
+#         faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( xPosInner - (0.1*design.cutWingTip),yInSkinDN2(design, design.C3/2), design.C3/2 ) , )  , )[0]) #[0] access the Face object
+#         # faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( xPosInner - (0.1*design.cutWingTip),yInSkinUP2(design, design.B/2), design.B/2 ) , )  , )[0]) #[0] access the Face object
+#         # faces_list.append(WingModel.parts['RibBox'].faces.findAt(( ( xPosInner - (0.1*design.cutWingTip),yInSkinDN2(design, design.B/2), design.B/2 ) , )  , )[0])
 
-        index += 1
-WingModel.parts['RibBox'].RemoveFaces(deleteCells=False, faceList=faces_list)
+#         index += 1
+# WingModel.parts['RibBox'].RemoveFaces(deleteCells=False, faceList=faces_list)
 
 model.rootAssembly.rotate(angle=-90.0, axisDirection=
-    (0.0, 1.0, 0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('Lattice-1', 'RibBox-1', ))
-model.rootAssembly.translate(instanceList=('Lattice-1', 'RibBox-1', ), vector=(0.0, 0.0, -design.cutWingRoot))
-model.rootAssembly.translate(instanceList=('Lattice-1', 'RibBox-1', ), vector=(c_0*PositionRearSpar, 0.0, 0.0))
-model.rootAssembly.translate(instanceList=('Lattice-1', 'RibBox-1', ), vector=(0.0, mod8_DN[1]-design.cutDown, 0.0))
+    (0.0, 1.0, 0.0), axisPoint=(0.0, 0.0, 0.0), instanceList=('Lattice-1', ))
+model.rootAssembly.translate(instanceList=('Lattice-1', ), vector=(0.0, 0.0, -design.cutWingRoot))
+model.rootAssembly.translate(instanceList=('Lattice-1', ), vector=(c_0*PositionRearSpar, 0.0, 0.0))
+model.rootAssembly.translate(instanceList=('Lattice-1', ), vector=(0.0, mod8_DN[1]-design.cutDown, 0.0))
 
 #Partition in wing skin for creating nodes at the desired position
 datumPlane_partitionSkin = WingModel.parts['Wing'].DatumPlaneByPrincipalPlane(offset=c_0*PositionRearSpar - (design.B/2), principalPlane=YZPLANE)
@@ -1188,8 +1190,13 @@ WingModel.parts['Wing'].PartitionFaceByDatumPlane(datumPlane=WingModel.parts['Wi
 
 WingModel.rootAssembly.InstanceFromBooleanMerge(domain=
     GEOMETRY, instances=(WingModel.rootAssembly.instances['Wing-1'], 
-    WingModel.rootAssembly.instances['Lattice-1'],
+    # WingModel.rootAssembly.instances['Lattice-1'],
     WingModel.rootAssembly.instances['RibBox-1'])
+    , name='Wing-noLattice', originalInstances=SUPPRESS)
+
+WingModel.rootAssembly.InstanceFromBooleanMerge(domain=
+    GEOMETRY, instances=(WingModel.rootAssembly.instances['Wing-noLattice-1'], 
+    WingModel.rootAssembly.instances['Lattice-1'])
     , name='Wing-final', originalInstances=SUPPRESS)
 
 finalPart = WingModel.parts['Wing-final']
@@ -1305,28 +1312,31 @@ finalPart.seedPart(deviationFactor=0.1,minSizeFactor=0.1, size=mesh_wing.courseS
 
 # setMeshControls                jau dat klappt
 
-for i in range(Anz_Unterteilung):
-  # WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_box_up[0][0] ,0.0, y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
-  #  WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_nose[0][0] ,0.0, y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
-    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_box_up[0][0] ,points_box_up[0][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
-    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_nose[0][0] ,points_nose[0][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
-    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_nose[10][0]   ,points_nose[10][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # nose
-    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_nose[-10][0]   ,points_nose[-10][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # nose
-    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_trail1_up[1][0]   ,points_trail1_up[1][1], y_C[N+i]  ) , ) , )  ,technique=STRUCTURED)
-    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_trail1_low[1][0]   ,points_trail1_low[1][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED)
-########    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( c  ,0.0001,y*width/Anz_Unterteilung+0.001) , ) , )  ,technique=STRUCTURED)
-########    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( c  ,-0.0001,y*width/Anz_Unterteilung+0.001) , ) , )  ,technique=STRUCTURED)
-    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_box_up[1][0]   ,points_box_up[1][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # box
-    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_box_low[-2][0]   ,points_box_low[-2][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED)
+try:
+    for i in range(Anz_Unterteilung):
+      # WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_box_up[0][0] ,0.0, y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
+      #  WingModel.parts['Wing'].setMeshControls(regions=WingModel.parts['Wing'].faces.findAt(   ( ( points_nose[0][0] ,0.0, y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
+        finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_box_up[0][0] ,points_box_up[0][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
+        finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_nose[0][0] ,points_nose[0][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # spar
+        finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_nose[10][0]   ,points_nose[10][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # nose
+        finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_nose[-10][0]   ,points_nose[-10][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # nose
+        finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_trail1_up[1][0]   ,points_trail1_up[1][1], y_C[N+i]  ) , ) , )  ,technique=STRUCTURED)
+        finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_trail1_low[1][0]   ,points_trail1_low[1][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED)
+    ########    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( c  ,0.0001,y*width/Anz_Unterteilung+0.001) , ) , )  ,technique=STRUCTURED)
+    ########    finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( c  ,-0.0001,y*width/Anz_Unterteilung+0.001) , ) , )  ,technique=STRUCTURED)
+        finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_box_up[1][0]   ,points_box_up[1][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED) # box
+        finalPart.setMeshControls(regions=finalPart.faces.findAt(   ( ( points_box_low[-2][0]   ,points_box_low[-2][1], y_C[N+i] ) , ) , )  ,technique=STRUCTURED)
 
 ##finalPart.setMeshControls(regions=faces_setrib,technique=STRUCTURED) # rippe
+except Exception as e:
+    print('Error: Error found when defining the mesh controls')
 
 # setElementType             jau dat klappt
 
 # finalPart.setElementType(elemTypes=(ElemType(elemCode=S4R, elemLibrary=STANDARD), ElemType(elemCode=S3, elemLibrary=STANDARD),), regions=finalPart.sets['fullpart_set_Spar1'])
 # finalPart.setElementType(elemTypes=(ElemType(elemCode=S4R, elemLibrary=STANDARD), ElemType(elemCode=S3, elemLibrary=STANDARD),), regions=finalPart.sets['fullpart_set_Spar2'])
-finalPart.setElementType(elemTypes=(ElemType(elemCode=S4R, elemLibrary=STANDARD), ElemType(elemCode=S3, elemLibrary=STANDARD),), regions=finalPart.sets['C-box'])
-finalPart.setElementType(elemTypes=(ElemType(elemCode=S4R, elemLibrary=STANDARD), ElemType(elemCode=S3, elemLibrary=STANDARD),), regions=setrib)    # rippe
+# finalPart.setElementType(elemTypes=(ElemType(elemCode=S4R, elemLibrary=STANDARD), ElemType(elemCode=S3, elemLibrary=STANDARD),), regions=finalPart.sets['C-box'])
+# finalPart.setElementType(elemTypes=(ElemType(elemCode=S4R, elemLibrary=STANDARD), ElemType(elemCode=S3, elemLibrary=STANDARD),), regions=setrib)    # rippe
 
 ## Mesh lattice
 edges_lattice = finalPart.edges.getByBoundingBox(c_0*PositionRearSpar - 1.05*design.B,
