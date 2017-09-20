@@ -210,11 +210,21 @@ if design.typeOfModel == 'completeModel': #Standard design
 	partToApplyMeshBCsLoads = model.parts['RibBoxLattice']
 	instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLattice-1']
 	postProcStruct.finalInstanceName = 'RibBoxLattice-1'
-
+		
 	#Build tyre for nodes
 	if 'tyre' in load.additionalBC or load.conditionNodesInnerLattice == 'tyre':
 		instances_tyres = buildTyre(model, design, load, instanceToApplyMeshBCsLoads)
-		mergeInstances(model, (instanceToApplyMeshBCsLoads, )+instances_tyres, 'RibBoxLatticeTyres')
+
+		#Remove first lattice nodes intersecting with tyres
+		model.rootAssembly.InstanceFromBooleanCut(
+		    cuttingInstances=instances_tyres, instanceToBeCut=instanceToApplyMeshBCsLoads, 
+		    name='LatticeWithoutTyres', originalInstances=SUPPRESS)
+
+		#Resume tyre instances
+		for instance in instances_tyres:
+			model.rootAssembly.resumeFeatures((instance.name,))
+
+		mergeInstances(model, (model.rootAssembly.instances['LatticeWithoutTyres-1'], )+instances_tyres, 'RibBoxLatticeTyres')
 
 		partToApplyMeshBCsLoads = model.parts['RibBoxLatticeTyres']
 		instanceToApplyMeshBCsLoads = model.rootAssembly.instances['RibBoxLatticeTyres-1']
