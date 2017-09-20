@@ -1182,6 +1182,10 @@ model.rootAssembly.translate(instanceList=('Lattice-1', 'RibBox-1', ), vector=(0
 model.rootAssembly.translate(instanceList=('Lattice-1', 'RibBox-1', ), vector=(c_0*PositionRearSpar, 0.0, 0.0))
 model.rootAssembly.translate(instanceList=('Lattice-1', 'RibBox-1', ), vector=(0.0, mod8_DN[1]-design.cutDown, 0.0))
 
+#Partition in wing skin for creating nodes at the desired position
+datumPlane_partitionSkin = WingModel.parts['Wing'].DatumPlaneByPrincipalPlane(offset=c_0*PositionRearSpar - (design.B/2), principalPlane=YZPLANE)
+WingModel.parts['Wing'].PartitionFaceByDatumPlane(datumPlane=WingModel.parts['Wing'].datums[datumPlane_partitionSkin.id], faces=WingModel.parts['Wing'].sets['box_set'].faces)
+
 WingModel.rootAssembly.InstanceFromBooleanMerge(domain=
     GEOMETRY, instances=(WingModel.rootAssembly.instances['Wing-1'], 
     WingModel.rootAssembly.instances['Lattice-1'],
@@ -1337,45 +1341,46 @@ finalPart.Set(name='edges_lattice_fine_mesh' , edges=edges_lattice)
 # for edge in edges_lattice:
 finalPart.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=edges_lattice, size=mesh.fineSize)
 
-#Partition on Skin
-datumPlane_partitionSkin = finalPart.DatumPlaneByPrincipalPlane(offset=c_0*PositionRearSpar - 1.05*design.B, principalPlane=YZPLANE)
-finalPart.PartitionFaceByDatumPlane(datumPlane=finalPart.datums[datumPlane_partitionSkin.id], faces=finalPart.sets['box_set'].faces)
+# #Partition on Skin
+# datumPlane_partitionSkin = finalPart.DatumPlaneByPrincipalPlane(offset=c_0*PositionRearSpar - 1.05*design.B, principalPlane=YZPLANE)
+# finalPart.PartitionFaceByDatumPlane(datumPlane=finalPart.datums[datumPlane_partitionSkin.id], faces=finalPart.sets['box_set'].faces)
 
-try:
-    zRange = np.linspace(0.01*width, 0.95*width, 20)
-    edges_tuple_fineMesh_Skin=()
-    for zLoop in zRange: #xrange is the same as range
-        # edge_found1=finalPart.edges.findAt(( ( c_0*PositionRearSpar - 1.05*design.B,ySkinForXUP(pointsSkin, c_0*PositionRearSpar - 1.05*design.B),zLoop ) , )  , )
-        # edge_found2=finalPart.edges.findAt(( ( c_0*PositionRearSpar,ySkinForXUP(pointsSkin, c_0*PositionRearSpar),zLoop ) , )  , )
-        # edge_found3=finalPart.edges.findAt(( ( c_0*PositionRearSpar - 1.05*design.B,ySkinForXDN(pointsSkin, c_0*PositionRearSpar - 1.05*design.B),zLoop ) , )  , )
-        # edge_found4=finalPart.edges.findAt(( ( c_0*PositionRearSpar,ySkinForXDN(pointsSkin, c_0*PositionRearSpar),zLoop ) , )  , )
-        edge_found1=finalPart.edges.getByBoundingSphere( (c_0*PositionRearSpar - 1.05*design.B,ySkinForXUP(pointsSkin, c_0*PositionRearSpar - 1.05*design.B),zLoop), 0.001 )
-        edge_found2=finalPart.edges.getByBoundingSphere( (c_0*PositionRearSpar,ySkinForXUP(pointsSkin, c_0*PositionRearSpar),zLoop), 0.001 )
-        edge_found3=finalPart.edges.getByBoundingSphere( (c_0*PositionRearSpar - 1.05*design.B,ySkinForXDN(pointsSkin, c_0*PositionRearSpar - 1.05*design.B),zLoop), 0.001 )
-        edge_found4=finalPart.edges.getByBoundingSphere( (c_0*PositionRearSpar,ySkinForXDN(pointsSkin, c_0*PositionRearSpar),zLoop), 0.001 )
-        
-        if edge_found1 and edge_found1 not in edges_tuple_fineMesh_Skin: #if the edge hasn't already been found
-            edges_tuple_fineMesh_Skin += (edge_found1, )
-        else:
-            print('Edge found is being neglected, it was already found')
-        if edge_found2 and edge_found2 not in edges_tuple_fineMesh_Skin: #if the edge hasn't already been found
-            edges_tuple_fineMesh_Skin += (edge_found2, )
-        else:
-            print('Edge found is being neglected, it was already found')
-        if edge_found3 and edge_found3 not in edges_tuple_fineMesh_Skin: #if the edge hasn't already been found
-            edges_tuple_fineMesh_Skin += (edge_found3, )
-        else:
-            print('Edge found is being neglected, it was already found')
-        if edge_found4 and edge_found4 not in edges_tuple_fineMesh_Skin: #if the edge hasn't already been found
-            edges_tuple_fineMesh_Skin += (edge_found4, )
-        else:
-            print('Edge found is being neglected, it was already found')
+if False: #Additional option to fine mesh area on the wing skin on the top of the lattice
+    try:
+        zRange = np.linspace(0.01*width, 0.95*width, 20)
+        edges_tuple_fineMesh_Skin=()
+        for zLoop in zRange: #xrange is the same as range
+            # edge_found1=finalPart.edges.findAt(( ( c_0*PositionRearSpar - 1.05*design.B,ySkinForXUP(pointsSkin, c_0*PositionRearSpar - 1.05*design.B),zLoop ) , )  , )
+            # edge_found2=finalPart.edges.findAt(( ( c_0*PositionRearSpar,ySkinForXUP(pointsSkin, c_0*PositionRearSpar),zLoop ) , )  , )
+            # edge_found3=finalPart.edges.findAt(( ( c_0*PositionRearSpar - 1.05*design.B,ySkinForXDN(pointsSkin, c_0*PositionRearSpar - 1.05*design.B),zLoop ) , )  , )
+            # edge_found4=finalPart.edges.findAt(( ( c_0*PositionRearSpar,ySkinForXDN(pointsSkin, c_0*PositionRearSpar),zLoop ) , )  , )
+            edge_found1=finalPart.edges.getByBoundingSphere( (c_0*PositionRearSpar - 1.05*design.B,ySkinForXUP(pointsSkin, c_0*PositionRearSpar - 1.05*design.B),zLoop), 0.001 )
+            edge_found2=finalPart.edges.getByBoundingSphere( (c_0*PositionRearSpar,ySkinForXUP(pointsSkin, c_0*PositionRearSpar),zLoop), 0.001 )
+            edge_found3=finalPart.edges.getByBoundingSphere( (c_0*PositionRearSpar - 1.05*design.B,ySkinForXDN(pointsSkin, c_0*PositionRearSpar - 1.05*design.B),zLoop), 0.001 )
+            edge_found4=finalPart.edges.getByBoundingSphere( (c_0*PositionRearSpar,ySkinForXDN(pointsSkin, c_0*PositionRearSpar),zLoop), 0.001 )
+            
+            if edge_found1 and edge_found1 not in edges_tuple_fineMesh_Skin: #if the edge hasn't already been found
+                edges_tuple_fineMesh_Skin += (edge_found1, )
+            else:
+                print('Edge found is being neglected, it was already found')
+            if edge_found2 and edge_found2 not in edges_tuple_fineMesh_Skin: #if the edge hasn't already been found
+                edges_tuple_fineMesh_Skin += (edge_found2, )
+            else:
+                print('Edge found is being neglected, it was already found')
+            if edge_found3 and edge_found3 not in edges_tuple_fineMesh_Skin: #if the edge hasn't already been found
+                edges_tuple_fineMesh_Skin += (edge_found3, )
+            else:
+                print('Edge found is being neglected, it was already found')
+            if edge_found4 and edge_found4 not in edges_tuple_fineMesh_Skin: #if the edge hasn't already been found
+                edges_tuple_fineMesh_Skin += (edge_found4, )
+            else:
+                print('Edge found is being neglected, it was already found')
 
-    finalPart.Set(name='edges_skin_fine_mesh' , edges=edges_tuple_fineMesh_Skin)
-    for j in range(len(edges_tuple_fineMesh_Skin)):
-        finalPart.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=edges_tuple_fineMesh_Skin[j], size=mesh.fineSize)
-except Exception as e:
-    print('Warning: Set for finer mesh on skin could not be created')
+        finalPart.Set(name='edges_skin_fine_mesh' , edges=edges_tuple_fineMesh_Skin)
+        for j in range(len(edges_tuple_fineMesh_Skin)):
+            finalPart.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=edges_tuple_fineMesh_Skin[j], size=mesh.fineSize)
+    except Exception as e:
+        print('Warning: Set for finer mesh on skin could not be created')
 
 ## generate mesh
 
