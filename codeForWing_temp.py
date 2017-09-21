@@ -1434,3 +1434,6 @@ for y in xrange(1,anzRibs+1):
 #WingModel.rootAssembly.Set(name='point_SC',  vertices=WingModel.rootAssembly.instances['Wing-1'].vertices.getByBoundingBox(x_SC-1E-4, 0.2*0.12*c, width-1E-4, x_SC+1E-4, 0.12*c, width+1E-4))
 
 WingModel.rootAssembly.regenerate()
+
+#####
+#Boundary conditions
