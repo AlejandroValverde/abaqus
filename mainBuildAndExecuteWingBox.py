@@ -241,7 +241,7 @@ if 'tyre' in load.additionalBC or load.conditionNodesInnerLattice == 'tyre':
 
 	#Resume tyre instances
 	for instance in instances_tyres:
-		model.rootAssembly.resumeFeatures((instance.name))
+		model.rootAssembly.resumeFeatures((instance.name, ))
 
 	mergeInstances(model, (model.rootAssembly.instances['LatticeWithoutTyres-1'], )+instances_tyres, 'Lattice')
 
