@@ -19,7 +19,7 @@ import string
 import numpy as np
 # from parameters_Dom import N, c_0#, b
 
-from functions_Urban import *
+from functions_Urban_sim import *
 from moduleBuildWingBoxAndPostProc import *
 from moduleCommon import *
 
@@ -70,11 +70,11 @@ paraRead_wing = structtype()
 paraRead_wing = loadParameters(paraRead_wing, 'inputAbaqus_wing.txt')
 
 #### PARAMETERS - 1
-iSIM=1
-PositionFrontSpar = float(paraRead_wing.PositionFrontSpar)
-PositionRearSpar = float(paraRead_wing.PositionRearSpar)
-FaserWinkel=0
-thickness_bucklingSpar=1.000000e-04
+# iSIM=1
+PositionFrontSpar = float(paraRead_wing.PositionFrontSpar) #Overrides previous definition of PostionFrontSpar
+PositionRearSpar = float(paraRead_wing.PositionRearSpar) #Overrides previous definition of PostionFrontSpar
+# FaserWinkel=0
+# thickness_bucklingSpar=1.000000e-04
 
 # Check with consistency in 01_Variablendefinition_Dom
 # Define parameters
@@ -92,16 +92,17 @@ Re_scal = round(Re/c_0)         # Scaled Reynold's number for Xfoil
 N = int(paraRead_wing.N)       # Number of half-spanwise elements; not higher than 40, 25 recommended
 ##D = 0.05                        # Damping factor
 ##tol = 0.00001                   # Convergence tolerance
+t_step = float(paraRead_wing.t_step) # time step between different aerodynamic states
 
 ##############################################################
 ##############################################################
 
 #### Variables init
 
-start_dir = folder_path=os.getcwd()
-#folder_path = 'D:/faselu/ftero_opt_local'
-[folder_path,folder_path_ende]=os.path.split(start_dir)
-xfoil_path = folder_path+'/xfoil6.96/bin/xfoil.exe'
+# start_dir = folder_path=os.getcwd()
+# #folder_path = 'D:/faselu/ftero_opt_local'
+# [folder_path,folder_path_ende]=os.path.split(start_dir)
+# xfoil_path = folder_path+'/xfoil6.96/bin/xfoil.exe'
 
 ##################################################
 jobname = 'Wing-stat'
@@ -115,11 +116,11 @@ odbfile_path = start_dir+'/'+jobname                                            
 xycp_name = '/Cpxy'                                                 # name of the textfile where the pressure coefficient is stored for each slice
 BucklingSpar='Left'
 
-daempfung=[25000]#[500,600,700]
-jobNumber=1
+# daempfung=[25000]#[500,600,700]
+# jobNumber=1
 
 #Abaqus model
-WingModel = mdb.Model(name = 'Model-SparAngle-'+str(int(jobNumber))) 
+# WingModel = mdb.Model(name = 'Model-SparAngle-'+str(int(jobNumber))) 
 model = WingModel
 
 # Calculation of control points
@@ -1372,7 +1373,7 @@ finalPart.Set(name='edges_lattice_fine_mesh' , edges=edges_lattice)
 
 # for edge in edges_lattice:
 # finalPart.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=edges_lattice, size=mesh.fineSize)
-finalPart.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=finalPart.sets['edges_lattice_fine_mesh'].edges, size=mesh_wing.fineSize)
+finalPart.seedEdgeBySize(constraint = FINER, deviationFactor=0.1, edges=finalPart.sets['edges_lattice_fine_mesh_noTyres'].edges, size=mesh_wing.fineSize)
 
 # #Partition on Skin
 # datumPlane_partitionSkin = finalPart.DatumPlaneByPrincipalPlane(offset=c_0*PositionRearSpar - 1.05*design.B, principalPlane=YZPLANE)

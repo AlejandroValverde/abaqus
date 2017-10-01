@@ -54,10 +54,11 @@ design.cutGap_x = float(paraRead.cutGap_x) #Gap between the lattice and the skin
 ## Chiral lattice
 
 design.M = int(paraRead.M) #Number of unit cells in transversal direction
-design.N = int(paraRead.N) #20 - Number of unit cells in spanwise direction
+# design.N = int(paraRead.N) #20 - Number of unit cells in spanwise direction
 design.B = float(paraRead.B)  #Node depth
 
 #From wing
+design.c_0 = c_0
 design.width = width
 design.rib_box_low = rib_box_low
 design.rib_box_up = rib_box_up
@@ -66,6 +67,12 @@ design.C2f = mod7_UP[1] - mod7_DN[1]
 design.C2diff = (design.C2f - design.C2r) / 2
 design.s = width
 design.C3 = (PositionRearSpar*c_0) - (PositionFrontSpar*c_0)
+design.PositionRearSpar = PositionRearSpar
+design.PositionFrontSpar = PositionFrontSpar
+design.mod8_DN = mod8_DN
+design.mod8_UP = mod8_UP
+design.mod7_DN = mod7_DN
+design.mod7_UP = mod7_UP
 
 #Initial values for L and r
 design.L0 = float(paraRead.L) #half length
@@ -74,6 +81,7 @@ design.r0 = float(paraRead.r)  #Node radius
 dataDict = searchLandrForWing(design)
 design.L = dataDict['L']
 design.r = dataDict['r']
+design.N = dataDict['N']
 
 ######################
 
@@ -93,8 +101,8 @@ design.tipRibShape = paraRead.tipRibShape #'open' or 'closed'
 ## Meshing
 mesh = structtype()
 mesh.d = 2*float(paraRead.B) #Offset between different meshing regions
-mesh.courseSize = float(paraRead.courseSize) #Global seed element size for course mesh
-mesh.fineSize = float(paraRead.fineSize) #Local seed element size for fine mesh
+# mesh.courseSize = float(paraRead.courseSize) #Global seed element size for course mesh
+# mesh.fineSize = float(paraRead.fineSize) #Local seed element size for fine mesh
 mesh.ElemType = '' #'quad'
 
 ## Load
@@ -242,6 +250,16 @@ if 'tyre' in load.additionalBC or load.conditionNodesInnerLattice == 'tyre':
 	#Resume tyre instances
 	for instance in instances_tyres:
 		model.rootAssembly.resumeFeatures((instance.name, ))
+
+	#Part for meshing
+	edges_lattice_noTyres = model.parts['LatticeWithoutTyres'].edges.getByBoundingBox(design.cutWingRoot * 0.9,
+	                                                1.1 * design.cutDown_effective,
+	                                                -0.1 * design.B,
+	                                                design.cutWingTip * 1.1,
+	                                                1.1 * design.cutUp_effective,
+	                                                1.1 * design.B)
+
+	model.parts['LatticeWithoutTyres'].Set(name='edges_lattice_fine_mesh_noTyres' , edges=edges_lattice_noTyres)
 
 	mergeInstances(model, (model.rootAssembly.instances['LatticeWithoutTyres-1'], )+instances_tyres, 'Lattice')
 

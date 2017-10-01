@@ -1,0 +1,1390 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"han",
+				"handle2"
+			],
+			[
+				"a",
+				"ax"
+			],
+			[
+				"bre",
+				"breakFlag"
+			],
+			[
+				"br",
+				"breakFlag"
+			],
+			[
+				"ax",
+				"axss"
+			],
+			[
+				"tw",
+				"twist"
+			],
+			[
+				"RF",
+				"RF_unsorted"
+			],
+			[
+				"ste",
+				"steps_unsorted"
+			],
+			[
+				"id",
+				"id_j"
+			],
+			[
+				"fi",
+				"figure"
+			],
+			[
+				"file",
+				"fileOfData"
+			],
+			[
+				"s",
+				"steps"
+			],
+			[
+				"st",
+				"step"
+			],
+			[
+				"fil",
+				"fileData"
+			],
+			[
+				"t_",
+				"t_step"
+			],
+			[
+				"no",
+				"noGUI"
+			],
+			[
+				"Cm",
+				"CMDoptionsDict"
+			],
+			[
+				"Win",
+				"WingModel"
+			],
+			[
+				"La",
+				"LatticeWithoutTyres"
+			],
+			[
+				"q",
+				"q_j"
+			],
+			[
+				"Po",
+				"PositionFrontSpar"
+			],
+			[
+				"Wing",
+				"Wing-final"
+			],
+			[
+				"ri",
+				"rib_box_low"
+			],
+			[
+				"cutW",
+				"cutDown"
+			],
+			[
+				"P",
+				"P_i"
+			],
+			[
+				"instan",
+				"instances_tyres"
+			],
+			[
+				"rib_",
+				"rib_box_up"
+			],
+			[
+				"r",
+				"rib1"
+			],
+			[
+				"poin",
+				"pointRib"
+			],
+			[
+				"rib",
+				"rib2"
+			],
+			[
+				"points",
+				"points_spline_down"
+			],
+			[
+				"poi",
+				"points_spline_down"
+			],
+			[
+				"x",
+				"x_range"
+			],
+			[
+				"try",
+				"try\tTry/Except"
+			],
+			[
+				"get",
+				"getByBoundingSphere"
+			],
+			[
+				"str",
+				"structtype"
+			],
+			[
+				"datum",
+				"datumPlane"
+			],
+			[
+				"ed",
+				"edges_lattice"
+			],
+			[
+				"mod",
+				"mod8_UP"
+			],
+			[
+				"pos",
+				"PositionRearSpar"
+			],
+			[
+				"cut",
+				"cutWingRoot"
+			],
+			[
+				"part",
+				"partToMesh"
+			],
+			[
+				"Wi",
+				"Wing-final"
+			],
+			[
+				"siz",
+				"sizeFine"
+			],
+			[
+				"C",
+				"C3"
+			],
+			[
+				"face",
+				"faces_list"
+			],
+			[
+				"exe",
+				"execIndicator"
+			],
+			[
+				"faces_",
+				"faces_tuple"
+			],
+			[
+				"ser",
+				"setsToRemove"
+			],
+			[
+				"C2",
+				"C2diff"
+			],
+			[
+				"re",
+				"return"
+			],
+			[
+				"data",
+				"dataImport"
+			],
+			[
+				"des",
+				"design"
+			],
+			[
+				"wing",
+				"design_wing"
+			],
+			[
+				"cl",
+				"close"
+			],
+			[
+				"att",
+				"attrs"
+			],
+			[
+				"para",
+				"paraRead"
+			],
+			[
+				"strc",
+				"structData"
+			],
+			[
+				"V",
+				"V"
+			],
+			[
+				"va",
+				"value"
+			],
+			[
+				"la",
+				"label"
+			],
+			[
+				"labels",
+				"labels"
+			],
+			[
+				"cutGa",
+				"cutGap_y"
+			],
+			[
+				"Pos",
+				"PositionRearSpar"
+			],
+			[
+				"fo",
+				"found"
+			],
+			[
+				"DOM",
+				"01_Variablendefinition_Dom"
+			],
+			[
+				"las",
+				"lastTau"
+			],
+			[
+				"last",
+				"lastTau"
+			],
+			[
+				"fla",
+				"flagAnotherJob"
+			],
+			[
+				"cr",
+				"createCouplingWithTyre"
+			],
+			[
+				"condi",
+				"conditionNodesInnerLattice"
+			],
+			[
+				"el",
+				"elif"
+			],
+			[
+				"lon",
+				"long_opt"
+			],
+			[
+				"prin",
+				"print"
+			],
+			[
+				"op",
+				"opt"
+			],
+			[
+				"opt",
+				"opts"
+			],
+			[
+				"me",
+				"meanValues"
+			],
+			[
+				"er",
+				"errorStore"
+			],
+			[
+				"max",
+				"maxErrorFromMeanFunction"
+			],
+			[
+				"err",
+				"errorList"
+			],
+			[
+				"mean",
+				"mean"
+			],
+			[
+				"ma",
+				"max"
+			],
+			[
+				"it",
+				"item"
+			],
+			[
+				"column",
+				"columnWidths"
+			],
+			[
+				"col",
+				"columnWidths"
+			],
+			[
+				"tit",
+				"titleStr"
+			],
+			[
+				"ke",
+				"keyUsed"
+			],
+			[
+				"fig",
+				"figDict"
+			],
+			[
+				"key",
+				"keysUsed"
+			],
+			[
+				"t",
+				"t_2"
+			],
+			[
+				"plot",
+				"plotSettings"
+			],
+			[
+				"foun",
+				"foundEdge3"
+			],
+			[
+				"gr",
+				"group"
+			],
+			[
+				"tal",
+				"tableGroupTemp"
+			],
+			[
+				"tabl",
+				"tableGroupTemp"
+			],
+			[
+				"table",
+				"tableGroup"
+			],
+			[
+				"h",
+				"hSorted"
+			],
+			[
+				"estV",
+				"estV"
+			],
+			[
+				"pi",
+				"pitot"
+			],
+			[
+				"set",
+				"setup"
+			],
+			[
+				"end",
+				"end"
+			],
+			[
+				"func",
+				"function"
+			],
+			[
+				"ind",
+				"indexFirstColumn"
+			],
+			[
+				"AOA",
+				"AOAs"
+			],
+			[
+				"num",
+				"num2str"
+			],
+			[
+				"lam",
+				"lambda_0"
+			],
+			[
+				"m",
+				"m"
+			],
+			[
+				"nE",
+				"nEliminate"
+			],
+			[
+				"in",
+				"indexExp"
+			],
+			[
+				"nTe",
+				"nTestDuplicied"
+			],
+			[
+				"index",
+				"indexExp"
+			],
+			[
+				"sum",
+				"sumCA"
+			],
+			[
+				"po",
+				"pointsX"
+			],
+			[
+				"na",
+				"nacaDesignation"
+			],
+			[
+				"xU",
+				"xUpNaca"
+			],
+			[
+				"sig",
+				"sign"
+			],
+			[
+				"naca",
+				"nacaXs"
+			],
+			[
+				"test",
+				"testStrt"
+			],
+			[
+				"tes",
+				"testStrtXfoil"
+			],
+			[
+				"AOa",
+				"AOAs"
+			],
+			[
+				"experim",
+				"experimental"
+			],
+			[
+				"inde",
+				"indexExp"
+			],
+			[
+				"an",
+				"anglesRun"
+			],
+			[
+				"n",
+				"nExps"
+			],
+			[
+				"X",
+				"XFOIL"
+			],
+			[
+				"nFi",
+				"nFilesUsuful"
+			],
+			[
+				"i",
+				"iFile"
+			],
+			[
+				"xf",
+				"xfoilInfo"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "mainBuildWingScript.py",
+			"settings":
+			{
+				"buffer_size": 13727,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/H/private/code/wing_model/code/AeroelasticLoopCP_sim.py",
+			"settings":
+			{
+				"buffer_size": 31173,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/H/private/code/wing_model/code/main_sim.py",
+			"settings":
+			{
+				"buffer_size": 3421,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "moduleLoadsAndBC.py",
+			"settings":
+			{
+				"buffer_size": 33221,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/H/private/code/wing_model/code/functions_Urban_sim.py",
+			"settings":
+			{
+				"buffer_size": 64903,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "mainBuildAndExecuteWingBox.py",
+			"settings":
+			{
+				"buffer_size": 11415,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "analyseAbaqusProgress.py",
+			"settings":
+			{
+				"buffer_size": 7894,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "moduleParametricStudy.py",
+			"settings":
+			{
+				"buffer_size": 26893,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/H/private/code/wing_model/rootBendingMoment/pressureODB_Falk_OnlyLastFrame_sim.py",
+			"settings":
+			{
+				"buffer_size": 5046,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "inputAbaqus_wing.txt",
+			"settings":
+			{
+				"buffer_size": 169,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "inputAbaqus.txt",
+			"settings":
+			{
+				"buffer_size": 809,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/Python/Python.sublime-build",
+					""
+				],
+				[
+					"Packages/Python/Python.sublime-build",
+					"Syntax Check"
+				]
+			],
+			[
+				"Packages/Python/Python.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 348.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"Package Control: Install Package"
+			],
+			[
+				"pacl",
+				"Package Control: Discover Packages"
+			]
+		],
+		"width": 428.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/H/private/code/abaqus",
+		"/H/private/code/wing_model",
+		"/H/private/code/wing_model/code",
+		"/H/private/code/wing_model/rootBendingMoment"
+	],
+	"file_history":
+	[
+		"/H/private/code/wing_model/code/codeForWing_sim.py",
+		"/H/private/code/wing_model/code/main_sim.py",
+		"/H/private/code/test/figures/inputAbaqus.txt",
+		"/H/private/code/wing_model/rootBendingMoment/pressureODB_AverageStress.py",
+		"/H/private/code/wing_model/rootBendingMoment/pressureODB_Falk_OnlyTwist.py",
+		"/H/private/code/abaqus/moduleLoadsAndBC.py",
+		"/H/private/code/wing_model/rootBendingMoment/pressureODB_Falk.py",
+		"/H/private/code/wing_model/rootBendingMoment/evODB_Falk.py",
+		"/H/private/code/abaqus/analyseAbaqusProgress.py",
+		"/H/private/code/abaqus/functions_Urban.py",
+		"/H/private/code/abaqus/output_step0-2_V60_s3/Output-Job-54_20_1-10.txt",
+		"/H/private/code/abaqus/parameters_Dom_sim.py",
+		"/H/private/code/abaqus/moduleBuildWingBoxAndPostProc.py",
+		"/H/private/code/wing_model/Modelling_Parameterstudy/02_PointsAndSurfaces_Dom_RibTrailOpen.py",
+		"/H/private/code/wing_model/start.py",
+		"/H/private/code/abaqus/parameters_Dom.py",
+		"/H/private/code/abaqus/mainAbaqusParametricStudy.py",
+		"/H/private/code/abaqus/codeForWing_temp.py",
+		"/H/private/code/wing_model/code/AeroelasticLoopCP_sim.py",
+		"/H/private/code/test/wing/code/cleanUPabaqusResults.m",
+		"/H/private/code/test/wing/code/mainBuildWingScript.py",
+		"/H/private/code/test/wing/code/moduleBuildWingBoxAndPostProc.py",
+		"/H/private/code/test/wing/dos2unix-all.py",
+		"/H/private/code/test/wing/mainBuildWingScript-linux.py",
+		"/H/private/code/test/wing/code/runOneGeneration.m",
+		"/H/private/code/test/wing/code/moduleCommon.py",
+		"/H/private/code/test/wing/XFOIL6.99/Xfoil699src.zip",
+		"/H/private/code/abaqus/mainBuildAndExecuteWingBox.py",
+		"/H/private/code/wing_model/start_sim.py",
+		"/H/private/code/wing_model/code/functions_Urban_sim.py",
+		"/H/private/code/abaqus/start_sim.py",
+		"/H/private/code/abaqus/mainBuildWingScript.py",
+		"/H/private/code/wing_model/mainBuildWingScript_sim.py",
+		"/H/private/code/abaqus/inputAbaqus.txt",
+		"/H/private/code/abaqus/inputAbaqus_wing.txt",
+		"/H/private/code/abaqus/notes.txt",
+		"/H/private/code/abaqus/searchParameters_Matlab.m",
+		"/H/private/code/abaqus/abaqus.rpy",
+		"/H/private/code/abaqus/findrAndL_found.txt",
+		"/D/ETH/code/abaqus/abaqus.sublime-project",
+		"/D/ETH/code/latex/ETH_project.tex",
+		"/D/ETH/code/latex/chapters/Results-sim.tex",
+		"/D/ETH/code/latex/chapters/Aeroelastic.tex",
+		"/D/ETH/code/latex/latex.sublime-project",
+		"/H/private/code/wing_model/code/Parameters70.py",
+		"/H/private/code/wing_model/code/AeroelasticLoop.py",
+		"/H/private/code/abaqus/prueba.py",
+		"/H/private/code/abaqus/moduleCommon.py",
+		"/H/private/code/abaqus/codeFromAbaqus.jnl",
+		"/H/private/code/abaqus/inputAbaqus_Matlab.txt",
+		"/H/private/code/abaqus/Matlab_execution.txt",
+		"/H/private/code/test/aux_file.py",
+		"/H/private/code/wing_model/Modelling_Parameterstudy/10_Mesh_New.py",
+		"/H/private/code/abaqus/mainBuildWingBoxForWing.py",
+		"/H/private/code/old/findEdgesOnWingBox_forWing.py",
+		"/H/private/code/abaqus/codeForWing.py",
+		"/H/private/code/Wing Modell/code/mainAeroelasticLoop.py",
+		"/H/private/code/Wing Modell/start.py",
+		"/H/private/code/Wing Modell/code/AeroelasticLoop.py",
+		"/H/private/code/LICENSE.txt",
+		"/H/private/code/Wing Modell/code/RunModelling.py",
+		"/H/private/code/abaqus/dim.m",
+		"/D/Cranfield/Modules/9.Experimental Aerodynamics/assignment - Experimental Aerodynamics/matlab Lab 5 - Exp. Aerodynamics/FsClass.m",
+		"/D/Cranfield/Modules/9.Experimental Aerodynamics/assignment - Experimental Aerodynamics/matlab Lab 2 - Exp. Aerodynamics/FsClass.m",
+		"/H/private/code/abaqus/findrAndL.txt",
+		"/H/private/code/abaqus/searchParameters_r_L.py",
+		"/D/ETH/code/abaqus/PARA/cbox_t/linForce/2/frameInfo.txt",
+		"/D/ETH/code/abaqus/moduleBuildWingBoxAndPostProc.py",
+		"/H/private/code/abaqus/mainBuildWing.py",
+		"/D/ETH/code/latex/chapters/Model.tex",
+		"/D/ETH/code/latex/chapters/Results-model.tex",
+		"/D/ETH/code/latex/project.tex",
+		"/D/ETH/code/latex/chapters/0.Nomenclature.tex",
+		"/C/Users/Alejandro/AppData/Local/Sublime Text 3/Cache/LaTeXTools/internal/preview_math/7ea1f173cdf0df57b10e2ecd2c8ce4db.png.err",
+		"/D/ETH/code/abaqus/mainBuildAndExecuteWingBox.py",
+		"/D/ETH/code/abaqus/mainParametricStudy.py",
+		"/D/ETH/code/latex/settings/settingsProject_Personal.tex",
+		"/D/ETH/code/latex/projectBib.bib",
+		"/D/ETH/code/latex/My Collection.bib",
+		"/D/ETH/code/latex/chapters/Abstract.tex",
+		"/D/ETH/code/latex/chapters/Appendix.tex",
+		"/D/ETH/code/latex/chapters/Summary.tex",
+		"/D/ETH/code/latex/settings/cover&title.tex",
+		"/D/ETH/code/latex/chapters/State-of-the-art.tex",
+		"/D/ETH/code/latex/figures/model/loadIntroductionPoints.png",
+		"/D/ETH/code/latex/chapters/Acknowledgments.tex",
+		"/D/Cranfield/Modules/6.Flight Dynamic Principles/assesment/latex - FDP/main.tex",
+		"/C/Users/Alejandro/Documents/LaTeX/Ejemplo proyecto/Presentación (versión larga)/Presentacion.tex",
+		"/D/ETH/code/analytical/mainBeam.m",
+		"/D/ETH/code/analytical/variationParameters.m",
+		"/D/ETH/code/latex/settings/settingsProject_Cranfield.tex",
+		"/C/Users/Alejandro/Downloads/setspace/setspace-test.tex",
+		"/C/Users/Alejandro/Downloads/setspace/setspace.sty",
+		"/C/Users/Alejandro/AppData/Roaming/Sublime Text 3/Packages/User/figureTEX.sublime-macro",
+		"/C/Users/Alejandro/AppData/Roaming/Sublime Text 3/Packages/User/example.sublime-macro",
+		"/D/ETH/code/latex/figures/result-model/normalCaseDamp2InnerRibs_800N_stabilizationPlot.png",
+		"/H/private/code/abaqus/PARA/Cbox_t/800N/1/linear_ur1_xOverL.rpt",
+		"/D/ETH/code/abaqus/setUpParametricStudy.py",
+		"/D/ETH/code/abaqus/postProc_Cranfield/JobToSubmit.sub",
+		"/D/ETH/code/abaqus/postProc_Cranfield/matlab.sub",
+		"/D/ETH/code/abaqus/postProc_Cranfield/abaqus.sub",
+		"/D/ETH/code/abaqus/mainAbaqusParametricStudy.py",
+		"/D/ETH/code/abaqus/moduleParametricStudy.py",
+		"/D/ETH/code/latex/figures/result-sim/eccen_tau.pdf",
+		"/D/ETH/code/latex/project.bbl",
+		"/D/ETH/code/abaqus/postProc_2/parametricStudyDef.txt",
+		"/D/ETH/code/abaqus/postProc_1/parametricStudyDef.txt",
+		"/D/ETH/code/abaqus/moduleLoadsAndBC.py",
+		"/D/ETH/code/abaqus/inputAbaqus.txt",
+		"/D/ETH/Python/abacus/python code/BCs_1.py",
+		"/C/Users/Alejandro/AppData/Local/MiKTeX/2.9/miktex/log/bibtex.log",
+		"/D/ETH/code/abaqus/postProc_1/2/ur1_dn_frame32.rpt",
+		"/D/ETH/code/abaqus/postProc_1/2/ur1_up_frame32.rpt",
+		"/D/ETH/code/abaqus/postProc_1/2/ur1_up_frame7.rpt",
+		"/D/ETH/code/abaqus/moduleCommon.py",
+		"/D/ETH/code/prueba/abaqus/moduleParametricStudy.py",
+		"/D/ETH/code/abaqus/README.md",
+		"/D/ETH/code/abaqus/figures/UR1_tau-N.pdf",
+		"/D/ETH/code/prueba/abaqus/mainParametricStudy.py",
+		"/D/ETH/code/analytical/figures/EIy-E1overE2-t2overt1.png",
+		"/D/ETH/code/analytical/figures/GIt-E1overE2-BoverH.png",
+		"/D/ETH/code/analytical/figures/EIy-E1overE2-BoverH.png",
+		"/D/ETH/code/analytical/figures/SC-E1overE2-BoverH.png",
+		"/D/ETH/code/analytical/compareAnalyticalAndFEM.m",
+		"/D/ETH/code/workfolder/basicBeamScript.py",
+		"/D/ETH/code/analytical/FsClass.m",
+		"/D/ETH/Abaqus/python code/Wing Modell/code/main.py",
+		"/D/ETH/Abaqus/python code/Wing Modell/code/Parameters1.py"
+	],
+	"find":
+	{
+		"height": 41.0
+	},
+	"find_in_files":
+	{
+		"height": 105.0,
+		"where_history":
+		[
+			"H:\\private\\code\\wing_model\\,H:\\private\\code\\abaqus",
+			"H:\\private\\code\\wing_model\\",
+			"H:\\private\\code\\wing_model\\code",
+			"H:\\private\\code\\abaqus",
+			"H:\\private\\code\\test\\wing",
+			"H:\\private\\code\\wing_model\\code,*.py",
+			"H:\\private\\code\\wing_model\\code",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"16",
+			"counterNperKey[attr]",
+			"label",
+			"scatterHandles",
+			"legend",
+			"nonlinear",
+			"fileOfData.id",
+			"pwd+'\\output_step0-1_V30_s3'",
+			"/",
+			"data",
+			"i",
+			"data",
+			"5000000000",
+			"StaticStep",
+			".Step",
+			"Step",
+			"0",
+			"axs",
+			"axs[i][j]",
+			"ax[i]",
+			"ax",
+			"ax.",
+			"ax",
+			"loopNoConvergence",
+			"'twist'",
+			"twist",
+			"options",
+			"values",
+			"RF_ReferencePoint_BC",
+			"surfaces['Wing-final-1.Surf-Skin'])#['pSurf-0']) #Alejandro Valverde",
+			"normal",
+			"surfaces['Wing-final-1.Surf-Skin'])#['pSurf-0']) #Alejandro Valverde",
+			"aeroAssembly",
+			"'press",
+			"'pSurf-0'",
+			"pressureApplyEVcamber",
+			"pressure",
+			"pSet",
+			"pSet-",
+			"FzTot",
+			"un",
+			"fileData.step",
+			"\\phi",
+			"RF_x_all",
+			"RF_y_all",
+			"'\\t'",
+			"\t",
+			"Output-Job-",
+			"pressureODB",
+			"(figure",
+			"ax.",
+			"ax",
+			"print",
+			"c_0 =",
+			"c_0",
+			".rec",
+			"A_FRONT_OBEN_ELEMENTS",
+			"\\\\",
+			"0.2",
+			"submit",
+			".fil",
+			"os.remove",
+			"paraRead_wing",
+			"mesh",
+			"mesh_wing",
+			"flipNormal",
+			"factor_pressure",
+			"mapp",
+			"t_stringer",
+			"stringer",
+			"os.remove",
+			"5",
+			"type",
+			"sim",
+			"type",
+			"test",
+			"os.remove",
+			"copyJob",
+			"design",
+			"os.system('matlab -nodesktop -nosplash -r \"searchParameters_Matlab;quit"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"instances['Wing-final-1'].surfaces['Surf-Skin'])#['pSurf-0']) #Alejandro Valverde",
+			"/"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": true,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 3,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "mainBuildWingScript.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 13727,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								125,
+								125
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 208.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "/H/private/code/wing_model/code/AeroelasticLoopCP_sim.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 31173,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								899,
+								899
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 236.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "/H/private/code/wing_model/code/main_sim.py",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 3421,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1261,
+								1261
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 348.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "moduleLoadsAndBC.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 33221,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								26070,
+								26070
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 4,
+					"file": "/H/private/code/wing_model/code/functions_Urban_sim.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 64903,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								55232,
+								55232
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 21482.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "mainBuildAndExecuteWingBox.py",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 11415,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								732,
+								727
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 312.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 6,
+					"file": "analyseAbaqusProgress.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7894,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3728,
+								3728
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1830.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "moduleParametricStudy.py",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 26893,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								14140,
+								14146
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 5479.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 8,
+					"file": "/H/private/code/wing_model/rootBendingMoment/pressureODB_Falk_OnlyLastFrame_sim.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5046,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3295,
+								3295
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1467.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "inputAbaqus_wing.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 169,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4,
+								4
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "inputAbaqus.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 809,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4,
+								4
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 39.0
+	},
+	"input":
+	{
+		"height": 208.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
+			],
+			[
+				0,
+				1,
+				1,
+				2
+			],
+			[
+				1,
+				1,
+				2,
+				2
+			]
+		],
+		"cols":
+		[
+			0.0,
+			0.69042111428,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			0.5,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 100.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.unsaved_changes":
+	{
+		"height": 88.0
+	},
+	"pinned_build_system": "",
+	"project": "abaqus.sublime-project",
+	"replace":
+	{
+		"height": 73.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"",
+				"D:\\ETH\\code\\latex\\latex.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"select_symbol":
+	{
+		"height": 197.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 613.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 220.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

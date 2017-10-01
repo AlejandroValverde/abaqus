@@ -1,9 +1,11 @@
 from scipy.optimize import fsolve
 import math
 import pdb #pdb.set_trace()
+import sys
 import os
 import numpy as np
 import time
+import getopt
 
 class structtype():
 	
@@ -37,6 +39,21 @@ class structtype():
 		file.close()
 
 		self.attrs = attributes
+
+	def printParameters(self, name):
+
+		print('-> Parameters for '+name+':' + '\n')
+
+		for atr in self.attrs:
+
+			if sys.version_info.major == 2:
+				print atr + ' :',
+				print str(getattr(self, atr)),
+			elif sys.version_info.major == 3:
+				print(atr + ' :', end='')
+				print(str(getattr(self, atr)), end='')
+
+		print('\n')
 
 	def createInputMatlab(self, fileName, design_wing, design):
 
@@ -218,18 +235,99 @@ def f(x, *dimFix):
 
 	return (eq1, eq2)
 
+def searchLandrForWing(design):
+
+	dataDict = {}
+
+	file = open('findrAndL_found.txt', 'r')
+
+	lines = file.readlines()
+
+	for i in range(int(len(lines)/2)):
+
+		nameParater = lines[(i*2)]
+		valueParater = lines[(2*i)+1]
+
+		valueParater = valueParater.replace('\r\n','')
+		nameParater = nameParater.replace('\r\n','')
+
+		valueParater = valueParater.replace('\n','')
+		nameParater = nameParater.replace('\n','')
+
+		dataDict[nameParater] = float(valueParater)
+
+	file.close()
+
+	return dataDict
+
+def readCMDoptionsMainAbaqusParametric(argv, CMDoptionsDict):
+
+	short_opts = "i:o:"
+	long_opts = ["options=","abaqusOptions="]
+	try:
+		opts, args = getopt.getopt(argv,short_opts,long_opts)
+	except getopt.GetoptError:
+		raise ValueError('ERROR: Not correct input to script')
+
+	# check input
+	if len(opts) != len(long_opts):
+		raise ValueError('ERROR: Invalid number of inputs')	
+
+	for opt, arg in opts:
+
+		if opt in ("-i", "--options"):
+
+			if arg.lower() in ('test'):
+				CMDoptionsDict['type'] = 'test'
+			elif arg.lower() in ('sim'):
+				CMDoptionsDict['type'] = 'sim'
+
+		elif opt in ("-o", "--abaqusOptions"):
+
+			# pdb.set_trace()
+
+			if arg.lower() in ('script'):
+				CMDoptionsDict['abaqusOptions'] = 'script'
+			elif arg.lower() in ('nogui'):
+				CMDoptionsDict['abaqusOptions'] = 'noGUI'
+
+		# elif opt in ("-w", "--workingDir"):
+		# 	CMDoptionsDict['workingDir'] = arg
+
+	return CMDoptionsDict
+
 #####################
 print('\n'+'### Build wing model')
-# Obtain parameters
+
+#Read postProc folder name from CMD
+CMDoptionsDict = {}
+CMDoptionsDict = readCMDoptionsMainAbaqusParametric(sys.argv[1:], CMDoptionsDict)
+
+if CMDoptionsDict['type'] == 'sim':
+	pwd = os.getcwd()
+
+	os.chdir(pwd + '\\rootBendingMoment')
+
+	for f in os.listdir(os.getcwd()):
+		if f.endswith('.txt'):
+			os.remove(f)
+
+	os.chdir(pwd + '\\Results-54_20')
+
+	for f in os.listdir(os.getcwd()):
+		os.remove(f)
+
+	os.chdir(pwd + '\\code')
 
 ######## Chiral
 paraRead = structtype()
-paraRead_wing = structtype()
+#Read parameters
+paraRead.loadParameters('inputAbaqus.txt')
+paraRead.printParameters('paraRead')
+
 design = structtype()
 design_wing = structtype()
 
-#Read parameters
-paraRead.loadParameters('inputAbaqus.txt')
 
 # pdb.set_trace()
 design.M = int(paraRead.M) #Number of unit cells in transversal direction
@@ -239,7 +337,9 @@ design.r0 = float(paraRead.r)  #Node radius, initial values
 design.cutGap_y = float(paraRead.cutGap_y) #Gap between the lattice and the skin in the y direction
 
 ######## Wing
+paraRead_wing = structtype()
 paraRead_wing.loadParameters('inputAbaqus_wing.txt')
+paraRead_wing.printParameters('paraRead_wing')
 
 design_wing.span = float(paraRead_wing.span)
 design_wing.c_0 = float(paraRead_wing.c_0)
@@ -254,7 +354,9 @@ dimFix = (design_wing.C2r, design_wing.s, design.M, design.N, design.cutGap_y)
 # r0 = 5
 # L0 = 13
 
-[sol,infodict,ier,msg] = fsolve(f, (math.sqrt(design.L0), math.sqrt(design.r0)), args=dimFix, full_output=1)
+# [sol,infodict,ier,msg] = fsolve(f, (math.sqrt(design.L0), math.sqrt(design.r0)), args=dimFix, full_output=1)
+
+ier = 0
 
 if ier == 1:
 
@@ -277,53 +379,126 @@ if ier == 1:
 	file.close()
 
 else:
-	print('-> Not solution found for r and L, message: '+msg)
+	# print('-> Not solution found for r and L, message: '+msg)
 	print('-> Using Matlab now')
-
+	# pdb.set_trace()
 	paraRead.createInputMatlab('inputAbaqus_Matlab.txt', design_wing, design)
 
+	#Delete previous execution file
+	for f in os.listdir(os.getcwd()):
+		if f.startswith('findrAndL_found'):
+			os.remove(f)
 	os.system('matlab -nodesktop -nosplash -r "searchParameters_Matlab;quit;"')
 
 	#Wait for matlab to finish its execution
 	i = 1
+	j = 1
 	flagMatlabExecution = False
+	increaseNFlag = False
 	while True:
-		time.sleep(20)
+		time.sleep(10)
 
-		print('-> Waiting for Matlab to finish, '+str(i*20)+'seconds elapsed')
+		print('-> Waiting for Matlab to finish, '+str(i*10)+'seconds elapsed')
 		i += 1
 		
 		if i > 7:
 			raise ValueError('Error: Aborting Matlab execution, it is taking so much time')
 
 		for f in os.listdir(os.getcwd()):
-		    if f.startswith('Matlab_execution.txt'):
-		        
-		        file = open('Matlab_execution.txt', 'r')
+			if f.startswith('Matlab_execution.txt'):
+				
+				file = open('Matlab_execution.txt', 'r')
 
-		        lines = file.readlines()
+				lines = file.readlines()
 
-		        for i in range(int((len(lines))/2)):
+				for i in range(int((len(lines))/2)):
 
-		        	execIndicator = lines[(2*i)+1]
+					execIndicator = lines[(2*i)+1]
 
-		        	execIndicator = execIndicator.replace('\n','')
-		        	execIndicator = execIndicator.replace('\r\n','')
+					execIndicator = execIndicator.replace('\n','')
+					execIndicator = execIndicator.replace('\r\n','')
 
-		        	file.close()
-		        	# os.remove(f)
+				file.close()
+				os.remove(f)
 
-		        	if execIndicator == 'OK':
-		        		flagMatlabExecution = True
+				if execIndicator == 'OK':
+					flagMatlabExecution = True
 
-		        	elif execIndicator == 'FAIL':
-		        		raise ValueError('Error: Matlab execution failed')
+				elif execIndicator == 'FAIL':
+					raise ValueError('Error: Matlab execution failed')
 
-		        	else:
-		        		raise ValueError('Not possible to read Matlab exe file')
+				else:
+					raise ValueError('Not possible to read Matlab exe file')
 
 		if flagMatlabExecution:
-			print('-> Matlab successfully executed')
-			break #Exit while loop
+			dataDict = searchLandrForWing(design)
+			L_fromMatlab = dataDict['L']
+			r_fromMatlab = dataDict['r']
 
-out = os.system('abaqus cae script=codeForWing_temp.py')
+			print('-> Values found for r and L:')
+			print('L: '+str(L_fromMatlab))
+			print('r: '+str(r_fromMatlab))
+
+			# Automatic control for small values
+			if (L_fromMatlab < 0.0001 or r_fromMatlab < 0.0001) and j < 10:
+
+				flagMatlabExecution = False
+				increaseNFlag = True
+
+				j += 1
+
+			#Manual control of values achieved
+			value = raw_input('---> Continue (c), abort (a) or increase N (current='+paraRead.N+') (n,new N)?:')
+			if value == 'c':
+				#flagMatlabExecution = True already
+				increaseNFlag = False
+			elif value == 'a':
+				print('\n'+'-> Execution aborted')
+				exit()
+			elif 'n' in value:
+				increaseNFlag = True
+				flagMatlabExecution = False
+				newN = value[2:] #string
+			else:
+				raise ValueError('Error: Wrong input to question')
+
+			if increaseNFlag:
+
+				paraRead.N = newN #string
+
+				print('---> Parameter N modified to '+str(paraRead.N))
+
+				paraRead.createInputMatlab('inputAbaqus_Matlab.txt', design_wing, design)
+
+				#Delete previous execution file
+				for f in os.listdir(os.getcwd()):
+					if f.startswith('findrAndL_found'):
+						os.remove(f)
+
+				os.system('matlab -nodesktop -nosplash -r "searchParameters_Matlab;quit;"')
+
+				i = 1
+
+			if flagMatlabExecution:
+				print('\n'+'-> Matlab successfully executed')
+				break #Exit while loop
+
+dataDict = searchLandrForWing(design)
+L_fromMatlab = dataDict['L']
+r_fromMatlab = dataDict['r']
+
+print('\n'+'-> Values found for r and L:')
+print('L: '+str(L_fromMatlab))
+print('r: '+str(r_fromMatlab))
+
+#Execute next file
+print('\n'+'-> Executing Abaqus...')
+
+if CMDoptionsDict['type'] == 'sim':
+	os.chdir(pwd)
+	if CMDoptionsDict['abaqusOptions'] == 'script':
+		out = os.system('python start_sim.py -o script')
+	elif CMDoptionsDict['abaqusOptions'] == 'noGUI':
+		out = os.system('python start_sim.py -o noGUI')
+elif CMDoptionsDict['type'] == 'test':
+	out = os.system('abaqus cae script=codeForWing_temp.py')
